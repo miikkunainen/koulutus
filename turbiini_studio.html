@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turbiini Startup Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Archivo+Expanded:wght@700;800;900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf8f4;--paper:#ffffff;--cream:#f3eee4;
+  --ink:#16150f;--ink-2:#6b675c;--ink-3:#9a958a;--line:#e7e2d6;
+  --pink:#e8749b;--pink-deep:#cf4f7c;--pink-soft:#fbe7ef;
+  --mint:#7fd1bf;--mint-deep:#3f8576;--mint-soft:#e2f4ef;
+  --gold:#cda13f;--shadow:rgba(22,21,15,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Archivo',sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:0 26px}
+::selection{background:var(--pink-soft)}
+
+/* ---------- TOP BAR ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(250,248,244,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1240px;margin:0 auto;padding:13px 26px;display:flex;align-items:center;gap:18px}
+.logo{font-family:'Archivo Expanded';font-weight:900;font-size:1.3rem;letter-spacing:-.01em;display:flex;align-items:center;gap:.05em}
+.logo .blade{width:.6em;height:.6em;display:inline-flex}
+.logo small{font-family:'Archivo';font-weight:600;font-size:.6rem;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-left:8px}
+.topbar .spacer{flex:1}
+.mini-prog{display:flex;align-items:center;gap:10px;font-size:.78rem;font-weight:700;color:var(--ink-2)}
+.mini-prog .track{width:120px;height:7px;background:var(--line);border-radius:99px;overflow:hidden}
+.mini-prog .track span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mint),var(--pink));transition:width .5s}
+
+/* ---------- HERO ---------- */
+header.hero{padding:64px 0 30px}
+.hero .kicker{font-size:.74rem;letter-spacing:.26em;text-transform:uppercase;color:var(--pink-deep);font-weight:700;margin-bottom:16px}
+.hero h1{font-family:'Archivo Expanded';font-weight:900;font-size:clamp(2.6rem,6.5vw,5rem);line-height:.92;letter-spacing:-.025em;max-width:14ch}
+.hero h1 em{font-family:'Newsreader',serif;font-style:italic;font-weight:500;color:var(--pink)}
+.hero p.lead{font-family:'Newsreader',serif;font-size:clamp(1.1rem,2.2vw,1.45rem);color:var(--ink-2);margin-top:22px;max-width:62ch;line-height:1.45}
+.why-box{margin-top:28px;padding:20px 24px;background:var(--mint-soft);border:1px solid #cfe9e1;border-radius:16px;max-width:64ch;font-size:.95rem;color:#234e46}
+.why-box b{color:var(--mint-deep)}
+
+/* ---------- JOURNEY RAIL ---------- */
+.rail{display:flex;gap:0;overflow-x:auto;padding:30px 0 10px;margin:30px 0 8px;scrollbar-width:thin}
+.rail::-webkit-scrollbar{height:5px}.rail::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+.rnode{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;width:96px;position:relative;cursor:pointer}
+.rnode::before{content:"";position:absolute;top:17px;left:-50%;width:100%;height:2px;background:var(--line);z-index:0}
+.rnode:first-child::before{display:none}
+.rnode.done::before{background:var(--mint)}
+.rdot{width:36px;height:36px;border-radius:50%;background:var(--paper);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;z-index:1;transition:.25s;color:var(--ink-3)}
+.rnode.active .rdot{border-color:var(--pink);color:var(--pink-deep);box-shadow:0 0 0 5px var(--pink-soft);transform:scale(1.08)}
+.rnode.done .rdot{background:var(--mint);border-color:var(--mint);color:#16150f}
+.rnode.locked .rdot{opacity:.45}
+.rlabel{font-size:.66rem;font-weight:700;color:var(--ink-2);margin-top:8px;text-align:center;line-height:1.2}
+.rnode.locked .rlabel{opacity:.5}
+
+/* ---------- MAIN GRID ---------- */
+.studio{display:grid;grid-template-columns:1.15fr .85fr;gap:26px;margin:24px 0 70px;align-items:start}
+@media(max-width:980px){.studio{grid-template-columns:1fr}}
+
+.card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:0 18px 50px -34px var(--shadow)}
+.card.airy{padding:38px}
+.stage-tag{display:inline-flex;align-items:center;gap:8px;font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--pink-deep);background:var(--pink-soft);padding:6px 13px;border-radius:99px;margin-bottom:18px}
+h2.stage-h{font-family:'Archivo Expanded';font-weight:800;font-size:1.7rem;letter-spacing:-.01em;line-height:1.05;margin-bottom:6px}
+.stage-sub{color:var(--ink-2);font-size:.96rem;margin-bottom:24px}
+
+/* onboarding choice */
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+@media(max-width:560px){.choice-grid{grid-template-columns:1fr}}
+.choice{border:1.5px solid var(--line);border-radius:18px;padding:24px;cursor:pointer;transition:.2s;background:var(--paper)}
+.choice:hover{border-color:var(--pink);transform:translateY(-3px);box-shadow:0 16px 36px -24px var(--shadow)}
+.choice .ic{font-size:2rem}
+.choice h3{font-family:'Archivo Expanded';font-weight:800;font-size:1.15rem;margin:12px 0 6px}
+.choice p{font-size:.86rem;color:var(--ink-2)}
+
+label.fl{display:block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);font-weight:800;margin:18px 0 7px}
+input[type=text],textarea,select{width:100%;font-family:'Archivo',sans-serif;font-size:.98rem;color:var(--ink);background:var(--cream);border:1px solid var(--line);border-radius:13px;padding:13px 15px;transition:.16s}
+textarea{min-height:96px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pink);box-shadow:0 0 0 4px var(--pink-soft);background:var(--paper)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{font-size:.82rem;font-weight:600;padding:8px 14px;border:1.5px solid var(--line);border-radius:99px;cursor:pointer;transition:.15s;user-select:none}
+.chip:hover{border-color:var(--mint-deep)}
+.chip.on{background:var(--mint);border-color:var(--mint);color:#16150f;font-weight:700}
+
+.btn{font-family:'Archivo';font-weight:800;font-size:.92rem;border:none;border-radius:99px;padding:14px 28px;cursor:pointer;transition:.18s;display:inline-flex;align-items:center;gap:8px}
+.btn.pink{background:var(--pink);color:#fff}.btn.pink:hover{background:var(--pink-deep)}
+.btn.dark{background:var(--ink);color:#fff}.btn.dark:hover{background:#000}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}.btn.ghost:hover{border-color:var(--ink)}
+.btn.mint{background:var(--mint);color:#16150f}.btn.mint:hover{background:#6cc3b0}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+
+/* sparring chat */
+.spar{margin-top:8px}
+.coach-strip{display:flex;gap:14px;align-items:center;padding:14px 16px;background:var(--cream);border-radius:16px;margin-bottom:16px}
+.coach-strip .face{width:44px;height:44px;border-radius:12px;background:var(--pink);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.coach-strip .face svg{width:28px;height:28px;animation:spin 10s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.coach-strip .who{font-weight:800;font-size:.8rem;color:var(--mint-deep)}
+.coach-strip .role{font-size:.78rem;color:var(--ink-2)}
+.chatlog{display:flex;flex-direction:column;gap:12px;max-height:440px;overflow-y:auto;padding:4px 2px 4px 0}
+.msg{padding:13px 16px;border-radius:15px;font-size:.93rem;max-width:88%;line-height:1.5}
+.msg.ai{background:var(--mint-soft);border:1px solid #cfe9e1;align-self:flex-start;border-bottom-left-radius:5px}
+.msg.me{background:var(--ink);color:#fff;align-self:flex-end;border-bottom-right-radius:5px}
+.msg.ai b{color:var(--mint-deep)}
+.typing{align-self:flex-start;display:flex;gap:5px;padding:14px 18px;background:var(--mint-soft);border-radius:15px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--mint-deep);animation:bob 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bob{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.composer{display:flex;gap:10px;margin-top:14px;align-items:flex-end}
+.composer textarea{min-height:52px;max-height:140px}
+.spar-hint{font-size:.78rem;color:var(--ink-3);margin-top:10px;font-style:italic;font-family:'Newsreader',serif}
+.api-warn{display:none;font-size:.8rem;color:#9a5a1a;background:#fbf1e2;border:1px solid #f0dcc0;border-radius:12px;padding:11px 14px;margin-top:12px}
+
+/* task + feedback inside phase */
+.task-box{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-top:20px}
+.task-box .lbl{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.task-box .nm{font-weight:800;font-size:1.02rem}
+.task-box .pu{font-size:.86rem;color:var(--ink-2);margin-top:6px}
+.rate{display:flex;gap:7px;margin:10px 0}
+.star{font-size:1.5rem;cursor:pointer;filter:grayscale(1);opacity:.4;transition:.12s}
+.star.on{filter:none;opacity:1;transform:scale(1.05)}
+
+/* ---------- VIZ COLUMN ---------- */
+.viz-col{position:sticky;top:78px;display:flex;flex-direction:column;gap:18px}
+@media(max-width:980px){.viz-col{position:static}}
+.viz-card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 18px 50px -34px var(--shadow)}
+.viz-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px}
+.viz-head h3{font-family:'Archivo Expanded';font-weight:800;font-size:1.05rem}
+.viz-head .score{font-family:'Archivo Expanded';font-weight:900;font-size:1.1rem}
+.viz-head .score.pinkc{color:var(--pink-deep)}.viz-head .score.mintc{color:var(--mint-deep)}
+.viz-sub{font-size:.78rem;color:var(--ink-3);margin-bottom:12px}
+.viz-svg{width:100%;height:260px;display:block}
+.mode-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;justify-content:center}
+.mbtn{font-size:.72rem;font-weight:700;padding:7px 11px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper);cursor:pointer;transition:.14s;display:flex;align-items:center;gap:5px}
+.mbtn:hover{border-color:var(--ink-2)}
+.mbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.series-toggle{display:flex;background:var(--cream);border-radius:99px;padding:4px;margin-bottom:14px}
+.series-toggle button{flex:1;font-size:.8rem;font-weight:800;border:none;background:transparent;padding:9px;border-radius:99px;cursor:pointer;color:var(--ink-2);transition:.16s}
+.series-toggle button.on{background:var(--paper);color:var(--ink);box-shadow:0 2px 8px var(--shadow)}
+
+/* ---------- SUMMARY ---------- */
+.summary-sec{display:none;margin:20px 0 80px}
+.fb-item{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:12px}
+.fb-item .top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.fb-item .src{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pink-deep)}
+.fb-item textarea{min-height:64px;background:var(--cream)}
+.toggle{position:relative;width:46px;height:26px;border-radius:99px;background:var(--line);cursor:pointer;transition:.2s;flex-shrink:0}
+.toggle.on{background:var(--mint)}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px var(--shadow)}
+.toggle.on::after{left:23px}
+.send-box{background:var(--ink);color:#fff;border-radius:22px;padding:30px;margin-top:20px}
+.send-box h3{font-family:'Archivo Expanded';font-weight:800;font-size:1.3rem;margin-bottom:8px}
+.send-box p{color:#cfccc4;font-size:.92rem}
+.send-box .note{font-size:.8rem;color:#9a978f;margin-top:14px}
+
+/* toast */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(160%);z-index:90;background:var(--ink);color:#fff;font-weight:700;padding:13px 24px;border-radius:99px;box-shadow:0 14px 34px var(--shadow);transition:transform .4s cubic-bezier(.2,1.3,.4,1);font-size:.88rem;max-width:90vw;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+footer{border-top:1px solid var(--line);padding:30px 0 60px;text-align:center;font-size:.8rem;color:var(--ink-3);line-height:1.7}
+.lock-note{text-align:center;color:var(--ink-3);font-style:italic;font-family:'Newsreader',serif;padding:40px 20px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="logo">TUR<span class="blade"><svg viewBox="0 0 100 100"><path d="M8 50 L70 8 L92 30 L40 62 Z" fill="#e8749b"/><path d="M8 50 L40 62 L70 92 L24 92 Z" fill="#7fd1bf"/></svg></span>IINI <small>Startup Studio</small></div>
+    <div class="spacer"></div>
+    <div class="mini-prog"><span id="miniTxt">0 / 16</span><div class="track"><span id="miniBar"></span></div></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">Metropolia · Turbiini Arabia · Kevät 2026</div>
+    <h1>Ideasta <em>yritykseksi</em>, askel kerrallaan.</h1>
+    <p class="lead">Valmista yritysideaa ei tarvitse olla — riittää, että yrittäjyys kiinnostaa. Tämä studio sparraa sinut kiinnostuksesta tai raa'asta ajatuksesta solidiin liiketoimintamalliin. Tekoälyvalmentaja haastaa ja innostaa, kurssin 14 tapaamista vievät eteenpäin, ja kaksi elävää graafia näyttävät kuinka osaamisesi ja liikeideasi kasvavat.</p>
+    <div class="why-box">Miksi tämä kannattaa? Kun sinulla on jotain myytävää, tarvitset <b>laskutusta</b> — ja siihen pankkitilin. Sitä varten tarvitset <b>yrityksen</b>, joka turvaa asemasi, mahdollistaa verotuksen ja vähennykset sekä antaa pohjan kasvulle. Tämä polku tekee siitä siirtymästä suoraviivaisen — ja matkan varrella tukenasi ovat Turbiinin mentorit, talouslaskuri ja Nanobuusti-mikrorahoitus.</div>
+  </header>
+
+  <div class="rail" id="rail"></div>
+
+  <div class="studio" id="studio">
+    <div class="card airy" id="stageCard">
+      <div id="stageContent"></div>
+    </div>
+
+    <div class="viz-col">
+      <div class="viz-card">
+        <div class="series-toggle">
+          <button id="segIdea" class="on" onclick="setSeries('idea')">Liikeidea</button>
+          <button id="segSkill" onclick="setSeries('osaaminen')">Osaaminen</button>
+        </div>
+        <div class="viz-head">
+          <h3 id="vizTitle">Liikeidean kehitys</h3>
+          <span class="score pinkc" id="vizScore">0 %</span>
+        </div>
+        <div class="viz-sub" id="vizSub">Kasvaa kun jalostat ideaa ja suoritat vaiheita.</div>
+        <svg class="viz-svg" id="vizSvg" viewBox="0 0 360 260"></svg>
+        <div class="mode-row" id="modeRow"></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="summary-sec" id="summarySec">
+    <div class="stage-tag">Loppuyhteenveto</div>
+    <h2 class="stage-h" style="margin-bottom:10px">Palautteesi — sinä päätät</h2>
+    <p class="stage-sub" style="max-width:64ch">Studio on koonnut jokaisesta vaiheesta ehdotuksen palautteeksi. Muokkaa vapaasti jokaista kohtaa, kytke pois ne joita et halua mukaan, ja päätä lopuksi itse lähetätkö koonnin Metropolialle.</p>
+    <div id="fbList"></div>
+    <div class="send-box">
+      <h3>Valmis lähetettäväksi?</h3>
+      <p>Voit koota mukana olevat palautekohdat yhteen, kopioida ne tai avata sähköpostiluonnoksen. Mitään ei lähde ilman sinun napautustasi.</p>
+      <div class="btn-row">
+        <button class="btn mint" onclick="buildFeedback('copy')">Kopioi koonti</button>
+        <button class="btn ghost" style="color:#fff;border-color:#3a3a34" onclick="buildFeedback('download')">Lataa tekstinä</button>
+        <button class="btn pink" onclick="buildFeedback('send')">Avaa sähköpostiluonnos</button>
+      </div>
+      <p class="note" id="sendNote">Lähetys tapahtuu omasta sähköpostistasi Metropolian palauteosoitteeseen — voit vielä tarkistaa kaiken ennen lähettämistä.</p>
+    </div>
+  </section>
+
+  <footer>
+    Turbiini Startup Studio · pohjautuu Turbiinin toimintamalliin (turbiini.net) ja viitekehyksiin: Lean Startup · Disciplined Entrepreneurship (MIT) · The Mom Test · Traction · Blue Ocean.<br>
+    Turbiinin tuki matkalla: maksuton sparraus & mentorointi, talouslaskuri, Nanobuusti-mikrorahoitus, Turbiini All-Stars. Valmista ideaa ei tarvita — riittää kiinnostus.<br>
+    Itsearviot ja sparraus ovat oppimisen tukivälineitä, eivät virallinen arvosana. Tallenna edistymisesi ennen sulkemista.
+  </footer>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ================= DATA ================= */
+const SKILL_DIMS=[
+ {k:"sinnikkyys",l:"Sinnikkyys"},{k:"aloite",l:"Oma-aloitteisuus"},{k:"ammatti",l:"Ammattitaito"},
+ {k:"epavarmuus",l:"Epävarmuuden sieto"},{k:"oppiminen",l:"Oppimishalu"},{k:"vuorovaikutus",l:"Vuorovaikutus"},
+ {k:"asiakas",l:"Asiakasymmärrys"},{k:"talous",l:"Talous"},{k:"myynti",l:"Myynti"},{k:"riski",l:"Riskinsieto"}
+];
+const IDEA_DIMS=[
+ {k:"ongelma",l:"Ongelma"},{k:"asiakas",l:"Asiakas"},{k:"arvolupaus",l:"Arvolupaus"},{k:"markkina",l:"Markkina"},
+ {k:"ansainta",l:"Ansaintamalli"},{k:"kilpailuetu",l:"Kilpailuetu"},{k:"talous",l:"Kannattavuus"},
+ {k:"resurssit",l:"Resurssit"},{k:"validointi",l:"Validointi"},{k:"innovatiivisuus",l:"Innovatiivisuus"}
+];
+const skill={}, idea={};
+SKILL_DIMS.forEach(d=>skill[d.k]=0.4); IDEA_DIMS.forEach(d=>idea[d.k]=0.4);
+
+/* 14 phases: topic, intro, sparring focus, task, material, boosts */
+const PHASES=[
+ {date:"26.1.",t:"Aloitus & yrittäjyys",intro:"Mitä startup-yrittäjyys on ja mistä sinun matkasi alkaa.",
+  focus:"opiskelijan oman idean kirkastamisesta ja SWOT-ajattelusta (vahvuudet, heikkoudet, mahdollisuudet, uhat). Auta tunnistamaan oma kilpailuetu.",
+  task:{nm:"SWOT + idean tiivistys",pu:"Business Model Canvas 1 — koko liiketoiminta yhdelle sivulle."},
+  bi:["ongelma","innovatiivisuus"],bs:["aloite","sinnikkyys"]},
+ {date:"2.2.",t:"Ideointiworkshop",intro:"Yritysideasta liikeideaksi — divergoi ja konvergoi.",
+  focus:"ideoiden tuottamisesta ja seulonnasta. Haasta opiskelijaa olemaan rakastumatta ensimmäiseen ideaan ja etsimään useita kulmia.",
+  task:{nm:"Idean kirkastus",pu:"Ideointi-workshop -menetelmät, Double Diamond."},
+  bi:["innovatiivisuus","arvolupaus"],bs:["aloite","oppiminen"]},
+ {date:"9.2.",t:"Yrittäjyystyökalut (BMC)",intro:"Business Model Canvas omasta ideastasi.",
+  focus:"liiketoimintamallin yhdeksästä palikasta. Käy läpi asiakassegmentit, arvolupaus, kanavat, tulovirrat ja kulurakenne.",
+  task:{nm:"Täytä BMC",pu:"Business Model Canvas — testaa onko ideassa toimiva malli, ei vain tuote."},
+  bi:["arvolupaus","ansainta"],bs:["ammatti","talous"]},
+ {date:"23.2.",t:"Asiakasymmärrys 1",intro:"Kenelle ja miksi — asiakkaan hahmottaminen.",
+  focus:"asiakasymmärryksestä ja persoonista. Ohjaa opiskelija tekemään abstraktista kohderyhmästä yksi konkreettinen ihminen.",
+  task:{nm:"Asiakaspersoona + moodboard",pu:"Asiakasprofiilit (persoonat) -pohja."},
+  bi:["asiakas","markkina"],bs:["asiakas","vuorovaikutus"]},
+ {date:"2.3.",t:"Asiakasymmärrys 2",intro:"Soveltaminen: Double Diamond & oikea asiakastutkimus.",
+  focus:"asiakkaan ongelman validoinnista haastatteluilla. Muistuta The Mom Test -periaatteista: kysy menneestä käytöksestä, älä mielipiteitä ideasta.",
+  task:{nm:"Buyer Persona + asiakastutkimus",pu:"Double Diamond -täyttöpohja, Buyer Persona."},
+  bi:["asiakas","validointi"],bs:["asiakas","oppiminen"]},
+ {date:"16.3.",t:"Hinnoittelu & liiketoimintamallit",intro:"Miten tällä tehdään rahaa?",
+  focus:"hinnoittelusta ja liiketoimintamalleista. Käy läpi arvopohjainen hinnoittelu ja tmi vs Oy verotuksen näkökulmasta.",
+  task:{nm:"Hinnoittele tuote/palvelu",pu:"Business Model Navigator, tulonmuodostus tmi vs oy."},
+  bi:["ansainta","kilpailuetu"],bs:["talous","ammatti"]},
+ {date:"23.3.",t:"Talous & kannattavuus",intro:"Kustannus- ja kannattavuuslaskelmat.",
+  focus:"kannattavuuslaskennasta: katetarve, kiinteät ja muuttuvat kulut, myyntitavoite. Tee luvuista konkreettisia ja realistisia.",
+  task:{nm:"Kannattavuuslaskelma",pu:"Turbiinin kannattavuuslaskelmapohja + Turbiinin ilmainen aloittavan yrittäjän talouslaskuri (turbiini.net)."},
+  bi:["talous","ansainta"],bs:["talous","epavarmuus"]},
+ {date:"30.3.",t:"Prototypointi & testaus",intro:"Rakenna ja testaa — AI kokeilun apuna.",
+  focus:"halvimmasta mahdollisesta kokeesta, joka todistaa suurimman oletuksen oikeaksi tai vääräksi. Kannusta nopeaan, kevyeen prototyyppiin.",
+  task:{nm:"Prototyyppi/demo + testaus",pu:"Double Diamond & prototyyppi, AI testauksen apuna."},
+  bi:["validointi","innovatiivisuus"],bs:["riski","oppiminen"]},
+ {date:"13.4.",t:"Pitchaus & Storytelling",intro:"Tarina, joka jää mieleen.",
+  focus:"pitchin rakenteesta ja tarinankerronnasta. Ohjaa aloittamaan asiakkaan hetkellä, ei tuotteella. Esityksen anatomia.",
+  task:{nm:"Pitch + tarina",pu:"Tarinankerronta, esityksen anatomia, pitch-runko."},
+  bi:["arvolupaus","markkina"],bs:["myynti","vuorovaikutus"]},
+ {date:"20.4.",t:"Myynti",intro:"Myynti on auttamista, ei tyrkyttämistä.",
+  focus:"myyntityöstä ja asiakassuhteen rakentamisesta. Korosta kuuntelua ja tarpeen kartoitusta ennen ratkaisun esittelyä.",
+  task:{nm:"Myyntipuheen harjoitus",pu:"Opas myyntityöhön, hinnoittelu ja myynti."},
+  bi:["kilpailuetu","ansainta"],bs:["myynti","vuorovaikutus"]},
+ {date:"27.4.",t:"Tulokset & reflektointi",intro:"Mitä idea on nyt? Päivitä ja kokoa.",
+  focus:"opitun reflektoinnista ja BMC:n päivityksestä. Vertaa lähtöideaa nykyiseen ja tunnista suurin oppi.",
+  task:{nm:"BMC-päivitys + pitch deck",pu:"Turbiini pitch deck, päivitetty BMC."},
+  bi:["arvolupaus","resurssit"],bs:["sinnikkyys","ammatti"]},
+ {date:"4.5.",t:"Pitch-harjoitukset",intro:"Hio esitys teräväksi.",
+  focus:"pitchin viimeistelystä. Auta ennakoimaan kolme vaikeinta kysymystä ja valmistamaan vastaukset.",
+  task:{nm:"Pitch-harjoitus raadille",pu:"Ajoita 3 min, ennakoi vaikeat kysymykset."},
+  bi:["resurssit","validointi"],bs:["myynti","epavarmuus"]},
+ {date:"11.5.",t:"Loppupitchaukset",intro:"Koitos — näytä idea ja itsesi parhaalta puoleltasi.",
+  focus:"valmiin pitchin esittämisestä ja selkeästä pyynnöstä. Mitä haluat yleisöltä: asiakasta, kumppania, rahoitusta?",
+  task:{nm:"Valmis pitch",pu:"Pitch-materiaalisi, selkeä lopppupyyntö."},
+  bi:["kilpailuetu","markkina"],bs:["myynti","riski"]},
+ {date:"13.5.",t:"Turbiini All-Stars",intro:"Peli loppuu — yrittäjyys alkaa.",
+  focus:"jatkopoluista: Y-tunnus, starttiraha, pankkitili ja Turbiinin omat jatkopalvelut. Auta tekemään konkreettinen suunnitelma seuraaville askelille. Turbiinilta löytyy läpikäyneille tiimeille Nanobuusti-mikrorahoitus (jopa 1000 €), maksutonta henkilökohtaista mentorointia ja räätälöityjä jatkopolkuja. All-Stars -tapahtuma (13.5.2026, Helsinki XR Center) on paikka esitellä idea ja verkostoitua.",
+  task:{nm:"Jatkopolku & verkostot",pu:"Y-tunnus & starttiraha, pankkitili, Nanobuusti-mikrorahoitus, Turbiinin mentorointi, All-Stars -tapahtuma."},
+  bi:["resurssit","talous"],bs:["vuorovaikutus","sinnikkyys"]}
+];
+
+/* visualization modes */
+const MODES=[
+ {id:"bars",ic:"▥",nm:"Pylväät"},
+ {id:"pie",ic:"◔",nm:"Piirakka"},
+ {id:"radar",ic:"✸",nm:"Seitti"},
+ {id:"scatter",ic:"⁘",nm:"Haulikko"},
+ {id:"river",ic:"〰",nm:"Joki"},
+ {id:"tree",ic:"🌱",nm:"Puu"}
+];
+
+/* state */
+let activeSeries="idea";
+let activeMode="radar";
+let stageIndex=0;            // 0 = onboarding, 1..14 = phases, 15 = summary
+let onboardingDone=false;
+const phaseDone={}, phaseFeedback={}, chatHistories={};
+const feedbackItems=[];     // {src,text,include,rating}
+/* ================= VISUALIZATION ENGINE ================= */
+function seriesData(){
+  const dims = activeSeries==="idea"?IDEA_DIMS:SKILL_DIMS;
+  const store = activeSeries==="idea"?idea:skill;
+  const base = activeSeries==="idea"?["#e8749b","#cf4f7c","#f0a6c0"]:["#7fd1bf","#3f8576","#a8e0d3"];
+  return dims.map((d,i)=>({key:d.k,label:d.l,val:store[d.k],color:base[i%base.length]}));
+}
+function pt(cx,cy,r,a){return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+
+function drawChart(){
+  const data=seriesData();
+  const W=360,H=260;
+  let svg="";
+  const accent=activeSeries==="idea"?"#e8749b":"#7fd1bf";
+  const accentD=activeSeries==="idea"?"#cf4f7c":"#3f8576";
+
+  if(activeMode==="bars"){
+    const n=data.length,gap=6,bw=(W-40-gap*(n-1))/n,maxH=170,base=210;
+    data.forEach((d,i)=>{
+      const x=20+i*(bw+gap),h=Math.max(3,d.val/5*maxH),y=base-h;
+      svg+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="4" fill="${d.color}"/>`;
+      svg+=`<text x="${(x+bw/2).toFixed(1)}" y="${base+14}" font-size="7" fill="#9a958a" text-anchor="middle" transform="rotate(35 ${(x+bw/2).toFixed(1)} ${base+14})" font-family="Archivo">${d.label}</text>`;
+    });
+    svg+=`<line x1="20" y1="210" x2="${W-20}" y2="210" stroke="#e7e2d6"/>`;
+  }
+  else if(activeMode==="pie"){
+    const cx=W/2,cy=120,R=92;const tot=data.reduce((a,d)=>a+d.val+0.15,0);let ang=-Math.PI/2;
+    data.forEach(d=>{
+      const slice=(d.val+0.15)/tot*Math.PI*2,a2=ang+slice;
+      const [x1,y1]=pt(cx,cy,R,ang),[x2,y2]=pt(cx,cy,R,a2);
+      const large=slice>Math.PI?1:0;
+      svg+=`<path d="M${cx} ${cy} L${x1.toFixed(1)} ${y1.toFixed(1)} A${R} ${R} 0 ${large} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} Z" fill="${d.color}" stroke="#fff" stroke-width="1.5"/>`;
+      const [lx,ly]=pt(cx,cy,R*0.62,ang+slice/2);
+      if(d.val>0.6)svg+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="6.5" fill="#fff" text-anchor="middle" font-weight="700" font-family="Archivo">${d.label}</text>`;
+      ang=a2;
+    });
+    svg+=`<circle cx="${cx}" cy="${cy}" r="38" fill="#fff"/><text x="${cx}" y="${cy+4}" font-size="13" text-anchor="middle" font-weight="800" fill="${accentD}" font-family="Archivo Expanded">${Math.round(avg(data)*20)}%</text>`;
+  }
+  else if(activeMode==="radar"){
+    const cx=W/2,cy=125,R=96,n=data.length;
+    for(let g=1;g<=5;g++){let r='';for(let i=0;i<n;i++){const[a,b]=pt(cx,cy,R*g/5,-Math.PI/2+i*2*Math.PI/n);r+=(i?'L':'M')+a.toFixed(1)+' '+b.toFixed(1)+' ';}svg+=`<path d="${r}Z" fill="none" stroke="#eee7da"/>`;}
+    data.forEach((d,i)=>{const[a,b]=pt(cx,cy,R,-Math.PI/2+i*2*Math.PI/n);svg+=`<line x1="${cx}" y1="${cy}" x2="${a.toFixed(1)}" y2="${b.toFixed(1)}" stroke="#eee7da"/>`;
+      const[lx,ly]=pt(cx,cy,R+13,-Math.PI/2+i*2*Math.PI/n);let anc=Math.abs(Math.cos(-Math.PI/2+i*2*Math.PI/n))<.3?'middle':(lx>cx?'start':'end');
+      svg+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="6.5" fill="#6b675c" text-anchor="${anc}" font-weight="600" font-family="Archivo">${d.label}</text>`;});
+    let poly=data.map((d,i)=>{const[a,b]=pt(cx,cy,R*(d.val/5),-Math.PI/2+i*2*Math.PI/n);return a.toFixed(1)+','+b.toFixed(1);}).join(' ');
+    svg+=`<polygon points="${poly}" fill="${accent}" fill-opacity="0.25" stroke="${accent}" stroke-width="2.2"/>`;
+    data.forEach((d,i)=>{const[a,b]=pt(cx,cy,R*(d.val/5),-Math.PI/2+i*2*Math.PI/n);svg+=`<circle cx="${a.toFixed(1)}" cy="${b.toFixed(1)}" r="2.6" fill="${accentD}"/>`;});
+  }
+  else if(activeMode==="scatter"){
+    // "haulikonammunta": each dim = cluster of pellets; higher val = more pellets, tighter to its ring target
+    const cx=W/2,cy=125,R=98,n=data.length;
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#eee7da"/><circle cx="${cx}" cy="${cy}" r="${R*0.6}" fill="none" stroke="#f2ede2"/><circle cx="${cx}" cy="${cy}" r="3" fill="#e7e2d6"/>`;
+    data.forEach((d,i)=>{
+      const baseA=-Math.PI/2+i*2*Math.PI/n;const targetR=R*(d.val/5);
+      const pellets=Math.round(d.val*4)+1;
+      for(let p=0;p<pellets;p++){
+        const spread=(1.2-d.val/5)* (Math.random()*40-20);
+        const aJit=baseA+(Math.random()*0.5-0.25)*(1.3-d.val/5);
+        const[px,py]=pt(cx,cy,Math.max(6,targetR+spread),aJit);
+        svg+=`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${(2+d.val*0.4).toFixed(1)}" fill="${d.color}" fill-opacity="0.8"/>`;
+      }
+      const[lx,ly]=pt(cx,cy,R+13,baseA);let anc=Math.abs(Math.cos(baseA))<.3?'middle':(lx>cx?'start':'end');
+      svg+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="6" fill="#9a958a" text-anchor="${anc}" font-family="Archivo">${d.label}</text>`;
+    });
+  }
+  else if(activeMode==="river"){
+    // rahavirtojen joki: main stream grows with avg; tributaries for developed dims
+    const a=avg(data);const baseY=140;const startW=6+a*16;
+    let topEdge="",botEdge="";
+    const segs=14;
+    for(let s=0;s<=segs;s++){
+      const x=20+s/segs*(W-40);
+      const grow=startW*(0.5+s/segs*0.9);
+      const wob=Math.sin(s*0.7)*10;
+      topEdge+=(s?'L':'M')+x.toFixed(1)+' '+(baseY+wob-grow/2).toFixed(1)+' ';
+      botEdge=(x.toFixed(1)+' '+(baseY+wob+grow/2).toFixed(1)+' ')+(s?'L':'')+botEdge;
+    }
+    svg+=`<path d="${topEdge}L${botEdge}Z" fill="${accent}" fill-opacity="0.30" stroke="${accent}" stroke-width="1.5"/>`;
+    // tributaries
+    data.forEach((d,i)=>{
+      if(d.val<1)return;
+      const sx=30+i/(data.length)* (W-60);
+      const fromTop=i%2===0;
+      const y0=fromTop?30:250,y1=baseY+Math.sin((i*1.0))*10+(fromTop?-6:6);
+      svg+=`<path d="M${sx} ${y0} Q${(sx+12).toFixed(1)} ${((y0+y1)/2).toFixed(1)} ${(sx+18).toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${d.color}" stroke-width="${(1+d.val*0.8).toFixed(1)}" stroke-opacity="0.7" stroke-linecap="round"/>`;
+      svg+=`<text x="${sx.toFixed(1)}" y="${fromTop?22:259}" font-size="6" fill="#9a958a" text-anchor="middle" font-family="Archivo">${d.label}</text>`;
+    });
+    svg+=`<text x="${W-22}" y="${baseY+4}" font-size="9" fill="${accentD}" text-anchor="end" font-weight="800" font-family="Archivo Expanded">arvovirta →</text>`;
+  }
+  else if(activeMode==="tree"){
+    // puun kasvu: roots (foundational dims) + trunk + branches (developed dims)
+    const cx=W/2,ground=205,a=avg(data);
+    const trunkH=30+a*40;
+    svg+=`<line x1="${cx}" y1="${ground}" x2="${cx}" y2="${(ground-trunkH).toFixed(1)}" stroke="#8a6a4a" stroke-width="${(5+a*3).toFixed(1)}" stroke-linecap="round"/>`;
+    // roots
+    const roots=data.slice(0,Math.ceil(data.length/2));
+    roots.forEach((d,i)=>{
+      const dir=(i-roots.length/2+0.5);const len=10+d.val*16;
+      const ex=cx+dir*22, ey=ground+len*0.7;
+      svg+=`<path d="M${cx} ${ground} Q${(cx+dir*10).toFixed(1)} ${(ground+8).toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}" fill="none" stroke="#a8896a" stroke-width="${(1+d.val*0.7).toFixed(1)}" stroke-linecap="round" stroke-opacity="0.8"/>`;
+    });
+    svg+=`<line x1="30" y1="${ground}" x2="${W-30}" y2="${ground}" stroke="#e7e2d6"/>`;
+    // branches/leaves for each dim
+    const top=ground-trunkH;
+    data.forEach((d,i)=>{
+      const ang=-Math.PI/2 + (i-data.length/2+0.5)*0.34;
+      const len=14+d.val*22;
+      const[ex,ey]=[cx+Math.cos(ang)*len, top+Math.sin(ang)*len];
+      svg+=`<line x1="${cx}" y1="${top.toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="#8a6a4a" stroke-width="${(1+d.val*0.6).toFixed(1)}" stroke-linecap="round"/>`;
+      const leafR=2+d.val*3.4;
+      svg+=`<circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="${leafR.toFixed(1)}" fill="${d.color}" fill-opacity="${(0.4+d.val*0.12).toFixed(2)}"/>`;
+      if(d.val>1.5)svg+=`<text x="${ex.toFixed(1)}" y="${(ey-leafR-2).toFixed(1)}" font-size="5.5" fill="#6b675c" text-anchor="middle" font-family="Archivo">${d.label}</text>`;
+    });
+  }
+  document.getElementById('vizSvg').innerHTML=svg;
+  // header
+  const sc=Math.round(avg(data)*20);
+  document.getElementById('vizScore').textContent=sc+' %';
+  document.getElementById('vizScore').className="score "+(activeSeries==="idea"?"pinkc":"mintc");
+}
+function avg(data){return data.reduce((a,d)=>a+d.val,0)/data.length;}
+
+function setSeries(s){
+  activeSeries=s;
+  document.getElementById('segIdea').classList.toggle('on',s==="idea");
+  document.getElementById('segSkill').classList.toggle('on',s==="osaaminen");
+  document.getElementById('vizTitle').textContent=s==="idea"?"Liikeidean kehitys":"Osaamisesi & soveltuvuus";
+  document.getElementById('vizSub').textContent=s==="idea"?"Kasvaa kun jalostat ideaa ja suoritat vaiheita.":"Kasvaa kun ymmärrät kurssipäivien sisällöt — tekee sinusta soveliaamman yrittäjäksi.";
+  drawChart();
+}
+function setMode(m){activeMode=m;document.querySelectorAll('.mbtn').forEach(b=>b.classList.toggle('on',b.dataset.m===m));drawChart();}
+
+/* build mode buttons */
+const modeRow=document.getElementById('modeRow');
+MODES.forEach(m=>{const b=document.createElement('button');b.className='mbtn'+(m.id===activeMode?' on':'');b.dataset.m=m.id;
+  b.innerHTML=`<span>${m.ic}</span> ${m.nm}`;b.onclick=()=>setMode(m.id);modeRow.appendChild(b);});
+
+/* boost helper */
+function boost(series,keys,amt){
+  const store=series==="idea"?idea:skill;
+  keys.forEach(k=>{if(store[k]!=null)store[k]=Math.min(5,store[k]+amt);});
+  drawChart();
+}
+/* ================= AI SPARRING ================= */
+async function askAI(systemPrompt, history, userText, allowUpdate, updateKeys){
+  const messages=[...history,{role:"user",content:userText}];
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:systemPrompt,messages})
+    });
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const data=await res.json();
+    let text=data.content.filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
+    let updates=null;
+    const m=text.match(/UPDATE:\s*(\{[\s\S]*\})\s*$/);
+    if(m){try{updates=JSON.parse(m[1]);}catch(e){}text=text.replace(/UPDATE:\s*\{[\s\S]*\}\s*$/,'').trim();}
+    return {text,updates};
+  }catch(err){
+    return {text:null,error:err.message};
+  }
+}
+
+function localFallback(focusWord){
+  const lines=[
+    "Hyvä pohja. Kysy itseltäsi: kuka maksaa tästä ensimmäisenä — ja miksi juuri nyt? Konkretisoi yksi asiakas nimellä ja tilanteella.",
+    "Out of the box: mitä jos veisit tämän täysin eri toimialalle? Usein paras idea syntyy kahden maailman risteyksestä.",
+    "Reaalitalous: laske karkeasti paljonko yksi asiakas tuo ja paljonko maksaa hankkia. Jos jälkimmäinen on suurempi, malli ei vielä kanna.",
+    "Testaa halvalla: mikä on pienin koe, jolla todistat tämän oletuksen vääräksi tässä viikossa?"
+  ];
+  return "💡 (Paikallinen sparraus — live-AI aktivoituu kun studio avataan claude.ai-ympäristössä.)\n\n"+lines[Math.floor(Math.random()*lines.length)];
+}
+
+function addMsg(log,role,text){
+  const d=document.createElement('div');d.className='msg '+(role==="assistant"?"ai":"me");
+  d.innerHTML=text.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+  log.appendChild(d);log.scrollTop=log.scrollHeight;return d;
+}
+function showTyping(log){const t=document.createElement('div');t.className='typing';t.innerHTML='<i></i><i></i><i></i>';log.appendChild(t);log.scrollTop=log.scrollHeight;return t;}
+
+async function sendSpar(stageKey, systemPrompt, updateKeys, boostMap){
+  const input=document.getElementById('sparInput');
+  const log=document.getElementById('chatlog');
+  const txt=input.value.trim();if(!txt)return;
+  input.value="";input.style.height="52px";
+  addMsg(log,"user",txt);
+  chatHistories[stageKey]=chatHistories[stageKey]||[];
+  const hist=chatHistories[stageKey];
+  const typing=showTyping(log);
+  const r=await askAI(systemPrompt,hist,txt,true,updateKeys);
+  typing.remove();
+  if(r.text){
+    addMsg(log,"assistant",r.text);
+    hist.push({role:"user",content:txt});hist.push({role:"assistant",content:r.text});
+    // apply suggested updates
+    if(r.updates){
+      if(r.updates.idea)Object.keys(r.updates.idea).forEach(k=>{if(idea[k]!=null)idea[k]=Math.min(5,Math.max(0,idea[k]+(+r.updates.idea[k]||0)));});
+      if(r.updates.osaaminen)Object.keys(r.updates.osaaminen).forEach(k=>{if(skill[k]!=null)skill[k]=Math.min(5,Math.max(0,skill[k]+(+r.updates.osaaminen[k]||0)));});
+      drawChart();
+    } else if(boostMap){
+      boost("idea",boostMap.bi,0.25);boost("osaaminen",boostMap.bs,0.2);
+    }
+  } else {
+    document.getElementById('apiWarn').style.display='block';
+    addMsg(log,"assistant",localFallback());
+    if(boostMap){boost("idea",boostMap.bi,0.25);boost("osaaminen",boostMap.bs,0.2);}
+  }
+}
+
+/* ================= STAGE RENDERING ================= */
+const rail=document.getElementById('rail');
+function buildRail(){
+  rail.innerHTML="";
+  const nodes=[{n:"●",l:"Aloitus"}];
+  PHASES.forEach((p,i)=>nodes.push({n:i+1,l:p.date}));
+  nodes.push({n:"★",l:"Yhteenveto"});
+  nodes.forEach((nd,i)=>{
+    const el=document.createElement('div');el.className='rnode';
+    if(i<stageIndex)el.classList.add('done');
+    if(i===stageIndex)el.classList.add('active');
+    if(i>stageIndex)el.classList.add('locked');
+    el.innerHTML=`<div class="rdot">${nd.n}</div><div class="rlabel">${nd.l}</div>`;
+    el.onclick=()=>{if(i<=maxUnlocked())goStage(i);else toast("Suorita edelliset vaiheet ensin.");};
+    rail.appendChild(el);
+  });
+  const done=stageIndex;const total=15;
+  document.getElementById('miniTxt').textContent=stageIndex+" / 16";
+  document.getElementById('miniBar').style.width=(stageIndex/15*100)+'%';
+}
+function maxUnlocked(){
+  let m=0;
+  if(onboardingDone)m=1;
+  for(let i=1;i<=14;i++){if(phaseDone[i])m=i+1;}
+  return m;
+}
+function goStage(i){stageIndex=i;buildRail();renderStage();window.scrollTo({top:document.querySelector('.rail').offsetTop-20,behavior:'smooth'});}
+
+function renderStage(){
+  const c=document.getElementById('stageContent');
+  document.getElementById('summarySec').style.display = stageIndex===15?'block':'none';
+  document.getElementById('studio').style.display = stageIndex===15?'none':'grid';
+  if(stageIndex===0){renderOnboarding(c);return;}
+  if(stageIndex>=1&&stageIndex<=14){renderPhase(c,stageIndex-1);return;}
+  if(stageIndex===15){renderSummary();return;}
+}
+
+/* ---- ONBOARDING ---- */
+function renderOnboarding(c){
+  c.innerHTML=`
+    <div class="stage-tag">● Aloitus</div>
+    <h2 class="stage-h">Mistä lähdet liikkeelle?</h2>
+    <p class="stage-sub">Ei hätää, vaikka idea olisi vasta aavistus — moni turbiinilainen aloittaa juuri siitä. Valitse kumpi kuvaa sinua nyt, niin lähdetään liikkeelle sinun tahtiisi.</p>
+    <div class="choice-grid">
+      <div class="choice" onclick="pickPath('explore')">
+        <div class="ic">🧭</div><h3>Pohdin yrittäjyyttä</h3>
+        <p>Minulla ei ole vielä valmista ideaa, mutta jokin alalla tai tekemisessä kiinnostaa. Auta löytämään suunta — ilman painetta.</p>
+      </div>
+      <div class="choice" onclick="pickPath('idea')">
+        <div class="ic">💡</div><h3>Minulla on idean alku</h3>
+        <p>Minulla on raakile tai aavistus liiketoiminnasta. Sparrataan se rauhassa eteenpäin.</p>
+      </div>
+    </div>
+    <div id="onboardBody" style="margin-top:8px"></div>`;
+}
+function pickPath(p){
+  const b=document.getElementById('onboardBody');
+  if(p==='explore'){
+    b.innerHTML=`
+      <label class="fl">Mikä toimiala tai teema kiinnostaa?</label>
+      <div class="chips" id="chipsField"></div>
+      <label class="fl">Mikä yrittäjyydessä motivoi sinua eniten?</label>
+      <div class="chips" id="chipsMot"></div>
+      <label class="fl">Kuvaa lyhyesti mitä osaat tai mistä innostut</label>
+      <textarea id="exploreText" placeholder="Esim. olen hyvä käsilläni ja korjaan vanhoja huonekaluja…"></textarea>
+      <div class="btn-row"><button class="btn pink" onclick="startSparring('explore')">Aloita sparraus →</button></div>`;
+    fillChips('chipsField',["Muotoilu","Käsityö","Ruoka","Teknologia","Hyvinvointi","Media & sisältö","Tapahtumat","Koulutus","Kestävyys","Pelit"]);
+    fillChips('chipsMot',["Vapaus & itsenäisyys","Luova työ","Auttaa muita","Rakentaa jotain omaa","Ratkaista ongelma","Ansaita toimeentulo"]);
+  } else {
+    b.innerHTML=`
+      <label class="fl">Kuvaa ideasi raakile — mitä, kenelle ja mikä ongelma</label>
+      <textarea id="ideaSeed" style="min-height:120px" placeholder="Esim. Teen kierrätysmateriaaleista designvaloja, jotka myyn pienille kahviloille sisustukseksi…"></textarea>
+      <div class="btn-row"><button class="btn pink" onclick="startSparring('idea')">Aloita sparraus →</button></div>`;
+  }
+}
+function fillChips(id,arr){const w=document.getElementById(id);arr.forEach(a=>{const ch=document.createElement('div');ch.className='chip';ch.textContent=a;ch.onclick=()=>ch.classList.toggle('on');w.appendChild(ch);});}
+function chipsVal(id){return [...document.querySelectorAll('#'+id+' .chip.on')].map(c=>c.textContent).join(', ');}
+
+function startSparring(path){
+  let seed="";
+  if(path==='explore'){
+    const f=chipsVal('chipsField'),m=chipsVal('chipsMot'),t=document.getElementById('exploreText').value.trim();
+    if(!t&&!f){toast("Kerro edes vähän kiinnostuksestasi.");return;}
+    seed=`Opiskelija pohtii vasta yrittäjyyttä. Kiinnostavat alat: ${f||'(ei valittu)'}. Motivaatio: ${m||'(ei valittu)'}. Omin sanoin: "${t}". Auta häntä löytämään konkreettinen liiketoimintaidean aihio.`;
+    boost("idea",["innovatiivisuus"],0.6);boost("osaaminen",["aloite","oppiminen"],0.6);
+  } else {
+    const s=document.getElementById('ideaSeed').value.trim();
+    if(!s){toast("Kirjoita ideasi raakile.");return;}
+    seed=`Opiskelijan liiketoimintaidean raakile: "${s}". Vie sitä eteenpäin.`;
+    boost("idea",["ongelma","arvolupaus","innovatiivisuus"],0.6);boost("osaaminen",["aloite"],0.5);
+  }
+  renderIdeaSparring(seed);
+}
+
+const IDEA_SYS=`Olet Turbo — Metropolian Turbiini-yrityshautomon tekoälyvalmentaja. Sparraat suomeksi, lämpimästi ja innostavasti, mutta rehellisesti. Tyylisi: lyhyet kappaleet, konkreettiset esimerkit, yksi terävä kysymys kerrallaan.
+
+TÄRKEÄÄ: Opiskelija on usein aivan alussa eikä hänellä tarvitse olla valmista ideaa — riittää kiinnostus. Moni on kulttuuri- tai luovan alan substanssiosaaja, ei liiketalouden osaaja. Vältä jargonia, selitä termit (esim. "arvolupaus = lupaus siitä, miksi asiakas valitsee juuri sinut") ja madalla kynnystä. Älä lannista; rakenna itseluottamusta pienin askelin.
+
+Vie opiskelijan ideaa eteenpäin VAIHEISTETUSTI ja MONIULOTTEISESTI: ongelma & asiakas, arvolupaus, markkina & kilpailu, ansaintamalli, kannattavuus reaalitalouden mukaan. Tuo aina mukaan yksi "out of the box" -kulma (käännä päinvastoin, yhdistä toimialoja, poista itsestäänselvyys, AI-twist) — mutta ankkuroi se realismiin: paljonko asiakas maksaa, paljonko maksaa hankkia, kannattaako tämä. Muistuta tarvittaessa Turbiinin tuesta: maksuton mentorointi, talouslaskuri, Nanobuusti-mikrorahoitus.
+
+Pidä vastaukset alle 160 sanaa. Päätä useimmiten yhteen kysymykseen joka vie eteenpäin.
+
+Kun opiskelijan idea kehittyy, arvioi edistymistä ja lisää vastauksesi VIIMEISEKSI riviksi (vain kun on aihetta) täsmälleen muodossa:
+UPDATE: {"idea":{"ongelma":0.3,"asiakas":0.2,"arvolupaus":0.3,"markkina":0.2,"ansainta":0.3,"kilpailuetu":0.2,"talous":0.2,"validointi":0.2,"innovatiivisuus":0.3},"osaaminen":{"aloite":0.2,"talous":0.2,"asiakas":0.2}}
+Käytä vain niitä avaimia joihin keskustelu liittyi, arvot 0.1–0.5. Älä koskaan selitä UPDATE-riviä.`;
+
+function renderIdeaSparring(seed){
+  const c=document.getElementById('stageContent');
+  c.innerHTML=`
+    <div class="stage-tag">● Aloitus · Idean sparraus</div>
+    <h2 class="stage-h">Jalostetaan ideaasi yhdessä</h2>
+    <p class="stage-sub">Turbo haastaa ideaasi monelta kantilta ja reaalitalouden ehdoilla — ja raottaa aina yhtä uutta kulmaa. Kun olette saaneet idean hyvälle alulle, siirry kurssin vaiheisiin.</p>
+    <div class="coach-strip"><div class="face">${turboSvg()}</div><div><div class="who">TURBO</div><div class="role">Yritysidean sparraaja</div></div></div>
+    <div class="chatlog" id="chatlog"></div>
+    <div id="apiWarn" class="api-warn">Live-sparraus ei juuri nyt vastannut. Studio toimii silti — käytä paikallisia vinkkejä, tai avaa studio claude.ai-ympäristössä, jossa Turbo vastaa täysipainoisesti.</div>
+    <div class="composer">
+      <textarea id="sparInput" placeholder="Vastaa Turbolle tai kysy…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendSpar('idea',IDEA_SYS,null,{bi:['ongelma','arvolupaus','ansainta'],bs:['aloite','talous']});}" oninput="autoGrow(this)"></textarea>
+      <button class="btn pink" onclick="sendSpar('idea',IDEA_SYS,null,{bi:['ongelma','arvolupaus','ansainta'],bs:['aloite','talous']})">Lähetä</button>
+    </div>
+    <p class="spar-hint">Vinkki: ole konkreettinen. Mitä tarkemmin kuvaat asiakkaan ja rahan, sitä terävämmin Turbo sparraa.</p>
+    <div class="btn-row"><button class="btn dark" onclick="finishOnboarding()">Idea hyvällä alulla — jatka kurssin vaiheisiin →</button></div>`;
+  const log=document.getElementById('chatlog');
+  // kick off
+  chatHistories['idea']=[];
+  const typing=showTyping(log);
+  askAI(IDEA_SYS,[],seed,true,null).then(r=>{
+    typing.remove();
+    const t=r.text||("Tervetuloa! "+localFallback());
+    addMsg(log,"assistant",t);
+    if(r.text){chatHistories['idea'].push({role:"user",content:seed});chatHistories['idea'].push({role:"assistant",content:r.text});}
+    if(!r.text)document.getElementById('apiWarn').style.display='block';
+    if(r.updates&&r.updates.idea)Object.keys(r.updates.idea).forEach(k=>{if(idea[k]!=null)idea[k]=Math.min(5,idea[k]+(+r.updates.idea[k]||0));}),drawChart();
+  });
+}
+function finishOnboarding(){onboardingDone=true;boost("idea",["ongelma","asiakas","arvolupaus"],0.4);captureFeedback("Aloitus & idean sparraus",0,"Idean sparraus auttoi kirkastamaan suuntaa.");goStage(1);}
+
+function autoGrow(t){t.style.height="52px";t.style.height=Math.min(140,t.scrollHeight)+"px";}
+function turboSvg(){return `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="9" fill="#fff"/><g stroke="#fff" stroke-width="3"><path d="M50 41 C50 18 64 12 72 18 C63 27 56 34 50 41Z" fill="#16150f"/><path d="M59 50 C82 50 88 64 82 72 C73 63 66 56 59 50Z" fill="#7fd1bf"/><path d="M50 59 C50 82 36 88 28 82 C37 73 44 66 50 59Z" fill="#16150f"/><path d="M41 50 C18 50 12 36 18 28 C27 37 34 44 41 50Z" fill="#7fd1bf"/></g></svg>`;}
+/* ---- PHASE ---- */
+function phaseSys(p){
+  return `Olet Turbo, Turbiini-yrityshautomon tekoälyvalmentaja. Sparraat suomeksi tämän kurssitapaamisen aiheessa: "${p.t}". Keskity erityisesti: ${p.focus}
+
+Tyyli: lämmin, innostava, rehellinen. Lyhyet kappaleet, konkretia, yksi terävä kysymys kerrallaan, alle 160 sanaa. Tuo mukaan reaalitalouden realismi ja yksi out-of-box -kulma. Liitä neuvot opiskelijan omaan ideaan.
+
+Lisää tarvittaessa vastauksesi viimeiseksi riviksi täsmälleen:
+UPDATE: {"idea":{"${p.bi[0]}":0.3,"${p.bi[1]}":0.3},"osaaminen":{"${p.bs[0]}":0.3,"${p.bs[1]}":0.3}}
+Arvot 0.1–0.5, vain relevantit avaimet. Älä selitä UPDATE-riviä.`;
+}
+function renderPhase(c,pi){
+  const p=PHASES[pi];const done=phaseDone[pi+1];
+  c.innerHTML=`
+    <div class="stage-tag">${p.date} · Vaihe ${pi+1}/14</div>
+    <h2 class="stage-h">${p.t}</h2>
+    <p class="stage-sub">${p.intro}</p>
+    <div class="coach-strip"><div class="face">${turboSvg()}</div><div><div class="who">TURBO</div><div class="role">Sparraa aiheessa: ${p.t}</div></div></div>
+    <div class="chatlog" id="chatlog"></div>
+    <div id="apiWarn" class="api-warn">Live-sparraus ei juuri nyt vastannut — paikalliset vinkit käytössä. Täysi Turbo aktivoituu claude.ai-ympäristössä.</div>
+    <div class="composer">
+      <textarea id="sparInput" placeholder="Kerro missä mennään tai kysy Turbolta…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPhase(${pi});}" oninput="autoGrow(this)"></textarea>
+      <button class="btn pink" onclick="sendPhase(${pi})">Lähetä</button>
+    </div>
+    <div class="task-box">
+      <div class="lbl">⚡ Tämän kerran tehtävä & voimakortti</div>
+      <div class="nm">${p.task.nm}</div>
+      <div class="pu">${p.task.pu}</div>
+      <div style="margin-top:14px">
+        <div class="lbl" style="color:var(--ink-2)">Miten tämä vaihe sujui? (kerää palautteen pohjaksi)</div>
+        <div class="rate" id="rate${pi}">${[1,2,3,4,5].map(n=>`<span class="star" data-n="${n}" onclick="setRate(${pi},${n})">★</span>`).join('')}</div>
+        <textarea id="phaseNote${pi}" placeholder="Vapaa kommentti tehtävästä ja vaiheesta (vapaaehtoinen)…"></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn mint" id="completeBtn${pi}" onclick="completePhase(${pi})">${done?'Suoritettu ✓':'Merkitse vaihe suoritetuksi →'}</button>
+    </div>`;
+  // restore chat
+  const log=document.getElementById('chatlog');
+  const hist=chatHistories['phase'+pi];
+  if(hist&&hist.length){hist.forEach(m=>addMsg(log,m.role,m.content));}
+  else{
+    chatHistories['phase'+pi]=[];
+    const typing=showTyping(log);
+    const seed=`Aloitetaan tapaaminen "${p.t}". Anna minulle innostava avaus ja yksi kysymys, joka vie ideaani eteenpäin tämän aiheen kautta.`;
+    askAI(phaseSys(p),[],seed,true,null).then(r=>{typing.remove();
+      const t=r.text||("**"+p.t+".** "+localFallback());
+      addMsg(log,"assistant",t);
+      if(r.text){chatHistories['phase'+pi].push({role:"user",content:seed});chatHistories['phase'+pi].push({role:"assistant",content:r.text});}
+      if(!r.text)document.getElementById('apiWarn').style.display='block';
+    });
+  }
+  if(rateState[pi])document.querySelectorAll(`#rate${pi} .star`).forEach(s=>s.classList.toggle('on',+s.dataset.n<=rateState[pi]));
+  if(phaseFeedback[pi+1]&&phaseFeedback[pi+1].note)document.getElementById('phaseNote'+pi).value=phaseFeedback[pi+1].note;
+}
+const rateState={};
+function setRate(pi,n){rateState[pi]=n;document.querySelectorAll(`#rate${pi} .star`).forEach(s=>s.classList.toggle('on',+s.dataset.n<=n));}
+function sendPhase(pi){const p=PHASES[pi];sendSpar('phase'+pi,phaseSys(p),null,{bi:p.bi,bs:p.bs});}
+
+function completePhase(pi){
+  const p=PHASES[pi];
+  phaseDone[pi+1]=true;
+  boost("idea",p.bi,0.7);boost("osaaminen",p.bs,0.7);
+  const note=document.getElementById('phaseNote'+pi).value.trim();
+  const rating=rateState[pi]||0;
+  // auto-propose feedback text
+  const auto = rating>=4 ? `Vaihe "${p.t}" oli hyödyllinen ja selkeä. ${note}`.trim()
+            : rating===3 ? `Vaihe "${p.t}" oli ihan toimiva, joitain kohtia voisi kirkastaa. ${note}`.trim()
+            : rating>0 ? `Vaihe "${p.t}" jäi osin epäselväksi tai raskaaksi. ${note}`.trim()
+            : (note || `Suoritin vaiheen "${p.t}".`);
+  captureFeedback(`${p.date} ${p.t}`, rating, auto);
+  toast("Vaihe "+(pi+1)+" suoritettu! Osaaminen ja idea kasvoivat.");
+  document.getElementById('completeBtn'+pi).textContent="Suoritettu ✓";
+  // unlock + advance
+  if(pi+1<14){setTimeout(()=>goStage(pi+2),700);}
+  else {setTimeout(()=>goStage(15),700);}
+  buildRail();
+}
+
+/* ================= FEEDBACK ================= */
+function captureFeedback(src,rating,text){
+  const existing=feedbackItems.findIndex(f=>f.src===src);
+  const item={src,rating,text,include:true};
+  if(existing>=0)feedbackItems[existing]=item;else feedbackItems.push(item);
+  phaseFeedback[src]={note:text,rating};
+}
+function renderSummary(){
+  const total=Object.keys(phaseDone).filter(k=>phaseDone[k]).length;
+  const ideaScore=Math.round(avg(IDEA_DIMS.map(d=>({val:idea[d.k]})))*20);
+  const skillScore=Math.round(avg(SKILL_DIMS.map(d=>({val:skill[d.k]})))*20);
+  // overall auto feedback
+  if(!feedbackItems.find(f=>f.src==="Kokonaisuus")){
+    captureFeedback("Kokonaisuus",0,`Studio vei ideani raakileesta eteenpäin: liikeidean kehitys ${ideaScore} %, oma yrittäjyysvalmius ${skillScore} %. Vaiheistettu eteneminen ja sparraus tukivat oppimista.`);
+  }
+  const list=document.getElementById('fbList');
+  list.innerHTML="";
+  feedbackItems.forEach((f,i)=>{
+    const el=document.createElement('div');el.className='fb-item';
+    el.innerHTML=`
+      <div class="top">
+        <span class="src">${f.src}${f.rating?' · '+'★'.repeat(f.rating):''}</span>
+        <div class="toggle ${f.include?'on':''}" onclick="toggleFb(${i})"></div>
+      </div>
+      <textarea oninput="feedbackItems[${i}].text=this.value">${f.text}</textarea>`;
+    list.appendChild(el);
+  });
+}
+function toggleFb(i){feedbackItems[i].include=!feedbackItems[i].include;renderSummary();}
+
+function compileFeedback(){
+  const inc=feedbackItems.filter(f=>f.include);
+  let out=`TURBIINI STARTUP STUDIO — palaute\nKurssi: KM00FJ37-3006 · Turbiini Arabia, kevät 2026\nPäivä: ${new Date().toLocaleDateString('fi-FI')}\n\n`;
+  inc.forEach(f=>{out+=`■ ${f.src}${f.rating?' (arvio '+f.rating+'/5)':''}\n${f.text}\n\n`;});
+  out+=`Liikeidean kehitys: ${Math.round(avg(IDEA_DIMS.map(d=>({val:idea[d.k]})))*20)} %\nYrittäjyysvalmius: ${Math.round(avg(SKILL_DIMS.map(d=>({val:skill[d.k]})))*20)} %\n`;
+  return out;
+}
+function buildFeedback(action){
+  const txt=compileFeedback();
+  if(action==='copy'){navigator.clipboard.writeText(txt).then(()=>toast("Palaute kopioitu leikepöydälle.")).catch(()=>toast("Kopiointi ei onnistunut — käytä lataa-toimintoa."));}
+  else if(action==='download'){const b=new Blob([txt],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='turbiini_palaute.txt';a.click();toast("Palaute ladattu tiedostona.");}
+  else if(action==='send'){const subj=encodeURIComponent("Turbiini-palaute · KM00FJ37-3006");const body=encodeURIComponent(txt);window.location.href=`mailto:turbiini@metropolia.fi?subject=${subj}&body=${body}`;toast("Sähköpostiluonnos avattu — tarkista ja lähetä itse.");}
+}
+
+/* ================= INIT ================= */
+buildRail();renderStage();drawChart();setSeries('idea');
+let toastT;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800);}
+</script>
+</body>
+</html>
