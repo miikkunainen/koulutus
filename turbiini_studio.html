@@ -181,6 +181,12 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pink);bo
 .ai-multi{display:flex;align-items:center;gap:10px;margin:6px 0 2px;font-size:.88rem;font-weight:600;cursor:pointer}
 .ai-multi input{width:18px;height:18px;accent-color:var(--mint-deep)}
 .ai-badge{font-size:.6rem;font-weight:800;background:var(--mint);color:#16150f;border-radius:99px;padding:2px 7px;margin-left:5px;vertical-align:middle}
+.ai-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px;vertical-align:middle;background:#8a8778;transition:background .3s}
+.ai-dot.live{background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.6)}
+.ai-dot.local{background:#fbbf24}
+.ai-probe-row{display:flex;align-items:center;gap:10px;margin:10px 0 2px;flex-wrap:wrap}
+.ai-probe-status{font-size:.78rem;opacity:.85}
+.ai-probe-status .ok{color:#4ade80;font-weight:700}.ai-probe-status .bad{color:#fbbf24;font-weight:700}
 .idea-card .sub{font-size:.84rem;color:var(--ink-2);margin-bottom:14px}
 .idea-card textarea{width:100%;min-height:110px;font-family:'Archivo',sans-serif;font-size:.98rem;background:#fffaf0;border:1.5px solid #f0dcc0;border-radius:13px;padding:13px 15px}
 .idea-card textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(205,161,63,.14)}
@@ -616,6 +622,10 @@ body{padding-bottom:62px}
     <h3 id="aiModalTitle">🤖 Tekoälyn valinta</h3>
     <div class="sub" id="aiModalSub">Valitse mitä tekoälyä Turbo käyttää. Voit valita useamman ja vertailla vastauksia rinnakkain.</div>
     <div id="aiProviderList"></div>
+    <div class="ai-probe-row">
+      <button class="btn ghost" style="padding:6px 14px;font-size:.8rem" onclick="testAiConnection()" id="aiProbeBtn">📡 Testaa yhteys</button>
+      <span class="ai-probe-status" id="aiProbeStatus"></span>
+    </div>
     <label class="ai-multi"><input type="checkbox" id="aiMulti" onchange="aiToggleMulti(this.checked)"> <span id="aiMultiLbl">Käytä useampaa yhtä aikaa ja vertaile vastauksia</span></label>
     <div class="idea-actions">
       <button class="btn ghost" onclick="closeAiSettings()" id="aiCloseBtn">Sulje</button>
@@ -1466,6 +1476,35 @@ const aiConfig={
 };
 function provName(p){return LANG==="en"?(PROVIDERS[p].name_en||PROVIDERS[p].name):PROVIDERS[p].name;}
 
+/* ---- environment probe: does the keyless (claude.ai) endpoint work here? ---- */
+const aiEnv={live:null,probing:false};
+async function probeStudio(showToast){
+  if(aiEnv.probing)return aiEnv.live;
+  aiEnv.probing=true;updateAiBadge();
+  try{
+    const ctrl=new AbortController();const t=setTimeout(function(){ctrl.abort();},7000);
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+      headers:{"Content-Type":"application/json"},signal:ctrl.signal,
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1,messages:[{role:"user",content:"ping"}]})});
+    clearTimeout(t);
+    aiEnv.live=res.ok;
+  }catch(e){aiEnv.live=false;}
+  aiEnv.probing=false;updateAiBadge();
+  if(showToast){
+    toast(aiEnv.live?(LANG==="en"?"Turbo is live — no key needed here.":"Turbo on linjoilla — avainta ei tarvita tässä ympäristössä.")
+      :(LANG==="en"?"Built-in AI not available here. Add your own key in AI settings, or open the studio via claude.ai.":"Sisäänrakennettu tekoäly ei ole käytettävissä tässä ympäristössä. Lisää oma avain AI-asetuksista tai avaa studio claude.ai:n kautta."));
+  }
+  const st=document.getElementById("aiProbeStatus");if(st)renderProbeStatus();
+  return aiEnv.live;
+}
+function aiStatusMode(){
+  if(aiEnv.live===true&&aiConfig.active.indexOf("studio")>-1)return "live";
+  const hasKey=aiConfig.active.some(function(p){return PROVIDERS[p]&&PROVIDERS[p].needsKey&&aiConfig.keys[p];});
+  if(hasKey)return "live";
+  if(aiEnv.live===null)return "unknown";
+  return "local";
+}
+
 /* unified call: returns {text, updates, error, provider} */
 async function callProvider(pid, systemPrompt, history, userText){
   try{
@@ -1479,8 +1518,11 @@ async function callProvider(pid, systemPrompt, history, userText){
         headers["anthropic-version"]="2023-06-01";
         headers["anthropic-dangerous-direct-browser-access"]="true";
       }
-      const res=await fetch(url,{method:"POST",headers,body:JSON.stringify(body)});
+      if(pid==="studio"&&aiEnv.live===false&&!aiConfig.keys.claude)throw new Error("no-env");
+      let res=await fetch(url,{method:"POST",headers,body:JSON.stringify(body)});
+      if(res.status===529||res.status===429){await new Promise(function(rs){setTimeout(rs,1500);});res=await fetch(url,{method:"POST",headers,body:JSON.stringify(body)});}
       if(!res.ok)throw new Error("HTTP "+res.status);
+      if(pid==="studio")aiEnv.live=true,updateAiBadge();
       const data=await res.json();
       const text=data.content.filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
       return parseUpdates(text,pid);
@@ -1528,6 +1570,8 @@ async function askAI(systemPrompt, history, userText, allowUpdate, updateKeys){
 
 /* ----- AI settings UI ----- */
 function openAiSettings(){renderAiProviders();document.getElementById('aiMulti').checked=aiConfig.multi;document.getElementById('aiModal').classList.add('show');
+  renderProbeStatus();
+  const pb=document.getElementById('aiProbeBtn');if(pb)pb.textContent=LANG==='en'?'📡 Test connection':'📡 Testaa yhteys';
   document.getElementById('aiModalTitle').textContent=LANG==='en'?'🤖 Choose the AI':'🤖 Tekoälyn valinta';
   document.getElementById('aiModalSub').textContent=LANG==='en'?'Choose which AI Turbo uses. You can select several and compare answers side by side.':'Valitse mitä tekoälyä Turbo käyttää. Voit valita useamman ja vertailla vastauksia rinnakkain.';
   document.getElementById('aiMultiLbl').textContent=LANG==='en'?'Use several at once and compare answers':'Käytä useampaa yhtä aikaa ja vertaile vastauksia';
@@ -1535,6 +1579,20 @@ function openAiSettings(){renderAiProviders();document.getElementById('aiMulti')
   document.getElementById('aiSaveBtn').textContent=LANG==='en'?'Save':'Tallenna';
 }
 function closeAiSettings(){document.getElementById('aiModal').classList.remove('show');}
+function renderProbeStatus(){
+  const st=document.getElementById('aiProbeStatus');if(!st)return;
+  if(aiEnv.probing){st.innerHTML=LANG==='en'?'Testing…':'Testataan…';return;}
+  if(aiEnv.live===true)st.innerHTML='<span class="ok">✓ '+(LANG==='en'?'Built-in Turbo works here — no key needed':'Sisäänrakennettu Turbo toimii tässä — avainta ei tarvita')+'</span>';
+  else if(aiEnv.live===false)st.innerHTML='<span class="bad">⚠ '+(LANG==='en'?'Built-in not available here — add your own key below or open via claude.ai':'Sisäänrakennettu ei toimi tässä ympäristössä — lisää oma avain alle tai avaa claude.ai:ssa')+'</span>';
+  else st.innerHTML='';
+}
+async function testAiConnection(){
+  const btn=document.getElementById('aiProbeBtn');if(btn)btn.disabled=true;
+  renderProbeStatus();
+  await probeStudio(false);
+  renderProbeStatus();
+  if(btn)btn.disabled=false;
+}
 function renderAiProviders(){
   const w=document.getElementById('aiProviderList');w.innerHTML="";
   Object.values(PROVIDERS).forEach(p=>{
@@ -1575,7 +1633,13 @@ function saveAiSettings(){
 function updateAiBadge(){
   const b=document.getElementById('aiSettingsBtn');if(!b)return;
   const n=aiConfig.active.length;
-  b.innerHTML="🤖 AI"+(n>1&&aiConfig.multi?` <span class="ai-badge">${n}</span>`:"");
+  const mode=aiStatusMode();
+  const dotCls=mode==="live"?"live":(mode==="local"?"local":"");
+  const tip=mode==="live"?(LANG==="en"?"AI live — sparring works":"Tekoäly linjoilla — sparraus toimii")
+    :(mode==="local"?(LANG==="en"?"Local tips only — open AI settings":"Vain paikalliset vinkit — avaa AI-asetukset")
+    :(LANG==="en"?"Checking AI connection…":"Tarkistetaan tekoäly-yhteyttä…"));
+  b.title=tip;
+  b.innerHTML="🤖 AI"+(n>1&&aiConfig.multi?" <span class=\"ai-badge\">"+n+"</span>":"")+"<span class=\"ai-dot "+dotCls+"\"></span>";
 }
 function loadAiSettings(){
   try{const s=localStorage.getItem('turbiini_ai');if(s){const o=JSON.parse(s);Object.assign(aiConfig,o);if(!aiConfig.active||!aiConfig.active.length)aiConfig.active=["studio"];}}catch(e){}
@@ -1656,6 +1720,11 @@ function applyAiUpdates(r,boostMap){
 }
 function providerError(r){
   if(r&&r.error==="no-key")return LANG==='en'?"(No API key set for this provider — add it in AI settings.)":"(Tälle palvelulle ei ole API-avainta — lisää se AI-asetuksista.)";
+  if(r&&(r.error==="no-env"||r.provider==="studio")){
+    return localFallback()+"\n\n"+(LANG==='en'
+      ?"➡️ To get live AI here: tap 🤖 AI in the top bar and add your own key — or open the studio inside claude.ai, where Turbo works with no key at all."
+      :"➡️ Saat live-tekoälyn käyttöön: napauta yläpalkin 🤖 AI ja lisää oma avain — tai avaa studio claude.ai:ssa, jossa Turbo toimii ilman avainta.");
+  }
   return localFallback();
 }
 
@@ -2896,6 +2965,7 @@ const restored=tryRestore();
 try{const sl=localStorage.getItem('turbiini_studio_lang');if(sl&&UI[sl])LANG=sl;}catch(e){}
 buildLangSwitch();
 loadAiSettings();
+setTimeout(function(){probeStudio(false);},800);
 syncDisplayInstant();buildCompareOptions();buildRail();renderStage();updateSnapBanner();drawChart();setSeries('idea');renderDock();
 applyI18n();
 if(typeof rebuildBio==='function')rebuildBio();
