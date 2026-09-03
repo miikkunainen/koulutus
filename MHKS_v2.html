@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MHKS · Metropolia · Muotoilun pajat</title>
+<style>
+/* ════ DESIGN TOKENS ══════════════════════════════════════
+   Pajakuutio DNA: värit, emboss-shadow, centered layout   */
+:root{
+  --c1:#A9D4C4;--i1:#2C6450;--d1:#1f4d3b;
+  --c2:#E6C6D2;--i2:#823A55;--d2:#5e2a3e;
+  --c3:#B9D2E0;--i3:#2E5A72;--d3:#214255;
+  --c4:#D8C7E0;--i4:#5B3F70;--d4:#432e54;
+  --c5:#F4C8B8;--i5:#8A3D22;--d5:#662c19;
+  --c6:#F3D9A6;--i6:#8A6A1E;--d6:#665015;
+  --fill:var(--c1);--ink:var(--i1);--dark:var(--d1);
+  --paper:#FBFAF7;--cloud:#F2EFE8;--mist:#E8E3DC;
+  --bor:#DDD8CE;--text:#26251F;--sub:#5A5850;--hint:#8A8880;
+  --sh-card: 0 28px 60px -38px color-mix(in srgb,var(--ink) 72%,transparent),
+             0 2px 0 rgba(255,255,255,.88) inset;
+  --sh-float:0 12px 28px -16px color-mix(in srgb,var(--ink) 50%,transparent),
+             0 1px 0 rgba(255,255,255,.9) inset;
+  --f:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:"Consolas","Monaco",monospace;
+  --rsm:9px;--rmd:15px;--rlg:22px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{font-family:var(--f);background:radial-gradient(1100px 440px at 50% -60px,color-mix(in srgb,var(--fill) 28%,var(--paper)),transparent 68%),var(--cloud);color:var(--text);line-height:1.55;min-height:100vh;transition:background 1.1s ease}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;border:none;background:none;font-family:var(--f)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:4px}
+img{display:block}
+
+/* ═══ APP SHELL ════════════════════════════════════════════ */
+#app{max-width:1200px;margin:0 auto;min-height:100vh;background:var(--paper);
+  box-shadow:0 0 0 1px rgba(0,0,0,.04),0 2px 60px rgba(0,0,0,.08)}
+
+/* ═══ INTRO ════════════════════════════════════════════════ */
+#intro{position:fixed;inset:0;z-index:900;background:var(--paper);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:2rem 1.5rem}
+.intro-skip{position:absolute;top:18px;right:20px;font-size:12px;
+  color:var(--hint);background:none;border:1px solid var(--bor);
+  border-radius:100px;padding:5px 14px;cursor:pointer;transition:.15s}
+.intro-skip:hover{color:var(--text);border-color:var(--text)}
+.intro-prog{display:flex;gap:7px;margin-bottom:36px}
+.ip{width:28px;height:4px;border-radius:2px;background:var(--bor);transition:.3s}
+.ip.on{background:var(--ink)}
+.intro-card{max-width:520px;width:100%;text-align:center;
+  background:#fff;border:1px solid var(--bor);border-radius:24px;
+  padding:36px 32px 32px;
+  box-shadow:0 40px 80px -36px rgba(0,0,0,.18),0 2px 0 rgba(255,255,255,.9) inset;
+  animation:slideup .4s cubic-bezier(.34,1.4,.4,1)}
+@keyframes slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.ic-big{font-size:52px;margin-bottom:16px;line-height:1}
+.ic-num{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--hint);margin-bottom:6px}
+.ic-title{font-size:26px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-.3px}
+.ic-sub{font-size:14px;color:var(--sub);line-height:1.6;margin-bottom:22px}
+.ic-tags{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:24px}
+.ic-tag{font-size:11px;padding:4px 11px;border-radius:100px;
+  border:1px solid color-mix(in srgb,var(--ink) 22%,transparent);
+  color:var(--ink);background:color-mix(in srgb,var(--fill) 18%,#fff)}
+.intro-nav{display:flex;gap:10px;justify-content:center;width:100%}
+.ibt{padding:11px 28px;border-radius:100px;font-size:13px;font-weight:700;
+  cursor:pointer;border:1.5px solid var(--bor);background:var(--cloud);
+  color:var(--text);transition:.2s}
+.ibt:hover{background:var(--mist);border-color:var(--text)}
+.ibt.prim{background:var(--ink);border-color:var(--ink);color:color-mix(in srgb,var(--fill) 65%,#fff)}
+.ibt.prim:hover{background:var(--dark)}
+
+/* ═══ TOPBAR ═══════════════════════════════════════════════ */
+.topbar{position:sticky;top:0;z-index:50;
+  background:rgba(251,250,247,.93);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--bor);
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 3px 10px rgba(0,0,0,.04)}
+.tbi{max-width:860px;margin:0 auto;padding:0 16px;height:52px;
+  display:flex;align-items:center;gap:10px}
+.tbar-logo{width:28px;height:28px;border-radius:7px;flex-shrink:0;
+  background:color-mix(in srgb,var(--fill) 38%,var(--paper));
+  border:1.5px solid color-mix(in srgb,var(--ink) 22%,transparent);
+  display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-float);transition:1.1s}
+.tbar-logo img{height:16px}
+.tbar-names{flex:1;min-width:0}
+.tbar-n{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbar-s{font-size:10px;color:var(--hint)}
+.tbar-r{display:flex;align-items:center;gap:7px;flex-shrink:0}
+
+/* Kognitiivinen kuorma — topbar */
+.cog-wrap{display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 8px;
+  border-radius:8px;border:1px solid var(--bor);background:var(--cloud);
+  transition:.15s}
+.cog-wrap:hover{background:var(--mist)}
+.cog-ic{font-size:14px}
+.cog-bar{width:44px;height:5px;background:var(--bor);border-radius:3px;overflow:hidden;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.07)}
+.cog-fill{height:100%;border-radius:3px;transition:width .5s ease,background .5s}
+.cog-pct{font-size:9px;font-weight:700;color:var(--sub);min-width:22px}
+
+/* Tasoindikaattori */
+.lv-ind{display:flex;align-items:center;gap:5px;padding:4px 10px 4px 7px;
+  border-radius:100px;border:1px solid color-mix(in srgb,var(--ink) 15%,transparent);
+  background:color-mix(in srgb,var(--fill) 16%,var(--paper));
+  font-size:11px;font-weight:700;color:var(--ink);transition:1.1s;cursor:pointer}
+.lv-dots{display:flex;gap:3px}
+.lvd{width:6px;height:6px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ink) 22%,transparent)}
+.lvd.on{background:var(--ink);border-color:var(--ink)}
+.logout-btn{font-size:11px;color:var(--hint);padding:4px 8px;border-radius:6px;
+  transition:.15s;border:1px solid transparent}
+.logout-btn:hover{background:var(--mist);color:var(--text);border-color:var(--bor)}
+
+/* ═══ TAHKO NAV ════════════════════════════════════════════ */
+.tahko-nav{border-bottom:1px solid var(--bor);background:rgba(251,250,247,.7);
+  backdrop-filter:blur(8px);overflow:hidden}
+.tn-s{max-width:860px;margin:0 auto;padding:8px 16px;
+  display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tn-s::-webkit-scrollbar{display:none}
+.tn-t{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:100px;
+  border:1.5px solid transparent;font-size:11.5px;font-weight:600;white-space:nowrap;
+  flex-shrink:0;color:var(--hint);background:color-mix(in srgb,var(--mist) 45%,transparent);
+  transition:all .22s cubic-bezier(.34,1.4,.4,1)}
+.tn-t:hover{color:var(--text);background:color-mix(in srgb,var(--mist) 80%,transparent)}
+.tn-t.active{background:color-mix(in srgb,var(--CC) 22%,var(--paper));
+  border-color:color-mix(in srgb,var(--CI) 26%,transparent);color:var(--CI);
+  box-shadow:0 5px 18px -5px color-mix(in srgb,var(--CI) 30%,transparent),
+    0 1px 0 rgba(255,255,255,.8) inset}
+.tn-t[data-t="1"]{--CC:var(--c1);--CI:var(--i1)}.tn-t[data-t="2"]{--CC:var(--c2);--CI:var(--i2)}
+.tn-t[data-t="3"]{--CC:var(--c3);--CI:var(--i3)}.tn-t[data-t="4"]{--CC:var(--c4);--CI:var(--i4)}
+.tn-t[data-t="5"]{--CC:var(--c5);--CI:var(--i5)}.tn-t[data-t="6"]{--CC:var(--c6);--CI:var(--i6)}
+.tn-dot{width:5px;height:5px;border-radius:50%;background:var(--CI);opacity:.5;transition:.2s}
+.tn-t.active .tn-dot{opacity:1}
+
+/* ═══ CONTENT ══════════════════════════════════════════════ */
+.content{max-width:860px;margin:0 auto;padding:18px 16px 100px}
+
+/* ═══ KORTIT ═══════════════════════════════════════════════ */
+.card{background:color-mix(in srgb,var(--fill) 10%,#fff);
+  border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);
+  border-radius:var(--rlg);padding:16px 18px;margin-bottom:11px;
+  box-shadow:var(--sh-card);transition:background 1.1s,border-color 1.1s}
+.card.plain{background:#fff;border-color:var(--bor);box-shadow:var(--sh-float)}
+.card.ok{background:color-mix(in srgb,var(--c1) 18%,#fff);border-color:color-mix(in srgb,var(--i1) 18%,transparent)}
+.card.warn{background:color-mix(in srgb,var(--c2) 18%,#fff);border-color:color-mix(in srgb,var(--i2) 18%,transparent)}
+.card.info{background:color-mix(in srgb,var(--c3) 18%,#fff);border-color:color-mix(in srgb,var(--i3) 18%,transparent)}
+.card.chem{background:color-mix(in srgb,var(--c6) 18%,#fff);border-color:color-mix(in srgb,var(--i6) 18%,transparent)}
+.card h3{font-size:13.5px;font-weight:700;margin:0 0 11px;color:var(--text)}
+
+/* ═══ STAT TILES ════════════════════════════════════════════ */
+.sg{display:grid;gap:8px;margin-bottom:11px}
+.sg2{grid-template-columns:1fr 1fr}.sg3{grid-template-columns:repeat(3,1fr)}.sg4{grid-template-columns:repeat(4,1fr)}
+.stile{background:color-mix(in srgb,var(--fill) 20%,#fff);border:1px solid color-mix(in srgb,var(--ink) 9%,transparent);
+  border-radius:12px;padding:12px 14px;
+  box-shadow:0 10px 26px -14px color-mix(in srgb,var(--ink) 45%,transparent),
+    0 1px 0 rgba(255,255,255,.9) inset;transition:background 1.1s}
+.stl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--hint);margin-bottom:3px}
+.stv{font-size:21px;font-weight:700;line-height:1}
+.sts{font-size:10px;color:var(--sub);margin-top:2px}
+
+/* ═══ BAR ══════════════════════════════════════════════════ */
+.barw{height:5px;background:var(--mist);border-radius:3px;overflow:hidden;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.07);flex:1}
+.barf{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* ═══ BADGES ════════════════════════════════════════════════ */
+.bdg{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 9px;
+  border-radius:100px;border:1px solid transparent;white-space:nowrap}
+.ok{background:#EDF7ED;color:#265C26;border-color:#A9D4C4}
+.wn{background:#FDF6E3;color:#8A6A1E;border-color:#E8C97A}
+.dn{background:#FEF0F0;color:#823A55;border-color:#E6C6D2}
+.in{background:#EBF3FB;color:#2E5A72;border-color:#B9D2E0}
+.gh{background:var(--mist);color:var(--sub);border-color:var(--bor)}
+.pp{background:#F3F0FB;color:#5B3F70;border-color:#D8C7E0}
+.risk{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 9px;border-radius:100px;border:1px solid transparent}
+.r1{background:#EDF7ED;color:#2C6450;border-color:#A9D4C4}.r2{background:#F0F7F0;color:#2C6450;border-color:#A9D4C4}
+.r3{background:#FDF6E3;color:#8A6A1E;border-color:#F3D9A6}.r4{background:#FDF0EC;color:#8A3D22;border-color:#F4C8B8}
+.r5{background:#FDF0F4;color:#823A55;border-color:#E6C6D2}
+
+/* ═══ ROW ═══════════════════════════════════════════════════ */
+.row{display:flex;align-items:center;gap:10px;padding:9px 0;
+  border-bottom:1px solid color-mix(in srgb,var(--ink) 7%,transparent)}
+.row:last-child{border-bottom:none}
+.rm{flex:1;min-width:0}
+.rn{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rs{font-size:10.5px;color:var(--hint);margin-top:2px}
+
+/* ═══ NOTE ══════════════════════════════════════════════════ */
+.nt{border-left:3px solid var(--ink);padding:9px 13px;margin:8px 0;
+  border-radius:0 9px 9px 0;background:color-mix(in srgb,var(--fill) 18%,#fff);
+  font-size:12.5px;line-height:1.55;transition:background 1.1s}
+.nt.warn{border-left-color:var(--i2);background:color-mix(in srgb,var(--c2) 15%,#fff)}
+.nt.ok{border-left-color:var(--i1);background:color-mix(in srgb,var(--c1) 15%,#fff)}
+.nt.info{border-left-color:var(--i3);background:color-mix(in srgb,var(--c3) 15%,#fff)}
+.nt.danger{border-left-color:#C00;background:#FEF2F2}
+
+/* ═══ BUTTONS ═══════════════════════════════════════════════ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  font-size:12px;font-weight:700;padding:9px 18px;border-radius:100px;cursor:pointer;
+  border:1.5px solid color-mix(in srgb,var(--ink) 19%,transparent);
+  background:color-mix(in srgb,var(--fill) 16%,#fff);color:var(--text);
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 3px 7px rgba(0,0,0,.06);
+  transition:all .18s cubic-bezier(.34,1.4,.4,1);min-height:39px;line-height:1;font-family:var(--f)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 7px 15px rgba(0,0,0,.1)}
+.btn:active{transform:translateY(1px);box-shadow:none}
+.btn.prim{background:linear-gradient(180deg,color-mix(in srgb,var(--ink) 82%,var(--fill)) 0%,var(--ink) 60%,var(--dark) 100%);
+  border-color:var(--dark);color:color-mix(in srgb,var(--fill) 72%,#fff);
+  box-shadow:0 1px 0 rgba(255,255,255,.14) inset,0 -2px 0 rgba(0,0,0,.2) inset,
+    0 5px 13px -3px color-mix(in srgb,var(--ink) 50%,transparent)}
+.btn.prim:hover{background:linear-gradient(180deg,var(--ink) 0%,var(--dark) 100%)}
+.btn.sm{font-size:10.5px;padding:6px 13px;min-height:31px}
+.btn.xs{font-size:10px;padding:4px 10px;min-height:26px}
+.btn.full{display:flex;width:100%;border-radius:var(--rsm);margin-top:9px}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.brow{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+.brow .btn{flex:1;min-width:76px}
+
+/* ═══ FORM ══════════════════════════════════════════════════ */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--sub);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;font-size:13px;padding:10px 12px;
+  border:1.5px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:9px;
+  background:color-mix(in srgb,var(--fill) 5%,var(--paper));color:var(--text);
+  outline:none;font-family:var(--f);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.05);transition:.2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ink);
+  background:color-mix(in srgb,var(--fill) 9%,#fff);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.04),0 0 0 3px color-mix(in srgb,var(--fill) 28%,transparent)}
+.field textarea{resize:vertical;min-height:76px}
+
+/* ═══ WORKFLOW CARDS ════════════════════════════════════════ */
+.wo-card{background:#fff;border:1px solid var(--bor);border-radius:var(--rmd);
+  margin-bottom:10px;overflow:hidden;box-shadow:var(--sh-float)}
+.wo-head{display:flex;align-items:center;gap:10px;padding:12px 15px;
+  border-bottom:1px solid var(--bor)}
+.wo-status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.wo-info{flex:1;min-width:0}
+.wo-title{font-size:13px;font-weight:700}
+.wo-meta{font-size:10.5px;color:var(--hint)}
+.wo-body{padding:10px 15px}
+.wo-step{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px}
+.wo-step-ic{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;border:1px solid transparent}
+.ws-done{background:#EDF7ED;color:#265C26;border-color:#A9D4C4}
+.ws-wait{background:#EBF3FB;color:#2E5A72;border-color:#B9D2E0}
+.ws-pend{background:var(--mist);color:var(--hint)}
+
+/* ═══ PROSESSIOHJEET ════════════════════════════════════════ */
+.ps-step{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bor)}
+.ps-step:last-child{border-bottom:none}
+.ps-num{width:26px;height:26px;border-radius:50%;background:color-mix(in srgb,var(--fill) 30%,#fff);
+  border:1.5px solid color-mix(in srgb,var(--ink) 20%,transparent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;color:var(--ink);flex-shrink:0;box-shadow:var(--sh-float)}
+.ps-content{flex:1}
+.ps-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.ps-desc{font-size:12.5px;color:var(--sub);line-height:1.55}
+.ps-safety{margin-top:6px;background:color-mix(in srgb,var(--c2) 15%,#fff);
+  border:1px solid color-mix(in srgb,var(--i2) 20%,transparent);
+  border-radius:8px;padding:7px 10px;font-size:11.5px;color:var(--i2)}
+.ps-ppe{margin-top:5px;display:flex;gap:5px;flex-wrap:wrap}
+.ppe-tag{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:100px;
+  background:#EBF3FB;color:#2E5A72;border:1px solid #B9D2E0}
+.ps-check{display:flex;align-items:center;gap:8px;margin-top:8px;cursor:pointer;
+  font-size:12px;font-weight:600}
+.ps-check input{width:16px;height:16px;accent-color:var(--ink);cursor:pointer}
+.ps-step.checked .ps-num{background:color-mix(in srgb,var(--c1) 40%,#fff);
+  border-color:var(--i1);color:var(--i1)}
+
+/* ═══ KEMIKAALIKORTTI ═══════════════════════════════════════ */
+.chem-card{border-left:4px solid var(--i6);background:color-mix(in srgb,var(--c6) 14%,#fff);
+  border-radius:0 var(--rmd) var(--rmd) 0;padding:12px 15px;margin-bottom:10px;
+  box-shadow:var(--sh-float);cursor:pointer;transition:.2s}
+.chem-card:hover{box-shadow:0 10px 28px -12px rgba(0,0,0,.15)}
+.chem-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.chem-name{font-size:13px;font-weight:700}
+.chem-cas{font-size:10px;font-family:var(--mono);color:var(--hint)}
+.hz-tags{display:flex;gap:4px;flex-wrap:wrap}
+.hz-tag{width:22px;height:22px;border-radius:4px;background:color-mix(in srgb,var(--c6) 40%,#fff);
+  border:1px solid color-mix(in srgb,var(--i6) 30%,transparent);
+  display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--i6)}
+.chem-em{font-size:11.5px;color:var(--i2);font-weight:600;margin-top:4px}
+
+/* ═══ TILAKARTTA ════════════════════════════════════════════ */
+.space-map{background:var(--cloud);border-radius:var(--rmd);padding:14px;
+  border:1px solid var(--bor);margin-bottom:12px}
+.sm-room{border:2px solid var(--bor);border-radius:10px;background:#fff;
+  position:relative;padding:8px 10px;margin-bottom:8px;min-height:90px}
+.sm-room-lbl{font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--hint);margin-bottom:8px}
+.sm-items{display:flex;flex-wrap:wrap;gap:5px}
+.sm-item{display:flex;align-items:center;gap:5px;padding:4px 10px;
+  border-radius:100px;background:color-mix(in srgb,var(--fill) 16%,#fff);
+  border:1px solid color-mix(in srgb,var(--ink) 10%,transparent);
+  font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
+.sm-item:hover{background:color-mix(in srgb,var(--fill) 30%,#fff);
+  border-color:color-mix(in srgb,var(--ink) 22%,transparent)}
+.sm-item.mach{background:#EBF3FB;border-color:#B9D2E0;color:#2E5A72}
+.sm-item.chem-loc{background:#FDF6E3;border-color:#E8C97A;color:#8A6A1E}
+.sm-item.tool{background:#F3F0FB;border-color:#D8C7E0;color:#5B3F70}
+.sm-item.retake{background:#EDF7ED;border-color:#A9D4C4;color:#2C6450}
+
+/* ═══ KOGNITIIVINEN KUORMA MODAL ════════════════════════════ */
+.cog-detail{background:#fff;border:1px solid var(--bor);border-radius:var(--rmd);padding:16px;box-shadow:var(--sh-float)}
+.cog-meter{width:100%;height:18px;background:var(--mist);border-radius:9px;overflow:hidden;margin:10px 0;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.08)}
+.cog-meter-fill{height:100%;border-radius:9px;transition:width .5s,background .5s}
+.cog-item{display:flex;align-items:center;gap:8px;padding:6px 0;
+  border-bottom:1px solid var(--bor);font-size:12px}
+.cog-item:last-child{border-bottom:none}
+.cog-item-val{font-weight:700;margin-left:auto;font-size:11px}
+
+/* ═══ AVATAR ════════════════════════════════════════════════ */
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.av-sm{width:25px;height:25px;font-size:9px}
+.av-md{width:32px;height:32px;font-size:11px}
+.av-lg{width:42px;height:42px;font-size:13px}
+
+/* ═══ MODAL ═════════════════════════════════════════════════ */
+.ov{position:fixed;inset:0;background:rgba(38,37,31,.42);z-index:300;
+  display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(5px)}
+.ov.open{display:flex}
+.sh{background:var(--paper);border-radius:22px 22px 0 0;width:100%;max-width:600px;
+  max-height:92vh;overflow-y:auto;padding:14px 17px 36px;position:relative;
+  box-shadow:0 -22px 60px rgba(0,0,0,.2)}
+.sh-grip{width:34px;height:3px;background:var(--bor);border-radius:2px;margin:0 auto 16px}
+.sh-x{position:absolute;top:13px;right:14px;width:27px;height:27px;border-radius:50%;
+  background:color-mix(in srgb,var(--fill) 16%,#fff);border:1px solid var(--bor);
+  cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;
+  color:var(--sub);transition:.15s}
+.sh-x:hover{background:color-mix(in srgb,var(--fill) 34%,#fff)}
+.sh-title{font-size:16px;font-weight:700;margin-bottom:14px;padding-right:34px}
+
+/* ═══ TOAST ═════════════════════════════════════════════════ */
+.toast{position:fixed;bottom:68px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:color-mix(in srgb,var(--ink) 95%,var(--fill));
+  color:color-mix(in srgb,var(--fill) 52%,#fff);padding:9px 19px;border-radius:100px;
+  font-size:12px;font-weight:700;z-index:500;opacity:0;transition:.22s;
+  pointer-events:none;max-width:88vw;text-align:center;
+  box-shadow:0 7px 22px rgba(0,0,0,.25)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══ API BUTTON ════════════════════════════════════════════ */
+.api-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:1200px;display:flex;justify-content:center;
+  padding:11px 16px;background:linear-gradient(to top,var(--paper) 48%,transparent);
+  pointer-events:none;z-index:40}
+.ap-pill{display:flex;align-items:center;gap:6px;
+  background:rgba(38,37,31,.9);color:#A0C8B0;border:1px solid #3A3830;
+  border-radius:100px;padding:6px 14px 6px 11px;font-size:11px;font-weight:700;
+  cursor:pointer;font-family:var(--mono);letter-spacing:.06em;pointer-events:auto;
+  box-shadow:0 4px 18px rgba(0,0,0,.36),0 1px 0 rgba(255,255,255,.07) inset;transition:.2s}
+.ap-pill:hover{transform:translateY(-2px);box-shadow:0 7px 24px rgba(0,0,0,.44)}
+.ap-dot{width:7px;height:7px;border-radius:50%;background:#4A8A4A;animation:ap 2s ease-in-out infinite}
+@keyframes ap{0%,100%{opacity:1}50%{opacity:.3}}
+.ap-cnt{background:var(--i5);color:#fff;border-radius:100px;padding:1px 6px;font-size:9px;font-family:var(--f);font-weight:800}
+
+/* ═══ TERMINAALI ════════════════════════════════════════════ */
+.t-ov{position:fixed;inset:0;background:rgba(10,8,5,.78);z-index:600;
+  display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
+.t-ov.open{display:flex}
+.term{background:#0C0A07;color:#787570;width:100%;max-width:680px;
+  height:60vh;max-height:520px;border-radius:18px 18px 0 0;display:flex;flex-direction:column;
+  border:1px solid #252218;border-bottom:none;box-shadow:0 -14px 55px rgba(0,0,0,.55);
+  font-family:var(--mono);font-size:11px}
+.t-bar{background:#141210;border-bottom:1px solid #1E1C16;padding:9px 14px;
+  display:flex;align-items:center;gap:9px;border-radius:18px 18px 0 0;flex-shrink:0}
+.t-dots{display:flex;gap:4px}
+.td{width:10px;height:10px;border-radius:50%}
+.td.r{background:#FF5F57;cursor:pointer}.td.y{background:#FEBC2E}.td.g{background:#28C840}
+.t-hd{flex:1;text-align:center;font-size:10px;color:#3A3830;letter-spacing:.1em;text-transform:uppercase}
+.t-clr{font-size:9px;color:#3A3830;cursor:pointer;padding:2px 7px;border-radius:3px;
+  border:1px solid #2A2820;background:none;font-family:var(--mono);transition:.15s}
+.t-clr:hover{border-color:#555;color:#777}
+.t-body{flex:1;overflow-y:auto;padding:9px 13px}
+.t-body::-webkit-scrollbar{width:3px}
+.t-body::-webkit-scrollbar-thumb{background:#252218;border-radius:2px}
+.lr{display:flex;gap:8px;padding:3px 0;border-bottom:1px solid #100E08}
+.lts{color:#2A2820;font-size:9.5px;white-space:nowrap;flex-shrink:0}
+.ltag{font-size:9.5px;font-weight:700;min-width:33px}
+.ltx{flex:1;min-width:0;color:#787570}
+.t-prompt{padding:7px 13px;border-top:1px solid #1A1810;
+  display:flex;align-items:center;gap:7px;flex-shrink:0}
+.tsym{color:var(--i1);font-size:11px}
+.tcur{display:inline-block;width:6px;height:12px;background:#4A8A4A;
+  opacity:.8;margin-left:2px;animation:tc .75s step-end infinite}
+@keyframes tc{0%,100%{opacity:.8}50%{opacity:0}}
+
+/* ═══ LOGIN ════════════════════════════════════════════════ */
+#s-login{min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:2rem 1.2rem}
+.lc{width:100%;max-width:480px;background:#fff;border:1px solid var(--bor);
+  border-radius:24px;padding:26px 22px;
+  box-shadow:0 38px 76px -36px rgba(38,37,31,.2),0 2px 0 rgba(255,255,255,.9) inset}
+.lh{text-align:center;margin-bottom:20px}
+.l-logo{width:48px;height:48px;border-radius:var(--rsm);margin:0 auto 12px;
+  background:color-mix(in srgb,var(--fill) 28%,#fff);
+  border:1.5px solid color-mix(in srgb,var(--ink) 16%,transparent);
+  display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-float)}
+.l-logo img{height:26px;opacity:.9}
+.l-title{font-size:19px;font-weight:700;letter-spacing:-.3px;margin-bottom:2px}
+.l-sub{font-size:12px;color:var(--hint)}
+.l-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.r-card{background:color-mix(in srgb,var(--fill) 7%,#fff);
+  border:1.5px solid color-mix(in srgb,var(--ink) 9%,transparent);
+  border-radius:var(--rmd);padding:12px 11px;cursor:pointer;text-align:left;
+  transition:all .2s cubic-bezier(.34,1.4,.4,1);box-shadow:var(--sh-float)}
+.r-card:hover{border-color:var(--ink);transform:translateY(-2px);
+  box-shadow:0 16px 34px -16px color-mix(in srgb,var(--ink) 42%,transparent),0 1px 0 rgba(255,255,255,.9) inset}
+.r-ic{font-size:19px;margin-bottom:6px}
+.r-n{font-size:12.5px;font-weight:700;margin-bottom:2px}
+.r-w{font-size:10.5px;color:var(--sub);margin-bottom:2px}
+.r-d{font-size:9.5px;color:var(--hint);line-height:1.4}
+.r-card.wide{grid-column:1/-1;display:flex;align-items:center;gap:12px}
+.r-card.wide .r-ic{font-size:24px;flex-shrink:0}
+.gdpr-nt{text-align:center;margin-top:13px;font-size:11px;color:var(--hint);line-height:1.55}
+.gdpr-nt a{color:var(--ink);font-weight:600}
+
+/* ═══ FOOTER ════════════════════════════════════════════════ */
+.foot{border-top:1px solid var(--bor);padding:13px 16px 22px;
+  text-align:center;color:var(--hint);font-size:11px}
+.foot a{color:var(--ink);font-weight:600}
+
+/* ═══ RESPONSIVE ════════════════════════════════════════════ */
+@media(min-width:560px){.sg3{grid-template-columns:repeat(3,1fr)}.sg4{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:420px){.l-grid{grid-template-columns:1fr}.r-card.wide{grid-column:1}.content{padding:14px 13px 100px}.tbi{padding:0 12px}.sg3,.sg4{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ INTRO ════════════════════════════════════════════════ -->
+<div id="intro">
+  <button class="intro-skip" onclick="skipIntro()">Ohita intro ↓</button>
+  <div class="intro-prog" id="iprog"></div>
+  <div class="intro-card" id="ic"></div>
+  <div class="intro-nav">
+    <button class="ibt" id="iprev" onclick="introNav(-1)">← Edellinen</button>
+    <button class="ibt prim" id="inext" onclick="introNav(1)">Seuraava →</button>
+  </div>
+</div>
+
+<!-- ══ LOGIN ════════════════════════════════════════════════ -->
+<div id="s-login" style="display:none">
+  <div class="lc">
+    <div class="lh">
+      <div class="l-logo"><img id="ll" alt="M"></div>
+      <div class="l-title">MHKS · Pajakuutio</div>
+      <div class="l-sub">Metropolia AMK · Arabia · v2.1</div>
+    </div>
+    <div class="l-grid" id="login-grid"></div>
+    <div class="gdpr-nt">🔒 <a href="https://www.metropolia.fi/fi/metropoliasta/tietosuoja-ja-gdpr" target="_blank" rel="noopener">Metropolian tietosuojakäytännöt</a> · AMK-laki 932/2014</div>
+  </div>
+</div>
+
+<!-- ══ SOVELLUS ══════════════════════════════════════════════ -->
+<div id="s-app" style="display:none">
+  <header class="topbar">
+    <div class="tbi">
+      <div class="tbar-logo"><img id="al" alt="M"></div>
+      <div class="tbar-names">
+        <div class="tbar-n" id="tbar-n">MHKS</div>
+        <div class="tbar-s" id="tbar-s"></div>
+      </div>
+      <div class="tbar-r">
+        <div class="cog-wrap" onclick="openM('cog')" title="Kognitiivinen kuorma">
+          <span class="cog-ic">🧠</span>
+          <div class="cog-bar"><div class="cog-fill" id="cog-fill"></div></div>
+          <span class="cog-pct" id="cog-pct">0%</span>
+        </div>
+        <div class="lv-ind" id="lv-ind">
+          <div class="lv-dots" id="lv-dots"></div>
+          <span id="lv-name"></span>
+        </div>
+        <button class="logout-btn" onclick="logout()">Vaihda ↩</button>
+      </div>
+    </div>
+  </header>
+  <nav class="tahko-nav"><div class="tn-s" id="tn"></div></nav>
+  <main class="content" id="content"></main>
+  <footer class="foot">
+    Metropolia AMK · Muotoilun pajat · Arabia &nbsp;·&nbsp;
+    <a href="https://miikkunainen.github.io/koulutus/pajakuutio_projektit.html" target="_blank" rel="noopener">Pajakuutio — kuusi periaatetta ↗</a>
+  </footer>
+</div>
+
+<!-- API NAPPI -->
+<div class="api-bar" id="api-bar" style="display:none">
+  <button class="ap-pill" onclick="openLog()">
+    <div class="ap-dot" id="ap-dot"></div>◉ API
+    <span class="ap-cnt" id="ap-cnt">0</span>
+  </button>
+</div>
+
+<!-- MODAL -->
+<div class="ov" id="ov">
+  <div class="sh"><div class="sh-grip"></div>
+    <button class="sh-x" onclick="closeM()">✕</button>
+    <div id="mb"></div></div>
+</div>
+
+<!-- TERMINAALI -->
+<div class="t-ov" id="t-ov" onclick="if(event.target===this)closeLog()">
+  <div class="term">
+    <div class="t-bar">
+      <div class="t-dots"><div class="td r" onclick="closeLog()"></div><div class="td y"></div><div class="td g"></div></div>
+      <div class="t-hd">MHKS · tapahtumaloki</div>
+      <button class="t-clr" onclick="LOG.clear()">Tyhjennä</button>
+    </div>
+    <div class="t-body" id="tlog"></div>
+    <div class="t-prompt"><span class="tsym">mhks@metropolia:~$</span><span style="font-size:10.5px;color:#2A2820">odottaa</span><span class="tcur"></span></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ════════════════════════════════════════════
+   CONFIG
+════════════════════════════════════════════ */
+const ROLES = {
+  student:{n:'Manta Metropol', t:'Opiskelija · TXX17S1',    x:'MM',ac:'#2E5A72',bg:'#C8DFF0',lv:1,lbl:'Opiskelija'},
+  paja:   {n:'Mestari Geppetto',t:'Pajamestari · Arabia',   x:'MG',ac:'#2C6450',bg:'#BEE0D0',lv:2,lbl:'Pajamestari'},
+  lehtori:{n:'Mika Ihanus',    t:'Lehtori · Ind.Design',    x:'MI',ac:'#8A6A1E',bg:'#EDD88A',lv:3,lbl:'Lehtori'},
+  koord:  {n:'Tera Tarkka',    t:'Koordinaattori',          x:'TT',ac:'#5B3F70',bg:'#D0BFEC',lv:4,lbl:'Koordinaattori'},
+  johto:  {n:'Jalo Johto',     t:'Esimies / Johto',         x:'JJ',ac:'#8A3D22',bg:'#F0C8B0',lv:5,lbl:'Johto'},
+};
+const TAHKOT=[
+  {i:1,n:'Työtilaukset',ic:'📋',sub:'Heräte → kuittaus → materiaali',fill:'--c1',ink:'--i1',dark:'--d1'},
+  {i:2,n:'Oikeus',      ic:'⚖️',sub:'Ajokortti · perehdytys · vastuu',fill:'--c2',ink:'--i2',dark:'--d2'},
+  {i:3,n:'Turvallisuus',ic:'🛡️',sub:'Koneet · kemikaalit · prosessit',fill:'--c3',ink:'--i3',dark:'--d3'},
+  {i:4,n:'Laatu',       ic:'✦', sub:'Työloki · seuranta · AI',       fill:'--c4',ink:'--i4',dark:'--d4'},
+  {i:5,n:'Projektit',   ic:'🔥',sub:'Projektit · portfolio · tilat', fill:'--c5',ink:'--i5',dark:'--d5'},
+  {i:6,n:'Talous',      ic:'💰',sub:'Laskutus · inventaario · ostot', fill:'--c6',ink:'--i6',dark:'--d6'},
+];
+
+/* ════════════════════════════════════════════
+   INTRO DATA
+════════════════════════════════════════════ */
+const INTRO_SLIDES=[
+  {ic:'🏭',n:'Tahko 1 · Vihreä siirtymä',t:'Materiaalit kiertoon',
+   d:'RETAKE-ohjelma, materiaalin käyttö ja inventaario. Tarkista uusioastiat aina ennen uutta materiaalia.',
+   tags:['RETAKE','Inventaario','Kierrätys','CO₂']},
+  {ic:'⚖️',n:'Tahko 2 · Oikeus',t:'Vastuu ja vapaus',
+   d:'Paja-ajokortti on käyttölupa. Perehdytys on lupa, ei muodollisuus. Jokaisen oikeudet ja velvollisuudet on määritelty.',
+   tags:['Ajokortti','Perehdytys','Roolit','Liikennevalot']},
+  {ic:'🛡️',n:'Tahko 3 · Turvallisuus',t:'Koneilla toiminta on osa turvaa',
+   d:'Koneet, kemikaalit, suojaimet. Prosessiohjeet hopean hehkutuksesta laserleikkaukseen. Turvallisuus ei ole sääntö — se on tapa tehdä työtä.',
+   tags:['Kemikaalit','Suojaimet','Prosessiohjeet','KTT']},
+  {ic:'✦',n:'Tahko 4 · Laatu',t:'Lokikirja synnyttää laadun',
+   d:'Työloki, heräte-järjestelmä, AI-analyysi. Dokumentoimaton työ on menetetty oppiminen.',
+   tags:['Työloki','Heräte','AI','Seuranta']},
+  {ic:'🔥',n:'Tahko 5 · Projektit',t:'Projektisuunnittelu ja toteutus',
+   d:'Kurssi- ja henkilökohtaiset projektit. Tilakartta, koneiden ja työkalujen sijainnit. Portfolio ja näkyvyys.',
+   tags:['Projekti','Tilakartta','Portfolio','Yhteistyö']},
+  {ic:'💰',n:'Tahko 6 · Talous',t:'Läpinäkyvä laskutus',
+   d:'Materiaalikustannukset näkyville. Laskutusraja 50 € omille projekteille. Inventaario päivittyy reaaliaikaisesti.',
+   tags:['Laskutus','Inventaario','50 € raja','Hankinnat']},
+];
+
+/* ════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════ */
+const D = {
+  role:null, tahko:1,
+  _dsMat:null, _dsQty:1, _maintId:null,
+  _cogMinutes:0, _cogTimer:null,
+
+  /* Työtilaukset / Work orders */
+  workOrders:[
+    {id:'wo1',stu:'2311501',stuName:'Manta Metropol',type:'course',title:'Baltic-sarja — keramiikkavati',
+     mats:['clay','silver'],status:'active',lehOk:true,pajaOk:true,matDone:false,
+     desc:'Keramiikkavati + hopeadetaljit. Poltto 980°C.',created:'15.5.',due:'28.5.'},
+    {id:'wo2',stu:'2301203',stuName:'Mikael Järvinen',type:'personal',title:'Modulaarinen valaistus',
+     mats:['silver','alupro'],status:'waiting_paja',lehOk:true,pajaOk:false,matDone:false,
+     desc:'Teräsrunko + hopeasoljet. CNC + juotostyö.',created:'16.5.',due:'30.5.'},
+    {id:'wo3',stu:'2312847',stuName:'Aino Virtanen',type:'course',title:'Biohajoava pakkaus',
+     mats:['pla'],status:'waiting_leh',lehOk:false,pajaOk:false,matDone:false,
+     desc:'PLA-tulostus, 3 eri orientaatio.',created:'17.5.',due:'1.6.'},
+  ],
+
+  /* Materiaalit */
+  inv:[
+    {id:'silver',n:'Hopealevy 0.8 mm',   u:'g', s:340,m:200,p:.85, st:'ok',      loc:'Kaappi H-03',procs:['hopea']},
+    {id:'alupro',n:'Alumiiniprofiili',    u:'m', s:8.5,m:5,  p:4.2, st:'ok',      loc:'Hylly M-12', procs:[]},
+    {id:'pla',   n:'PLA-filamentti',      u:'kg',s:2.4,m:3,  p:22,  st:'low',     loc:'Kaappi D-01',procs:['pla']},
+    {id:'epoxy', n:'Epoksihartsi',        u:'kg',s:.8, m:2,  p:18.5,st:'critical',loc:'Kaappi K-05',procs:['epoksi']},
+    {id:'clay',  n:'Keramiikkasavi',      u:'kg',s:45, m:20, p:2.1, st:'ok',      loc:'Kaappi K-01',procs:[]},
+    {id:'glaze', n:'Lasituslakka kirkas', u:'dl',s:3,  m:5,  p:8.9, st:'low',     loc:'Kaappi K-02',procs:[]},
+  ],
+  mach:[
+    {id:'bacci', n:'BACCI CNC 5-akseli',    u:152,m:200,last:'14.3.',st:'warning',risk:4,loc:'Metallihuone'},
+    {id:'prusa', n:'Prusa XL #1',           u:512,m:500,last:'10.2.',st:'overdue',risk:2,loc:'3D-piste'},
+    {id:'laser', n:'Laserleikkuri Epilog',  u:88, m:200,last:'1.3.', st:'ok',     risk:3,loc:'Laserpiste'},
+    {id:'drill', n:'Pylväsporakone B33',    u:13, m:100,last:'2.1.', st:'ok',     risk:2,loc:'Metallihuone'},
+    {id:'kiln',  n:'Keramiikkauuni',        u:0,  m:50, last:'15.4.',st:'ok',     risk:3,loc:'Keramiikkatila'},
+    {id:'solder',n:'Juotosasema',           u:22, m:50, last:'28.3.',st:'ok',     risk:5,loc:'Hopeapiste'},
+  ],
+  stu:[
+    {id:'2311501',n:'Manta Metropol', b:38.5,o:16.5,sg:true, grp:'TXX17S1',email:'manta.metropol@metropolia.fi'},
+    {id:'2301203',n:'Mikael Järvinen',b:67.2,o:37.2,sg:true, grp:'TXX17S1',email:'mikael.jarvinen@metropolia.fi'},
+    {id:'2312847',n:'Aino Virtanen',  b:12.8,o:0,   sg:false,grp:'TXX17S1',email:'aino.virtanen@metropolia.fi'},
+    {id:'2309156',n:'Rasmus Lund',    b:51.6,o:33.6,sg:true, grp:'TXX17S1',email:'rasmus.lund@metropolia.fi'},
+    {id:'2315002',n:'Emilia Korhonen',b:8.4, o:0,   sg:false,grp:'TXX17S1',email:'emilia.korhonen@metropolia.fi'},
+  ],
+  peh:{'2311501':{bacci:'wait',prusa:'ok',laser:'ok',drill:'ok',kiln:'ok',solder:'ok'},
+       '2301203':{prusa:'ok',laser:'ok',drill:'ok'},'2312847':{},'2309156':{bacci:'ok',prusa:'ok',laser:'ok',drill:'ok',kiln:'ok'},'2315002':{}},
+  txn:[
+    {d:'28.4.',n:'Hopealevy',q:'12 g',c:false,t:11.76},
+    {d:'25.4.',n:'Pylväspora 0.5h',q:'',c:false,t:2.25},
+    {d:'22.4.',n:'Lasituslakka',q:'2 dl',c:true,t:19.30},
+  ],
+  ord:[
+    {id:'o1',n:'Epoksihartsi A+B 5 kg',s:'Finska Kemi Oy',p:92.5,st:'pending',req:'Mika Ihanus'},
+    {id:'o2',n:'PLA-filamentti 10 kg', s:'Prusa Research', p:220, st:'pending',req:'Mestari Geppetto'},
+    {id:'o3',n:'Hopealevy 200 g',      s:'Kultatukku Oy',  p:170, st:'arrived',req:'Mestari Geppetto'},
+  ],
+
+  /* Tilakartta */
+  spaces:[
+    {id:'metal',n:'Metallihuone',ic:'⚙️',
+     items:[{n:'BACCI CNC',t:'mach'},{n:'Pylväspora B33',t:'mach'},{n:'Puristuspenkit',t:'tool'},
+            {n:'Kaappi H-03 (Hopea)',t:'chem-loc'},{n:'Imurit',t:'tool'}]},
+    {id:'hopea',n:'Hopeapiste & vetokaappi',ic:'🥈',
+     items:[{n:'Juotosasema',t:'mach'},{n:'Sitruunahappo (piklaushappo)',t:'chem-loc'},
+            {n:'Hehkutuslanka + teline',t:'tool'},{n:'Kaappi K-05 (Kemikaalit)',t:'chem-loc'},
+            {n:'Rosteripinsetit',t:'tool'},{n:'Suojalasit + käsineet',t:'tool'}]},
+    {id:'laser',n:'Laserpiste',ic:'⚡',
+     items:[{n:'Laserleikkuri Epilog',t:'mach'},{n:'Porrashylly (laser-laatu)',t:'tool'},
+            {n:'Kaappi M-12 (Aluprofiili)',t:'chem-loc'}]},
+    {id:'3d',n:'3D-piste',ic:'🖨️',
+     items:[{n:'Prusa XL #1',t:'mach'},{n:'Kaappi D-01 (PLA)',t:'chem-loc'},{n:'Spatula + pinsetit',t:'tool'}]},
+    {id:'keram',n:'Keramiikkatila',ic:'🏺',
+     items:[{n:'Keramiikkauuni Nabertherm',t:'mach'},{n:'Kaappi K-01 (Savi)',t:'chem-loc'},
+            {n:'Kaappi K-02 (Lasitus)',t:'chem-loc'},{n:'RETAKE-astia (Savi)',t:'retake'}]},
+    {id:'retake',n:'RETAKE-piste (aula)',ic:'♻️',
+     items:[{n:'Vihreä RETAKE-häkki (Hopea)',t:'retake'},{n:'Vihreä RETAKE-häkki (Puu)',t:'retake'},
+            {n:'Vihreä RETAKE-häkki (Muovi)',t:'retake'},{n:'Porrashylly (Laser-jämät)',t:'retake'}]},
+  ],
+
+  /* Kemikaalirekisteri */
+  chemicals:[
+    {id:'citric',n:'Sitruunahappoliuos (piklaushappo)',cas:'77-92-9',hz:['C','!'],
+     maxTemp:70,hood:true,pinkku:true,
+     ppe:{gloves:'Nitriilikäsineet (nitriili)',eyes:'Suojalasit (sirote)',breath:'Ei normaalikäytössä'},
+     em:'Roiske iholle: huuhtele heti runsaalla vedellä 15 min. Silmiin: huuhtele 15 min, hakeudu lääkäriin.',
+     store:'Vetokaappi tai tuuletettu kemikaalikaappi. Kaukana metalleista.',
+     proc:'hopea',
+     info:'Heikko orgaaninen happo. Käytetään hopean piklaukseen (puhdistukseen) hehkutuksen jälkeen. ENSIN VESI — sitten happo. Kuumahauteessa max 70°C. Rosteripinsetit aina.'},
+    {id:'agno3',n:'Hopeaetikka / hopeanitraatti AgNO₃',cas:'7761-88-8',hz:['Ox','!','Aq'],
+     maxTemp:null,hood:true,pinkku:true,
+     ppe:{gloves:'Nitriilikäsineet',eyes:'Suojalasit',breath:'Ei normaalikäytössä'},
+     em:'Hapettava aine. Iholle: huuhtele vesi 15 min. Silmiin: huuhtele, hakeudu lääkäriin. Hapettaa ihon mustaksi.',
+     store:'Vetokaappi. Pimeys — valoherkistyminen. Ei kosketukseen orgaanisten aineiden kanssa.',
+     proc:'hopea',
+     info:'Hopean peittaukseen. Ei sekoiteta alkoholin tai orgaanisten aineiden kanssa — räjähdysriski. Käytetään vain vetokaapissa.'},
+    {id:'bisphenol',n:'Epoksihartsi (Bisphenol A-pohjainen)',cas:'25068-38-6',hz:['!','Sk'],
+     maxTemp:40,hood:false,pinkku:true,
+     ppe:{gloves:'Nitriilikäsineet (TUPLA)',eyes:'Suojalasit',breath:'Riittävä ilmanvaihto'},
+     em:'Allergisoituminen on pysyvää — yksikin altistuminen voi laukaista elinikäisen allergian. Iholle: saippuavesi välittömästi. Älä koskaan käsittele paljain käsin.',
+     store:'Suljettu astia. Viileä (+5–25°C). Ei lasien tai ruoan läheisyydessä.',
+     proc:'epoksi',
+     info:'Sekoitussuhde aina hartsin ohjeen mukaan (tyypillisesti 2:1 tai 1:1). Sekoita 3–4 min, kaavi sivut. Ilmakuplat: lämpöpistoolilla lyhyt ajo pinnalle.'},
+    {id:'h2so4',n:'Piklaushappo H₂SO₄ 10 %',cas:'7664-93-9',hz:['C','!'],
+     maxTemp:60,hood:true,pinkku:true,
+     ppe:{gloves:'Kumikäsineet (paksu)',eyes:'Suojalasit + kasvosuojain',breath:'Voimakkaan höyrystymisen estäminen — ei kuumenna liikaa'},
+     em:'Syövyttävä. Iholle: runsas huuhtelu vedellä heti. Silmiin: huuhtele 15+ min, 112. Kaato: HAPPO AINA VETEEN — ei vettä happoon (räiskyminen).',
+     store:'Kemikaalikaappi. Lukittu. Erillään emäksistä.',
+     proc:'hopea',
+     info:'Vahvempi vaihtoehto sitruunahappoliuokselle. Käytä vain vetokaapissa. Lämmitys vesihaude max 60°C. Älä koskaan lämmitä avotulella. Rosteripinsetit.'},
+  ],
+
+  /* Prosessiohjeet */
+  processes:{
+    hopea:{
+      title:'Hopean hehkutus ja piklaus',
+      intro:'Hopea kovettuu muokkauksen aikana (tikkuuntuminen). Hehkutus palauttaa metallin kiderakenteen muokattavaksi — ilman sitä hopea halkeaa tai murtuu jatkokäsittelyssä.',
+      steps:[
+        {t:'Suojaimet päälle',
+         d:'Laita suojalasit ja nitriilikäsineet. Esiliina tai työtakki.',
+         safety:'Hehkutusvaiheessa lämpötila on noin 600–700°C. Kipinät voivat sinkoilla.',
+         ppe:['Suojalasit','Nitriilikäsineet','Esiliina'],chem:null},
+        {t:'Valmista piklaushappo',
+         d:'Sekoita kylmään veteen sitruunahappoa (1 rkl / 100 ml). ENSIN VESI — sitten happo. Laita kemikaalihaude (vesiastia) kuumalle levylle, max 70°C. Suorita VETOKAAPISSA.',
+         safety:'ENSIN VESI, SITTEN HAPPO. Max 70°C. Korkea lämpötila vapauttaa höyryjä — vetokaappi auki.',
+         ppe:['Nitriilikäsineet','Suojalasit'],chem:'citric'},
+        {t:'Hehkutus',
+         d:'Aseta hopea titaaniverkkoalustalle. Kuumenna propaanikaasupolttimella tasaisesti pyörivin liikkein kunnes metalliin tulee lohenpunainen väri (≈600–700°C). Pidä liike tasaisena — ylikuumennus pilaa metallin.',
+         safety:'Ei katso suoraan liekkiin. Poltin poispäin ihmisistä. Ei palavien materiaalien läheisyydessä.',
+         ppe:['Suojalasit'],chem:null},
+        {t:'Anna jäähtyä hetki (ei karaistumista)',
+         d:'Anna hopean jäähtyä 3–5 sekuntia. ÄLÄ kasta välittömästi kylmään veteen — nopea sammutus voi halkoa tai kovettaa eräitä hopeaseosten metalleja. Kultasepäntyössä fine silver (999) voidaan kylmäkarkaista — tarkista seoksesi.',
+         safety:'Kuuma metalli ei näytä kuumalta — kosketa aina ensin puiseen alustaan.',
+         ppe:[],chem:null},
+        {t:'Piklaus — hopea piklaushappoon',
+         d:'Ota rosteripinseteillä (EI kupari tai teräs — ne saastavat hapon) hopea piklaushappoastiaan. Jätä 1–5 minuuttia. Hopea vaalenee: happo poistaa oksidipinnan.',
+         safety:'Rosteripinsetit aina — muut metallit saastavat hapon ja tekevät siitä vaarallisempaa.',
+         ppe:['Nitriilikäsineet','Suojalasit'],chem:'citric'},
+        {t:'Huuhtele ennen jatkokäsittelyä',
+         d:'Nosta rosteripinseteillä hopea puhtaaseen vesiastiaan. Huuhtele 30 sekuntia. Hopea on nyt valmis jatkokäsittelyyn (takominen, pakotus, juottaminen).',
+         safety:'Huuhtelematon hopea voi jättää happojäämiä jotka syövyttävät ihoa ja työkaluja.',
+         ppe:['Nitriilikäsineet'],chem:null},
+      ]
+    },
+    laser:{
+      title:'Laserleikkaus — turvallinen työnkulku',
+      intro:'Laserleikkuri on suuri riski väärällä materiaalilla. PVC vapauttaa kloorivetyä, styrox syttyy. Vain laser-laatu.',
+      steps:[
+        {t:'Tarkista materiaali',
+         d:'Varmista että materiaali on "laser-laatu": NAF-vaneri, vaalealiimainen koivuvaneri, 3–4 mm MDF. Tuntematon levy EI kuulu laserille. Katso pajan sallittujen materiaalien lista.',
+         safety:'PVC (merkki 03) vapauttaa kloorikaasua — syövyttää optiikan ja on terveysriski. KOSKAAN EI.',
+         ppe:['Suojalasit (laser-suoja)'],chem:null},
+        {t:'Tarkista kohdepoisto',
+         d:'Puhaltimen pitää olla päällä ENNEN leikkausta. Tarkista että kanavisto ei ole tukossa. Suoritustaso saa olla max 90% — älä ylikuormita puhallinta.',
+         safety:'Ilman kohdepoistoa savu jää sisään ja sytyttää tai myrkyttää.',
+         ppe:[],chem:null},
+        {t:'Aseta materiaali ja fokus',
+         d:'Aseta levy kennoalustalle tasaisesti. Tarkista fokusointietäisyys: tiputa fokusointitappi z-akselilta levyn pinnalle.',
+         safety:'Väärä fokus = leikkaa vain osittain ja aiheuttaa kytemistä.',
+         ppe:[],chem:null},
+        {t:'Testileikkaus',
+         d:'Tee ensin 10 × 10 mm testileikkaus. Tarkista: leikkaa läpi? Ei mustunutta yläpintaa? Ei jälkiä pohjassa? Säädä nopeus/teho tarvittaessa.',
+         safety:'Älä koskaan jätä konetta yksin käynnin aikana.',
+         ppe:['Suojalasit (laser-suoja)'],chem:null},
+        {t:'Lopetus: purge + tuuletus',
+         d:'Ajoa laserilla. Anna puhaltimen käydä 2 minuuttia kannen avaamisen jälkeen. Tarkista lopuksi optiikka MDF-ajojen jälkeen.',
+         safety:'Kaasut ja savu jäävät laitteeseen — tuuletus poistaa ne ennen kannen avaamista.',
+         ppe:[],chem:null},
+      ]
+    },
+    pla:{
+      title:'3D-tulostus PLA — Prusa XL',
+      intro:'PLA on helpoiten tulostettava muovilaatu, mutta tulostusalustan tasaus ja ensimmäinen kerros ovat kriittisiä. Huolimaton aloitus tuhlaa aikaa ja materiaalia.',
+      steps:[
+        {t:'Tarkista filamentti',
+         d:'PLA imee kosteutta. Jos tulostettaessa kuuluu napsahtelua tai blobeja, filamentti on kostunut. Kuivaa filamenttilaatikossa 65°C, 4–6 h.',
+         safety:'Kostuneen filamenttiin PLA-kaasut ovat epämiellyttäviä. Hyvä ilmanvaihto.',
+         ppe:['Ilmanvaihto'],chem:null},
+        {t:'Tasota tulostusalusta',
+         d:'Paperitesti: paperi liikkuu vastuksen kanssa mutta ei juutu. Tarkista 4 kulmaa ja keskipiste. Käytä Prusa-kalibrointitoimintoa (Calibrate > First Layer).',
+         safety:'Epätasainen alusta = ensimmäinen kerros ei tartu = tulostus kaatuu = hukattua materiaalia ja aikaa.',
+         ppe:[],chem:null},
+        {t:'Seuraa ensimmäinen kerros',
+         d:'ÄLÄ poistu ennen kuin ensimmäinen kerros on ajettu. Tarkista tasainen tartunta ilman aukkoja tai rullautumia. Säädä Live Adjust Z:lla tarvittaessa.',
+         safety:'Irronnut ensimmäinen kerros tarrautuu myöhemmin extruuderiin ja tukkii sen.',
+         ppe:[],chem:null},
+        {t:'Orientoi ennen tulostusta',
+         d:'Minimoi tukimateriaali asettamalla malli oikein. Tasainen pohja = ei tukia. 15° kallistus usein poistaa tuen tarpeen kokonaan. Tarkista Prusa Slicerissa.',
+         safety:'Tukimateriaalin irrotus voi murtaa hauraita osia — suunnittele ennakkoon.',
+         ppe:[],chem:null},
+        {t:'Viimeistely',
+         d:'PLA-tuet irrotetaan pinseteillä tai spatulalla. Pinta voidaan hioa (120→240→400). Pistoksille: lämpöpistoolilla lyhyt ajo sulattaa PLA-pintakerrosta pehmeämmäksi.',
+         safety:'Hiotessa PLA-pölyä — ei hengitetä. Lämpöpistooli: ei kohdisteta muoviin liian pitkään.',
+         ppe:['Hengityssuoja hiottaessa'],chem:null},
+      ]
+    },
+    epoksi:{
+      title:'Epoksihartsin käyttö',
+      intro:'Epoksihartsi on pysyvästi allergisoiva aine — yksikin altistuminen ilman suojausta voi laukaista elinikäisen allergian. Suojaimet ovat pakollisia, ei valinnaisia.',
+      steps:[
+        {t:'PAKOLLINEN: Suojaimet ennen avaamista',
+         d:'Laita nitriilikäsineet ENNEN hartsin avaamista. Tupla-käsineet on suositeltavaa. Suojalasit. Hiussuoja pitkille hiuksille. Esiliina tai vanha vaate.',
+         safety:'ALLERGISOITUMINEN ON PYSYVÄÄ. Yksikin altistuminen ilman suojausta riittää. Oireettomana altistunut voi saada reaktion myöhemmin.',
+         ppe:['Nitriilikäsineet (TUPLA)','Suojalasit','Esiliina'],chem:'bisphenol'},
+        {t:'Ilmanvaihto — ikkuna auki tai vetokaappi',
+         d:'Avaa ikkuna tai siirry vetokaappiin. Epoksihaihtumat ovat epämiellyttäviä ja pitkäaikaisessa altistumisessa haitallisia. Max 40°C käyttölämpötila.',
+         safety:'Suljetussa tilassa haihtuvat orgaaniset yhdisteet (VOC) kerääntyvät.',
+         ppe:['Riittävä ilmanvaihto'],chem:'bisphenol'},
+        {t:'Mittaa sekoitussuhde tarkasti',
+         d:'Lue hartsikohtainen sekoitussuhde (2:1 tai 1:1 tilavuus tai massa — TARKISTA). Mittaa tarkkaan — virhe heikentää kovettumista merkittävästi.',
+         safety:'Väärin sekoitettu epoksi ei kovetu täysin — jää tahmaiseksi ja allergisoivaksi.',
+         ppe:['Nitriilikäsineet'],chem:'bisphenol'},
+        {t:'Sekoita rauhallisesti 3–4 min',
+         d:'Sekoita rauhallisesti muovilastalla — ei vispata. Kaavi astian sivut ja pohja. Ilmakuplat ovat normaalia. 3–4 minuuttia riittää.',
+         safety:'Nopea sekoitus tekee enemmän ilmakuplia ja lyhentää käyttöaikaa (eksoterminen reaktio kiihtyy).',
+         ppe:['Nitriilikäsineet'],chem:null},
+        {t:'Kaada ja poista ilmakuplat',
+         d:'Kaada hitaasti, astiaa vinossa. Ilmakuplat pinnalta: lämpöpistoolin lyhyt ajo (1–2 sekuntia) tai kaasuliekki pinnan yli. Ei liian lähellä.',
+         safety:'Kuumennus sulattaa kuplia — ei yliku menneta tai epoksi alkaa kovettua liian nopeasti.',
+         ppe:['Nitriilikäsineet','Suojalasit'],chem:null},
+        {t:'Kovetuminen — älä liikuta',
+         d:'Jätä 24h ilman tärinää tai liikuttelua. Täysi kovuus 48–72h (hartsikohtainen). Lämpö nopeuttaa: 30°C = 12h sijaan 6h.',
+         safety:'Osittain kovettunut epoksi on allergisoivin vaihe. Älä kosketa ennen täyttä kovettumista.',
+         ppe:[],chem:null},
+        {t:'Jätteiden hävittäminen',
+         d:'Kovettumaton epoksijäte on ongelmajätettä. Anna tähteet kovettua astiassa kokonaan — sitten sekajäte. Kastunut paperi tai harso ongelmajäteastiaan.',
+         safety:'EI VIEMÄRIIN. EI tavalliseen sekajätteeseen kovettumattomana.',
+         ppe:['Nitriilikäsineet'],chem:null},
+      ]
+    }
+  }
+};
+
+/* ════════════════════════════════════════════
+   LOG
+════════════════════════════════════════════ */
+const LOG={
+  e:[],n:0,
+  add(type,msg,det=''){
+    const ts=new Date(),t=ts.toLocaleTimeString('fi-FI',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    this.e.unshift({n:++this.n,t,type,msg,det});
+    if(this.e.length>200)this.e.length=200;
+    const el=document.getElementById('ap-cnt');if(el)el.textContent=Math.min(this.n,999);
+    const p=document.getElementById('ap-dot');if(p){p.style.background='#C8940A';setTimeout(()=>p.style.background='#4A8A4A',650);}
+    if(document.getElementById('t-ov').classList.contains('open'))this.render();
+  },
+  render(){
+    const el=document.getElementById('tlog');if(!el)return;
+    const C={ok:'#4A8A4A',info:'#2E5A72',warn:'#8A6A1E',err:'#823A55',gold:'#8A3D22',sys:'#5B3F70'};
+    const T={ok:'OK ',info:'INF',warn:'WRN',err:'ERR',gold:'✦  ',sys:'SYS'};
+    if(!this.e.length){el.innerHTML='<div style="color:#2A2820;padding:10px 0">Lokia ei vielä ole.</div>';return;}
+    el.innerHTML=this.e.map(e=>`<div class="lr"><span class="lts">[${e.t}]</span><span class="ltag" style="color:${C[e.type]||'#555'}">${T[e.type]||'---'}</span><div class="ltx">${E(e.msg)}${e.det?'<br><span style="color:#3A3830">'+E(e.det)+'</span>':''}</div></div>`).join('');
+  },
+  clear(){this.e=[];this.n=0;const el=document.getElementById('ap-cnt');if(el)el.textContent='0';this.render();}
+};
+
+/* ════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════ */
+const E=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const f2=n=>(Math.round(n*100)/100).toFixed(2);
+const pct=(v,m)=>Math.min(100,Math.round(v/m*100));
+const ini=n=>n.trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+const bdg=(c,t)=>`<span class="bdg ${c}">${E(t)}</span>`;
+const sBdg=st=>{const m={ok:['ok','Kunnossa'],low:['wn','Vähissä'],critical:['dn','Kriittinen'],warning:['wn','Lähestyy'],overdue:['dn','Erääntynyt'],arrived:['ok','Saapunut'],pending:['wn','Odottaa'],active:['ok','Käynnissä'],waiting_leh:['in','Odottaa lehtoria'],waiting_paja:['wn','Odottaa pajamestaria'],done:['gh','Valmis']};const[c,t]=m[st]||['gh',st];return bdg(c,t);};
+const rsk=r=>{const l=['','Matala','Hallittu','Kohtalainen','Korkea','Korkein'];return `<span class="risk r${r}">${l[r]} ${r}/5</span>`;};
+const bar=(v,m,c)=>{const w=pct(v,m);const col=c||(w>90?'var(--i2)':w>70?'var(--i6)':'var(--i1)');return `<div class="barw"><div class="barf" style="width:${w}%;background:${col}"></div></div>`;};
+const nt=(cls,h)=>`<div class="nt ${cls||''}">${h}</div>`;
+const btn=(l,a,id,c='')=>`<button class="btn${c?' '+c:''}" data-action="${a}" data-id="${E(id||'')}">${l}</button>`;
+const row=(l,m,r='')=>`<div class="row">${l||''}<div class="rm">${m}</div>${r}</div>`;
+const av=(n,ac,bg,sz='md')=>`<div class="av av-${sz}" style="background:${bg};color:${ac}">${E(n)}</div>`;
+const stl=(l,v,c,s)=>`<div class="stile"><div class="stl">${E(l)}</div><div class="stv"${c?` style="color:${c}"`:''}>${v}</div>${s?`<div class="sts">${E(s)}</div>`:''}</div>`;
+const card=(h,cls='')=>`<div class="card${cls?' '+cls:''}">${h}</div>`;
+function sg(it,n){return `<div style="display:grid;grid-template-columns:repeat(${n},1fr);gap:8px;margin-bottom:11px">${it.join('')}</div>`}
+function emp(ic,t,s){return `<div style="text-align:center;padding:2rem 1rem;color:var(--hint)"><div style="font-size:36px;margin-bottom:10px;opacity:.4">${ic}</div><div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--sub)">${E(t)}</div><div style="font-size:11.5px">${E(s)}</div></div>`}
+
+/* ════════════════════════════════════════════
+   KOGNITIIVINEN KUORMA
+════════════════════════════════════════════ */
+function calcCog(){
+  const r=D.role, m=ROLES[r]||{lv:1};
+  const openWO=D.workOrders.filter(w=>w.status!=='done').length;
+  const lowInv=D.inv.filter(i=>i.st==='low'||i.st==='critical').length;
+  const badMach=D.mach.filter(m=>m.st==='overdue'||m.st==='warning').length;
+  const baseLoad=m.lv===1?25:m.lv===2?20:15;
+  const total=baseLoad+(openWO*14)+(lowInv*8)+(badMach*10);
+  return Math.min(100,total);
+}
+function updateCog(){
+  const v=calcCog();
+  const col=v>85?'#C00':v>70?'#B85418':v>45?'#8A6A1E':'#2C6450';
+  const el=document.getElementById('cog-fill');const pt=document.getElementById('cog-pct');
+  if(el){el.style.width=v+'%';el.style.background=col;}
+  if(pt)pt.textContent=v+'%';
+}
+
+/* ════════════════════════════════════════════
+   INTRO
+════════════════════════════════════════════ */
+let ISLIDE=0;
+const INTRO_COLORS=['--c1','--c2','--c3','--c4','--c5','--c6'];
+function renderIntro(){
+  const s=INTRO_SLIDES[ISLIDE],n=INTRO_SLIDES.length;
+  const r=document.documentElement;
+  r.style.setProperty('--fill',`var(${INTRO_COLORS[ISLIDE]})`);
+  r.style.setProperty('--ink',`var(--i${ISLIDE+1})`);
+  document.getElementById('iprog').innerHTML=Array(n).fill('').map((_,i)=>`<div class="ip${i<=ISLIDE?' on':''}"></div>`).join('');
+  document.getElementById('ic').innerHTML=`<div class="ic-big">${s.ic}</div><div class="ic-num">Tahko ${ISLIDE+1} / ${n}</div><div class="ic-title">${E(s.t)}</div><div class="ic-sub">${E(s.d)}</div><div class="ic-tags">${s.tags.map(t=>`<span class="ic-tag">${E(t)}</span>`).join('')}</div>`;
+  document.getElementById('iprev').style.visibility=ISLIDE===0?'hidden':'visible';
+  document.getElementById('inext').textContent=ISLIDE===n-1?'Aloita →':'Seuraava →';
+}
+function introNav(d){
+  ISLIDE=Math.max(0,Math.min(INTRO_SLIDES.length-1,ISLIDE+d));
+  if(d>0&&ISLIDE>=INTRO_SLIDES.length)return skipIntro();
+  if(ISLIDE===INTRO_SLIDES.length-1&&d>0){ISLIDE++;return skipIntro();}
+  renderIntro();
+}
+function skipIntro(){
+  const intro=document.getElementById('intro');
+  intro.style.opacity='0';intro.style.transition='opacity .4s';
+  setTimeout(()=>{intro.style.display='none';document.getElementById('s-login').style.display='flex';},380);
+  const r=document.documentElement;
+  r.style.setProperty('--fill','var(--c1)');r.style.setProperty('--ink','var(--i1)');r.style.setProperty('--dark','var(--d1)');
+}
+
+/* ════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════ */
+function setTahko(i){
+  D.tahko=i;const t=TAHKOT[i-1];
+  const r=document.documentElement;
+  r.style.setProperty('--fill',`var(${t.fill})`);
+  r.style.setProperty('--ink',`var(${t.ink})`);
+  r.style.setProperty('--dark',`var(${t.dark})`);
+  document.querySelectorAll('.tn-t').forEach(el=>el.classList.toggle('active',+el.dataset.t===i));
+  document.getElementById('tbar-s').textContent=t.sub;
+  document.getElementById('content').innerHTML=VIEWS[i-1]();
+  updateCog();
+  LOG.add('info',`Tahko ${i} — ${t.n}`,t.sub);
+}
+
+function login(role){
+  D.role=role;const m=ROLES[role];
+  document.getElementById('s-login').style.display='none';
+  document.getElementById('s-app').style.display='';
+  document.getElementById('api-bar').style.display='';
+  document.getElementById('tbar-n').textContent=m.n;
+  const lv=m.lv;
+  document.getElementById('lv-name').textContent=m.lbl;
+  document.getElementById('lv-dots').innerHTML=Array(5).fill('').map((_,i)=>`<div class="lvd${i<lv?' on':''}"></div>`).join('');
+  document.getElementById('tn').innerHTML=TAHKOT.map(t=>`<button class="tn-t" data-t="${t.i}" data-action="tahko"><div class="tn-dot"></div>${t.n}</button>`).join('');
+  setTahko(1);
+  LOG.add('sys',`${m.lbl} kirjautui sisään`,m.n+' · '+m.t);
+}
+function logout(){
+  D.role=null;
+  document.getElementById('s-app').style.display='none';
+  document.getElementById('s-login').style.display='flex';
+  document.getElementById('api-bar').style.display='none';
+  const r=document.documentElement;
+  r.style.setProperty('--fill','var(--c1)');r.style.setProperty('--ink','var(--i1)');r.style.setProperty('--dark','var(--d1)');
+}
+
+/* ════════════════════════════════════════════
+   VIEWS — 6 tahkoa
+════════════════════════════════════════════ */
+
+/* ─── T1: Työtilaukset / Workflow ─── */
+function vT1(){
+  const r=D.role;
+  let h='';
+  /* Opiskelija: omat tilaukset */
+  if(r==='student'){
+    const me=D.stu[0];
+    const myWO=D.workOrders.filter(w=>w.stu===me.id);
+    h+=sg([stl('Avoimia töitä',myWO.filter(w=>w.status!=='done').length,'','työtilauksia'),stl('Saldo',f2(me.b)+' €','',''+f2(me.o)+' € laskutettavaa')],2);
+    h+=btn('+ Uusi työtilaus','open-modal','new-wo','prim full');
+    h+=`<div style="font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Omat työtilaukset</div>`;
+    if(!myWO.length){h+=emp('📋','Ei avoimia tilauksia','Luo uusi työtilaus napilla yllä');}
+    else h+=myWO.map(wo=>woCard(wo,r)).join('');
+  }
+  /* Pajamestari: kaikki tilaset, kuittaukset */
+  else if(r==='paja'){
+    const woPaja=D.workOrders.filter(w=>w.status==='waiting_paja');
+    const woActive=D.workOrders.filter(w=>w.status==='active'&&w.pajaOk&&!w.matDone);
+    h+=sg([stl('Odottaa kuittaustasi',woPaja.length,woPaja.length?'var(--i5)':'var(--i1)'),stl('Luovutettavaa',woActive.length,'','materiaalia')],2);
+    if(woPaja.length)h+=woPaja.map(wo=>woCard(wo,r)).join('');
+    if(woActive.length){h+=`<div style="font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Materiaaliluovutus</div>`;h+=woActive.map(wo=>woCard(wo,r)).join('');}
+    h+=`<div style="font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px">Kaikki tilaukset</div>`;
+    h+=D.workOrders.map(wo=>woCard(wo,r)).join('');
+  }
+  /* Lehtori */
+  else if(r==='lehtori'){
+    const woLeh=D.workOrders.filter(w=>w.status==='waiting_leh');
+    h+=sg([stl('Hyväksyntää odottaa',woLeh.length,woLeh.length?'var(--i5)':'var(--i1)'),stl('Tilauksissa yht.',D.workOrders.length)],2);
+    if(woLeh.length)h+=woLeh.map(wo=>woCard(wo,r)).join('');
+    h+=D.workOrders.filter(w=>w.status!=='waiting_leh').map(wo=>woCard(wo,r)).join('');
+  }
+  /* Koord + Johto */
+  else{
+    h+=sg([stl('Kaikki tilaukset',D.workOrders.length),stl('Käynnissä',D.workOrders.filter(w=>w.status==='active').length)],2);
+    h+=D.workOrders.map(wo=>woCard(wo,r)).join('');
+  }
+  return h;
+}
+
+function woCard(wo,role){
+  const statusColors={active:'#4A8A4A',waiting_leh:'#2E5A72',waiting_paja:'#8A6A1E',done:'#888'};
+  const col=statusColors[wo.status]||'#888';
+  const steps=[
+    {lbl:'Opiskelija lähettänyt',done:true},
+    {lbl:'Lehtori kuittaa',done:wo.lehOk},
+    {lbl:'Pajamestari kuittaa',done:wo.pajaOk},
+    {lbl:'Materiaali luovutettu',done:wo.matDone},
+  ];
+  let actions='';
+  if(role==='lehtori'&&wo.status==='waiting_leh')
+    actions=`<div style="display:flex;gap:7px;margin-top:10px">${btn('✕ Hylkää','wo-action',wo.id+'|reject_leh','sm')} ${btn('✓ Hyväksy','wo-action',wo.id+'|approve_leh','sm prim')}</div>`;
+  if(role==='paja'&&wo.status==='waiting_paja')
+    actions=`<div style="display:flex;gap:7px;margin-top:10px">${btn('✕ Hylkää','wo-action',wo.id+'|reject_paja','sm')} ${btn('✓ Hyväksy & varaa materiaalit','wo-action',wo.id+'|approve_paja','sm prim')}</div>`;
+  if(role==='paja'&&wo.status==='active'&&!wo.matDone)
+    actions=`<div style="margin-top:10px">${btn('📦 Merkitse materiaalit luovutetuksi','wo-action',wo.id+'|mat_done','prim full sm')}</div>`;
+
+  return `<div class="wo-card">
+    <div class="wo-head">
+      <div class="wo-status-dot" style="background:${col}"></div>
+      <div class="wo-info">
+        <div class="wo-title">${E(wo.title)}</div>
+        <div class="wo-meta">${E(wo.stuName)} · ${wo.type==='course'?'Kurssisuoritus':'Oma työ'} · Luotu ${wo.created} · DL ${wo.due}</div>
+      </div>
+      ${sBdg(wo.status)}
+    </div>
+    <div class="wo-body">
+      <div style="font-size:12px;color:var(--sub);margin-bottom:10px">${E(wo.desc)}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        ${wo.mats.map(mid=>{const m=D.inv.find(x=>x.id===mid);return m?`<span style="background:color-mix(in srgb,var(--c1) 18%,#fff);border:1px solid color-mix(in srgb,var(--i1) 18%,transparent);border-radius:100px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--i1)">📦 ${E(m.n)}</span>`:''}).join('')}
+      </div>
+      <div style="display:flex;gap:0">
+        ${steps.map((s,i)=>`<div style="flex:1;text-align:center"><div style="width:100%;height:3px;background:${s.done?'var(--i1)':'var(--bor)'};transition:.3s"></div><div style="font-size:9px;color:${s.done?'var(--i1)':'var(--hint)'};margin-top:4px;font-weight:${s.done?700:400}">${E(s.lbl)}</div></div>`).join('')}
+      </div>
+      ${actions}
+    </div>
+  </div>`;
+}
+
+/* ─── T2: Oikeus ─── */
+function vT2(){
+  const r=D.role,me=D.stu[0];
+  const pOk=Object.values(D.peh[me.id]||{}).filter(v=>v==='ok').length;
+  let h='';
+  if(r==='student'){
+    h+=sg([stl('Ajokortti',me.sg?'✅ Voimassa':'⏳ Puuttuu',me.sg?'var(--i1)':'var(--i5)'),stl('Koneet',pOk+'/'+D.mach.length,'','perehdytetty')],2);
+    if(!me.sg)h+=nt('warn','<strong>Allekirjoita paja-ajokortti</strong> ennen itsenäistä työskentelyä. '+btn('✍ Allekirjoita →','open-modal','sign','sm prim'));
+    else h+=nt('ok','✅ Ajokortti voimassa. Tarkista alla mihin koneisiin sinulla on lupa.');
+    h+=card(`<h3>Omat koneoikeudet</h3>${D.mach.map(mc=>{const s=(D.peh[me.id]||{})[mc.id]||'none';const cc={ok:{bg:'var(--c1)',c:'var(--i1)',ic:'✓'},wait:{bg:'var(--c6)',c:'var(--i6)',ic:'⏳'},none:{bg:'var(--mist)',c:'var(--hint)',ic:'–'}};const{bg,c,ic}=cc[s]||cc.none;return row(`<div style="width:29px;height:29px;border-radius:7px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">⚙️</div>`,`<div class="rn">${E(mc.n)}</div><div class="rs">${rsk(mc.risk)} · ${E(mc.loc)}</div>`,`<div style="width:21px;height:21px;border-radius:50%;background:${bg};border:1.5px solid ${c};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${c}">${ic}</div>`);}).join('')}`);
+  } else {
+    h+=sg([stl('Opiskelijat',D.stu.length),stl('Ajokortteja',D.stu.filter(s=>s.sg).length+'/'+D.stu.length,D.stu.filter(s=>s.sg).length<D.stu.length?'var(--i5)':'var(--i1)')],2);
+    if(r==='paja'||r==='lehtori')h+=btn('+ Merkitse perehdytys','open-modal','pereh','prim full');
+    h+=card(`<h3>Perehdytysstatus</h3>${D.stu.map(s=>{const sp=D.peh[s.id]||{};const ok=Object.values(sp).filter(v=>v==='ok').length;return row(av(ini(s.n),'#2E5A72','#C8DFF0','sm'),`<div class="rn">${E(s.n)}</div><div class="rs" style="display:flex;gap:4px;margin-top:2px;flex-wrap:wrap">${bdg(s.sg?'ok':'wn',s.sg?'Ajokortti OK':'Ei ajokorttia')} ${bdg('in',ok+'/'+D.mach.length)}`,`${(r==='paja'||r==='lehtori')?btn('→','modal-pereh',s.id,'xs'):''}`)}).join('')}`);
+  }
+  return h;
+}
+
+/* ─── T3: Turvallisuus + Kemikaalit + Prosessit ─── */
+function vT3(){
+  const r=D.role;
+  const over=D.mach.find(m=>m.st==='overdue');
+  const crit=D.mach.filter(m=>m.st==='overdue'||m.st==='warning').length;
+  let h='';
+  h+=sg([stl('Koneet OK',D.mach.filter(m=>m.st==='ok').length+'/'+D.mach.length),stl('Huoltoa vaatii',crit,crit?'var(--i5)':'var(--i1)')],2);
+  if(over)h+=nt('warn',`⚙️ <strong>Huolto erääntynyt: ${E(over.n)}</strong> — ${over.u}/${over.m} h`);
+  h+=card(`<h3>Koneet — tila ja sijainti</h3>${D.mach.map(mc=>{const col=mc.st==='overdue'?'var(--i2)':mc.st==='warning'?'var(--i6)':'var(--i1)';return row('',`<div class="rn">${E(mc.n)}</div><div class="rs" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px"><span style="font-size:10px;color:var(--hint)">${E(mc.loc)}</span><div style="width:44px">${bar(mc.u,mc.m,col)}</div><span style="font-size:10px">${mc.u}/${mc.m} h</span>${rsk(mc.risk)}</div>`,`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">${sBdg(mc.st)}${(r==='paja'||r==='johto')?btn('Huolto','modal-maint',mc.id,'xs'):''}</div>`);}).join('')}`);
+  /* Kemikaalirekisteri */
+  h+=`<div style="font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 9px">⚗️ Kemikaalirekisteri — kaikki kemikaalit</div>`;
+  h+=D.chemicals.map(c=>`<div class="chem-card" data-action="open-chem" data-id="${c.id}">
+    <div class="chem-head">
+      <div style="flex:1"><div class="chem-name">${E(c.n)}</div><div class="chem-cas">CAS: ${E(c.cas)}</div></div>
+      <div class="hz-tags">${c.hz.map(z=>`<div class="hz-tag">${E(z)}</div>`).join('')}</div>
+      ${c.hood?bdg('in','Vetokaappi'):''}${c.pinkku?bdg('wn','PKR'):''}
+    </div>
+    <div class="chem-em">🚨 ${E(c.em.slice(0,80))}…</div>
+    <div style="font-size:11px;color:var(--hint);margin-top:5px">Max ${c.maxTemp?c.maxTemp+'°C':'—'} · 🛡 ${E(c.ppe.gloves)} · ${btn('Prosessiohje →','open-process',c.proc||'','xs')}</div>
+  </div>`).join('');
+  return h;
+}
+
+/* ─── T4: Laatu + Työloki ─── */
+function vT4(){
+  const r=D.role;
+  const logs=[
+    {d:'28.4.',tx:'Prototyyppi #3 — 4 mm seinämä OK. Poltto 980°C.',h:2.0,m:'Keramiikkauuni',ai:'Gluuriresepti T-2B: hylky −30%, säästö ~12 €/erä.'},
+    {d:'25.4.',tx:'Muottijärjestelmä: kipsi vs. puristus. Puristus voittaa sarjassa.',h:1.5,m:'—',ai:null},
+    {d:'22.4.',tx:'Pintakäsittely: 3 lasitusta. Kirkas toimii parhaiten.',h:3.0,m:'Keramiikkauuni',ai:null},
+  ];
+  let h='';
+  h+=sg([stl('Työtunteja YTD','48 h'),stl('Heräte avoimena',D.workOrders.filter(w=>w.status!=='done').length,'var(--i4)','työtilauksia')],2);
+  h+=btn('+ Työlokimerkintä','open-modal','work','prim full');
+  h+=card(`<h3>Työloki</h3>${logs.map(w=>`<div class="row" style="align-items:flex-start"><div class="rm"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:10.5px;color:var(--hint)">${w.d}</span><span style="font-size:10px;color:var(--hint)">⏱ ${w.h} h · ${E(w.m)}</span></div><div style="font-size:12.5px;margin-bottom:${w.ai?'7px':'0'}">${E(w.tx)}</div>${w.ai?`<div style="background:color-mix(in srgb,var(--c4) 18%,#fff);border-left:3px solid var(--i4);border-radius:0 7px 7px 0;padding:5px 8px;font-size:11px;color:var(--i4)">🤖 AI: ${E(w.ai)}</div>`:''}</div></div>`).join('')}`);
+  if(r==='lehtori'||r==='koord'||r==='johto'){
+    h+=card(`<h3>Ryhmän tilanne</h3>${D.stu.map(s=>row(av(ini(s.n),'#2E5A72','#C8DFF0','sm'),`<div class="rn">${E(s.n)}</div>`,`<div style="font-weight:700;font-size:13px;color:${s.b>50?'var(--i5)':'var(--text)'}">${f2(s.b)} €</div>`)  ).join('')}`);
+  }
+  return h;
+}
+
+/* ─── T5: Projektit + Tilakartta ─── */
+function vT5(){
+  let h='';
+  const projs=[
+    {n:'Baltic-sarja',s:'Manta Metropol',mat:'Keramiikka + hopea',st:'ok',prog:75},
+    {n:'Modulaarinen valaistus',s:'Mikael Järvinen',mat:'Alumiini + juottaminen',st:'ok',prog:50},
+    {n:'Biohajoava pakkaus',s:'Aino Virtanen',mat:'PLA',st:'wn',prog:20},
+  ];
+  h+=sg([stl('Aktiivisia projekteja',projs.length,'var(--i5)'),stl('Edistyminen keskim.',Math.round(projs.reduce((a,p)=>a+p.prog,0)/projs.length)+'%')],2);
+  h+=btn('+ Uusi projekti','open-modal','work','prim full');
+  h+=card(`<h3>Projektit</h3>${projs.map(p=>`<div class="row" style="align-items:flex-start"><div class="rm"><div class="rn">${E(p.n)}</div><div class="rs">${E(p.s)} · ${E(p.mat)}</div><div style="display:flex;align-items:center;gap:6px;margin-top:5px"><div style="width:80px;height:5px;background:var(--mist);border-radius:3px;overflow:hidden"><div style="width:${p.prog}%;height:100%;background:var(--i${p.st==='ok'?1:5});border-radius:3px"></div></div><span style="font-size:10px;color:var(--hint)">${p.prog}%</span></div></div>${bdg(p.st==='ok'?'ok':'wn',p.st==='ok'?'Hyvässä vauhdissa':'Alkanut')}</div>`).join('')}`);
+  /* Tilakartta */
+  h+=`<div style="font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 9px">🗺 Tilakartta — koneet, kemikaalit, työkalut</div>`;
+  h+=`<div class="space-map">${D.spaces.map(sp=>`<div class="sm-room"><div class="sm-room-lbl">${sp.ic} ${E(sp.n)}</div><div class="sm-items">${sp.items.map(it=>`<div class="sm-item ${it.t}" data-action="space-item" data-id="${E(it.n)}">${it.t==='mach'?'⚙️':it.t==='chem-loc'?'⚗️':it.t==='retake'?'♻️':'🔧'} ${E(it.n)}</div>`).join('')}</div></div>`).join('')}</div>`;
+  return h;
+}
+
+/* ─── T6: Talous ─── */
+function vT6(){
+  const r=D.role;
+  const tobill=D.stu.filter(s=>s.o>=50);
+  const val=D.inv.reduce((a,m)=>a+m.s*m.p,0);
+  let h='';
+  if(r==='student'){
+    const me=D.stu[0];
+    h+=sg([stl('Saldo',f2(me.b)+' €'),stl('Laskutettava',f2(me.o)+' €',me.o>=50?'var(--i5)':'')],2);
+    h+=nt('','<strong>Laskutusraja 50 €</strong> omille projekteille. Lunasta ennen poistumista pajalta.');
+  } else {
+    h+=sg([stl('Inventaario',f2(val)+' €'),stl('Laskutettavia',tobill.length,tobill.length?'var(--i5)':'var(--i1)','opiskelijaa')],2);
+    if(tobill.length)h+=tobill.map(s=>nt('warn',`<strong>${E(s.n)}</strong> — ${f2(s.o)} € · ${(r==='koord'||r==='johto')?btn('Muodosta lasku','bill-stu',s.id,'xs'):''}`)).join('');
+  }
+  h+=card(`<h3>Inventaario — reaaliaikainen</h3>${D.inv.map(m=>row('',`<div class="rn">${E(m.n)}</div><div class="rs">${E(m.loc)} · ${f2(m.p)} €/${m.u}</div>`,`<div style="display:flex;align-items:center;gap:7px;flex-shrink:0"><div style="width:48px">${bar(m.s,m.m*2)}</div><span style="font-size:12px;font-weight:700;white-space:nowrap">${m.s} ${m.u}</span>${sBdg(m.st)}</div>`)).join('')}`);
+  h+=card(`<h3>Hankinnat / ostopyynnöt</h3>${D.ord.map(o=>row('',`<div class="rn">${E(o.n)}</div><div class="rs">${E(o.s)} · ${E(o.req)}</div>`,`<div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span style="font-weight:700">${f2(o.p)} €</span>${sBdg(o.st)}${(r==='paja'||r==='koord'||r==='johto')&&o.st==='pending'?btn('✓','set-ord',o.id+'|arrived','xs'):''}</div>`)).join('')}`);
+  if(r==='koord'||r==='johto')
+    h+=card(`<h3>Opiskelijoiden kustannukset</h3>${D.stu.map(s=>row(av(ini(s.n),'#2E5A72','#C8DFF0','sm'),`<div class="rn">${E(s.n)}</div>`,`<div style="display:flex;gap:7px;align-items:center"><span style="font-weight:700">${f2(s.b)} €</span><span style="font-size:10px;color:${s.o>=50?'var(--i5)':'var(--hint)'}">oma ${f2(s.o)} €</span></div>`)).join('')}`);
+  return h;
+}
+
+const VIEWS=[vT1,vT2,vT3,vT4,vT5,vT6];
+
+/* ════════════════════════════════════════════
+   MODAALIT
+════════════════════════════════════════════ */
+function openM(type,id){
+  const mb=document.getElementById('mb');
+  const E2=s=>String(s||'').replace(/"/g,'&quot;');
+  let html='';
+
+  if(type==='cog'){
+    const v=calcCog();const col=v>85?'#C00':v>70?'#B85418':v>45?'#8A6A1E':'#2C6450';
+    const items=[
+      {lbl:'Avoimia työtilauksia',val:D.workOrders.filter(w=>w.status!=='done').length,max:5,unit:'kpl',w:14},
+      {lbl:'Kriittisiä varasto-hälytyksiä',val:D.inv.filter(i=>i.st==='critical').length,max:3,unit:'kpl',w:10},
+      {lbl:'Vähissä olevia materiaaleja',val:D.inv.filter(i=>i.st==='low').length,max:4,unit:'kpl',w:8},
+      {lbl:'Koneen huoltoa vaatii',val:D.mach.filter(m=>m.st==='overdue'||m.st==='warning').length,max:3,unit:'kpl',w:10},
+    ];
+    html=`<div class="sh-title">🧠 Kognitiivinen kuorma</div>
+    <div class="nt info">Kognitiivinen kuorma kertoo monestako asiasta sinun pitää pitää kirjaa samanaikaisesti. Korkea kuorma lisää virheiden todennäköisyyttä.</div>
+    <div class="cog-detail">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:13px;font-weight:700">Kokonaiskuorma</div>
+        <div style="font-size:20px;font-weight:700;color:${col}">${v}%</div>
+      </div>
+      <div class="cog-meter"><div class="cog-meter-fill" style="width:${v}%;background:${col}"></div></div>
+      <div style="font-size:11px;color:var(--hint);margin-bottom:12px">${v<40?'✅ Hyvä — toimit selkeällä mielellä':v<70?'⚠️ Kohtalainen — priorisoi tärkeimmät':'🔴 Korkea — harkitse taukoa tai delegointia'}</div>
+      ${items.map(it=>`<div class="cog-item"><div style="flex:1">${E(it.lbl)}</div><div class="cog-item-val">${it.val}${it.unit==='kpl'?'/'+it.max:''} <span style="color:var(--hint)">(+${it.val*it.w}%)</span></div></div>`).join('')}
+    </div>
+    <div style="margin-top:14px;font-size:12.5px;color:var(--sub);line-height:1.6">
+      <strong>Vinkkejä kuorman vähentämiseen:</strong><br>
+      → Kuittaa tai delegoi työtilauksia<br>
+      → Tilaa kriittiset materiaalit ensin<br>
+      → Ota 5 min tauko tunnin välein — se lisää tarkkuutta
+    </div>`;
+  }
+  else if(type==='new-wo'){
+    html=`<div class="sh-title">📋 Uusi työtilaus</div>
+    <div class="nt info">Työtilaus käynnistää workflow-prosessin: lehtori kuittaa → pajamestari varaa materiaalit → työ alkaa.</div>
+    <div class="field"><label>Työn nimi</label><input id="wo-title" placeholder="esim. Baltic-sarja — hopearunko"></div>
+    <div class="field"><label>Tyyppi</label><select id="wo-type"><option value="course">Kurssisuoritus</option><option value="personal">Oma projekti (laskutetaan)</option></select></div>
+    <div class="field"><label>Kuvaus</label><textarea id="wo-desc" placeholder="Mitä teet? Minkä kokoinen työ? Mitä tekniikkoja?"></textarea></div>
+    <div class="field"><label>Materiaalit (valitse tarvittavat)</label>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:5px">${D.inv.map(m=>`<label style="display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:100px;border:1.5px solid var(--bor);cursor:pointer;font-size:11px;font-weight:600;background:var(--cloud);transition:.15s"><input type="checkbox" name="wo-mat" value="${E2(m.id)}" style="accent-color:var(--ink)"> ${E(m.n)}</label>`).join('')}</div></div>
+    <div class="field"><label>Eräpäivä</label><input id="wo-due" type="date" value="${new Date(Date.now()+14*86400000).toISOString().slice(0,10)}"></div>
+    <div class="brow">${btn('Peruuta','close-modal','')} ${btn('📋 Lähetä työtilaus →','do-new-wo','','prim')}</div>`;
+  }
+  else if(type==='sign'){
+    html=`<div class="sh-title">✍ Paja-ajokortti</div>
+    <div style="background:color-mix(in srgb,var(--fill) 10%,#fff);border-radius:10px;padding:12px;font-size:12px;line-height:1.75;max-height:170px;overflow-y:auto;margin-bottom:13px">
+      <p style="margin-bottom:6px"><strong>1. Laitteiden käyttö:</strong> Vain henkilökohtaisen perehdytyksen jälkeen. Lupa on laitekohtainen.</p>
+      <p style="margin-bottom:6px"><strong>2. Suojaimet:</strong> Aina asianmukaiset suojaimet. Oma vastuu.</p>
+      <p style="margin-bottom:6px"><strong>3. Ilmoitusvelvollisuus:</strong> Vioista ja vaaratilanteista pajamestarille välittömästi.</p>
+      <p><strong>4. GDPR:</strong> Materiaalinkäyttöni ja työlokini tallentuvat MHKS-järjestelmään (AMK-laki 932/2014).</p>
+    </div>
+    <label style="display:flex;align-items:flex-start;gap:9px;margin-bottom:13px;cursor:pointer">
+      <input type="checkbox" id="sc" style="width:15px;height:15px;margin-top:2px;accent-color:var(--ink)" onchange="document.getElementById('sok').disabled=!this.checked">
+      <span style="font-size:12px;line-height:1.6">Olen lukenut sitoumuksen ja sitoudun noudattamaan sitä.</span>
+    </label>
+    <div class="brow">${btn('Peruuta','close-modal','')} <button class="btn prim" id="sok" data-action="do-sign" disabled style="flex:1">✅ Allekirjoita →</button></div>`;
+  }
+  else if(type==='pereh'){
+    html=`<div class="sh-title">🪪 Koneperehdytys</div>
+    <div class="nt ok">Perehdytys kirjautuu ajokorttiin välittömästi.</div>
+    <div class="field"><label>Opiskelija</label><select id="ps">${D.stu.map(s=>`<option value="${E2(s.id)}">${E(s.n)}</option>`).join('')}</select></div>
+    <div class="field"><label>Kone</label><select id="pm">${D.mach.map(m=>`<option value="${E2(m.id)}">${E(m.n)}</option>`).join('')}</select></div>
+    <div class="brow">${btn('Peruuta','close-modal','')} ${btn('✅ Merkitse →','do-pereh','','prim')}</div>`;
+  }
+  else if(type==='maint'){
+    const mc=D.mach.find(x=>x.id===id);D._maintId=id;if(!mc){showT('⚠️ Ei löydy');return;}
+    html=`<div class="sh-title">🔧 Huolto — ${E(mc.n)}</div>
+    <div class="nt ${mc.st==='overdue'?'warn':''}">${mc.u} h / ${mc.m} h · Viim. huolto: ${E(mc.last)}</div>
+    <div class="field"><label>Toimenpide</label><textarea id="mn" placeholder="Mitä tehtiin? Vaihdetut osat?"></textarea></div>
+    <div class="brow">${btn('Peruuta','close-modal','')} ${btn('✅ Nollaa käyttötunnit →','do-maint','','prim')}</div>`;
+  }
+  else if(type==='work'){
+    html=`<div class="sh-title">📓 Työlokimerkintä</div>
+    <div class="field"><label>Mitä teit?</label><textarea id="wt" placeholder="Kuvaile työvaihe, havainnot, ongelmat ja ratkaisut…"></textarea></div>
+    <div class="brow">${btn('Peruuta','close-modal','')} ${btn('💾 Tallenna →','do-work','','prim')}</div>`;
+  }
+  else if(type==='process'){
+    const proc=D.processes[id];if(!proc)return;
+    html=`<div class="sh-title">📋 ${E(proc.title)}</div>
+    <div class="nt info">${E(proc.intro)}</div>
+    <div id="proc-steps">${proc.steps.map((s,i)=>`
+      <div class="ps-step" id="ps-${i}">
+        <div class="ps-num" id="psn-${i}">${i+1}</div>
+        <div class="ps-content">
+          <div class="ps-title">${E(s.t)}</div>
+          <div class="ps-desc">${E(s.d)}</div>
+          ${s.safety?`<div class="ps-safety">⚠️ <strong>Turvallisuus:</strong> ${E(s.safety)}</div>`:''}
+          ${s.ppe&&s.ppe.length?`<div class="ps-ppe">${s.ppe.map(p=>`<div class="ppe-tag">🛡 ${E(p)}</div>`).join('')}</div>`:''}
+          <label class="ps-check"><input type="checkbox" onchange="checkStep(${i})"> Tehty</label>
+        </div>
+      </div>`).join('')}</div>
+    <div class="nt ok" style="margin-top:14px">Käy askeleet läpi järjestyksessä — kuittaa jokainen ennen seuraavaa.</div>`;
+  }
+  else if(type==='chem'){
+    const c=D.chemicals.find(x=>x.id===id);if(!c)return;
+    html=`<div class="sh-title">⚗️ ${E(c.n)}</div>
+    <div style="font-size:11px;font-family:var(--mono);color:var(--hint);margin-bottom:12px">CAS: ${E(c.cas)}</div>
+    <div class="nt danger">🚨 <strong>Hätätilanne:</strong> ${E(c.em)}</div>
+    ${c.maxTemp?`<div class="nt warn">🌡 <strong>Max lämpötila: ${c.maxTemp}°C</strong> — älä ylitä. Käytä vesihaude, ei avotuli.</div>`:''}
+    ${c.hood?`<div class="nt info">💨 <strong>Vetokaappi pakollinen</strong> — varmista vetokaappi ennen työn aloitusta.</div>`:''}
+    <div style="margin-top:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sub);margin-bottom:8px">Tarvittavat suojaimet</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        ${Object.entries(c.ppe).filter(([k,v])=>v).map(([k,v])=>`<div class="ppe-tag">🛡 ${E(v)}</div>`).join('')}
+      </div>
+    </div>
+    <div style="margin-top:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sub);margin-bottom:6px">Käyttöohjeet</div>
+    <div style="font-size:12.5px;color:var(--sub);line-height:1.6">${E(c.info)}</div></div>
+    <div style="margin-top:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sub);margin-bottom:6px">Säilytys</div>
+    <div style="font-size:12.5px;color:var(--sub)">${E(c.store)}</div></div>
+    ${c.proc?`<div style="margin-top:14px">${btn('📋 Avaa prosessiohje →','open-process',c.proc,'prim full')}</div>`:''}`;
+  }
+
+  document.getElementById('mb').innerHTML=html;
+  document.getElementById('ov').classList.add('open');
+  setTimeout(()=>{const el=document.querySelector('#sh select,#sh input,#sh textarea');if(el)el.focus();},80);
+}
+
+function closeM(){document.getElementById('ov').classList.remove('open')}
+
+function checkStep(i){
+  const el=document.getElementById('ps-'+i);const num=document.getElementById('psn-'+i);
+  if(el&&num){el.style.opacity='.6';num.style.background='color-mix(in srgb,var(--c1) 40%,#fff)';num.style.color='var(--i1)';num.style.borderColor='var(--i1)';}
+}
+
+/* ════════════════════════════════════════════
+   ACTIONS
+════════════════════════════════════════════ */
+function doNewWO(){
+  const title=document.getElementById('wo-title')?.value?.trim();
+  const desc=document.getElementById('wo-desc')?.value?.trim();
+  const type=document.getElementById('wo-type')?.value;
+  const due=document.getElementById('wo-due')?.value;
+  const mats=[...document.querySelectorAll('input[name="wo-mat"]:checked')].map(el=>el.value);
+  if(!title){showT('⚠️ Anna työn nimi');return;}
+  const me=D.stu[0];
+  const wo={id:'wo'+Date.now(),stu:me.id,stuName:me.n,type,title,mats,
+    status:type==='course'?'waiting_leh':'waiting_paja',
+    lehOk:type!=='course',pajaOk:false,matDone:false,
+    desc:desc||'',created:new Date().toLocaleDateString('fi-FI'),due:due||'—'};
+  D.workOrders.unshift(wo);
+  closeM();showT('📋 Työtilaus lähetetty!');
+  LOG.add('ok','Työtilaus luotu',`${me.n}: ${title} — ${type==='course'?'odottaa lehtoria':'odottaa pajamestaria'}`);
+  updateCog();setTahko(D.tahko);
+}
+
+function doWOAction(data){
+  const[id,act]=data.split('|');const wo=D.workOrders.find(x=>x.id===id);if(!wo)return;
+  if(act==='approve_leh'){wo.lehOk=true;wo.status='waiting_paja';showT('✓ Hyväksytty — siirtyy pajamestarille');LOG.add('ok','Työtilaus hyväksytty (lehtori)',wo.title);}
+  else if(act==='reject_leh'){wo.status='done';showT('✕ Hylätty');LOG.add('warn','Työtilaus hylätty (lehtori)',wo.title);}
+  else if(act==='approve_paja'){wo.pajaOk=true;wo.status='active';showT('✓ Hyväksytty — materiaalit varattavissa');LOG.add('ok','Työtilaus hyväksytty (pajamestari)',wo.title);}
+  else if(act==='reject_paja'){wo.status='done';showT('✕ Hylätty');LOG.add('warn','Työtilaus hylätty (pajamestari)',wo.title);}
+  else if(act==='mat_done'){
+    wo.matDone=true;wo.status='done';
+    const stu=D.stu.find(s=>s.id===wo.stu);
+    wo.mats.forEach(mid=>{
+      const m=D.inv.find(x=>x.id===mid);if(!m)return;
+      const amt=m.u==='g'?20:m.u==='m'?1:m.u==='dl'?1:0.5;
+      const tot=parseFloat((m.p*amt*1.15).toFixed(2));
+      m.s=parseFloat((m.s-amt).toFixed(2));
+      if(m.s<0)m.s=0;
+      const ms=m.s,mm=m.m;
+      m.st=ms<=0?'critical':ms<=(mm*0.5)?'critical':ms<=mm?'low':'ok';
+      if(stu&&wo.type==='personal'){stu.b=parseFloat((stu.b+tot).toFixed(2));stu.o=parseFloat((stu.o+tot).toFixed(2));}
+      D.txn.unshift({d:'Nyt',n:m.n,q:`${amt} ${m.u}`,c:wo.type==='course',t:tot});
+    });
+    showT('📦 Materiaalit luovutettu — inventaario päivitetty');
+    LOG.add('ok','Materiaalit luovutettu ja inventaario päivitetty',wo.stuName+': '+wo.title);
+  }
+  updateCog();setTahko(D.tahko);
+}
+
+function doSign(){const me=D.stu[0];if(!me)return;me.sg=true;closeM();showT('✅ Paja-ajokortti aktivoitu!');LOG.add('ok','Paja-ajokortti allekirjoitettu',me.n);setTahko(D.tahko);}
+function doPereh(){const sEl=document.getElementById('ps'),mEl=document.getElementById('pm');if(!sEl||!mEl)return;if(!D.peh[sEl.value])D.peh[sEl.value]={};D.peh[sEl.value][mEl.value]='ok';const sn=D.stu.find(s=>s.id===sEl.value)?.n||sEl.value;const mn=D.mach.find(m=>m.id===mEl.value)?.n||mEl.value;closeM();showT(`✅ Perehdytys — ${sn} · ${mn}`);LOG.add('ok','Perehdytys merkitty',sn+' → '+mn);setTahko(D.tahko);}
+function doMaint(){const mc=D.mach.find(x=>x.id===D._maintId);if(!mc)return;mc.u=0;mc.st='ok';mc.last=new Date().toLocaleDateString('fi-FI');closeM();showT('✅ Huolto merkitty');LOG.add('ok','Kone huollettu',mc.n);setTahko(D.tahko);}
+function doWork(){const el=document.getElementById('wt');if(!el?.value?.trim()){showT('⚠️ Kirjoita ensin');return;}closeM();showT('✅ Työloki tallennettu');LOG.add('ok','Työlokimerkintä',el.value.slice(0,80));}
+function setOrd(ti){const[id,st]=ti.split('|');const o=D.ord.find(x=>x.id===id);if(o)o.st=st;showT(st==='arrived'?'✅ Tilaus hyväksytty':'❌ Hylätty');LOG.add(st==='arrived'?'ok':'warn','Ostopyyntö '+(st==='arrived'?'hyväksytty':'hylätty'),o?.n);setTahko(D.tahko);}
+function billStu(id){const s=D.stu.find(x=>x.id===id);if(!s)return;showT(`✅ Lasku muodostettu — ${s.n}`);LOG.add('gold','Lasku muodostettu',`${s.n} — ${f2(s.o)} €`);}
+
+/* ════════════════════════════════════════════
+   LOG & API
+════════════════════════════════════════════ */
+function openLog(){LOG.render();document.getElementById('t-ov').classList.add('open')}
+function closeLog(){document.getElementById('t-ov').classList.remove('open')}
+
+/* ════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════ */
+let _tt;
+function showT(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2600);}
+
+/* ════════════════════════════════════════════
+   EVENTS
+════════════════════════════════════════════ */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-action]');if(!el)return;
+  e.preventDefault();e.stopPropagation();
+  const a=el.dataset.action,id=el.dataset.id||'';
+  ({
+    'login':       ()=>login(id),
+    'tahko':       ()=>setTahko(+el.dataset.t),
+    'open-modal':  ()=>openM(id),
+    'open-chem':   ()=>openM('chem',id),
+    'open-process':()=>openM('process',id),
+    'close-modal': ()=>closeM(),
+    'modal-maint': ()=>openM('maint',id),
+    'modal-pereh': ()=>openM('pereh',id),
+    'wo-action':   ()=>doWOAction(id),
+    'do-new-wo':   ()=>doNewWO(),
+    'do-sign':     ()=>doSign(),
+    'do-pereh':    ()=>doPereh(),
+    'do-maint':    ()=>doMaint(),
+    'do-work':     ()=>doWork(),
+    'set-ord':     ()=>setOrd(id),
+    'bill-stu':    ()=>billStu(id),
+    'space-item':  ()=>showT('📍 '+id),
+  }[a]||function(){})();
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('ov').classList.contains('open')){closeM();return;}
+    if(document.getElementById('t-ov').classList.contains('open')){closeLog();return;}
+  }
+});
+document.getElementById('ov').addEventListener('click',e=>{if(e.target===document.getElementById('ov'))closeM();});
+document.getElementById('t-ov').addEventListener('click',e=>{if(e.target===document.getElementById('t-ov'))closeLog();});
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+(function init(){
+  const LG = "data:image/png;base64,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";
+  document.querySelectorAll('#ll,#al').forEach(el=>el.src=LG);
+
+  const defs=[
+    {id:'student',ic:'📐',n:'Opiskelija',   w:'Manta Metropol · TXX17S1',   d:'Työtilaukset · ajokortti · projektit', col:'#2E5A72'},
+    {id:'paja',   ic:'🔧',n:'Pajamestari', w:'Mestari Geppetto · Arabia',   d:'Materiaalit · koneet · perehdytys',    col:'#2C6450'},
+    {id:'lehtori',ic:'📚',n:'Lehtori',     w:'Mika Ihanus · Ind.Design',    d:'Opiskelijat · hyväksynnät · AI',       col:'#8A6A1E'},
+    {id:'koord',  ic:'📊',n:'Koordinaattori',w:'Tera Tarkka · Koulutus',    d:'Hallinto · laskutus · GDPR',          col:'#5B3F70'},
+    {id:'johto',  ic:'✦', n:'Johto',       w:'Jalo Johto · Muotoilun Pajat',d:'Strategia · budjetti · kokonaisuus',  col:'#8A3D22',wide:true},
+  ];
+  document.getElementById('login-grid').innerHTML=defs.map(r=>`
+    <button class="r-card${r.wide?' wide':''}" data-action="login" data-id="${r.id}" style="border-top:3px solid ${r.col}22">
+      ${r.wide?`<div class="r-ic">${r.ic}</div><div>`:''}
+      ${!r.wide?`<div class="r-ic">${r.ic}</div>`:''}
+      <div class="r-n" style="color:${r.col}">${r.n}</div>
+      <div class="r-w">${r.w}</div>
+      <div class="r-d">${r.d}</div>
+      ${r.wide?`</div>`:''}
+    </button>`).join('');
+
+  renderIntro();
+})();
+</script>
+</body>
+</html>
