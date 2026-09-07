@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metropolia – SolidWorks perusteet | Oppimista ohjaava osaamiskoe</title>
+<style>
+  :root{
+    --orange:#ea580c; --orange2:#c2410c; --bg:#f8fafc; --card:#ffffff; --text:#1e293b;
+    --muted:#64748b; --line:#e2e8f0; --green:#15803d; --amber:#b45309; --red:#b91c1c;
+    --blue:#1d4ed8; --indigo:#4338ca;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}
+  header{background:var(--orange);color:white;padding:22px 18px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+  .wrap{max-width:980px;margin:0 auto}
+  h1{margin:0;font-size:1.55rem}
+  h2{margin-top:0}
+  .sub{opacity:.92;margin-top:5px;font-size:.95rem}
+  main{padding:24px 16px 48px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 3px 12px rgba(15,23,42,.05)}
+  .privacy{background:#eff6ff;border-color:#bfdbfe}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:700px){.grid{grid-template-columns:1fr}}
+  label{font-size:.86rem;font-weight:700;color:#475569;display:block;margin-bottom:6px}
+  input[type=text]{width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:9px;font-size:1rem}
+  button{border:0;border-radius:9px;padding:11px 16px;font-weight:700;cursor:pointer;font-size:.95rem}
+  .primary{background:var(--orange);color:white}
+  .primary:hover{background:var(--orange2)}
+  .secondary{background:white;color:#334155;border:1px solid #cbd5e1}
+  .green{background:var(--green);color:white}
+  .blue{background:var(--blue);color:white}
+  .hidden{display:none!important}
+  .topline{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px}
+  .progress{height:10px;background:#e2e8f0;border-radius:99px;overflow:hidden;flex:1}
+  .bar{height:100%;width:0;background:var(--orange);transition:width .2s}
+  .badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:.75rem;font-weight:800;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
+  .level{margin-left:8px;background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+  .qtitle{font-size:1.15rem;font-weight:800;margin:12px 0 16px}
+  .option{display:block;border:1px solid var(--line);border-radius:10px;padding:12px 12px;margin:9px 0;cursor:pointer;font-weight:500}
+  .option:hover{background:#f8fafc}
+  .option input{margin-right:10px}
+  .actions{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+  .feedback{margin-top:16px;padding:14px;border-radius:10px;border:1px solid}
+  .feedback.ok{background:#f0fdf4;border-color:#bbf7d0;color:#14532d}
+  .feedback.hint{background:#fffbeb;border-color:#fde68a;color:#78350f}
+  .feedback.bad{background:#fef2f2;border-color:#fecaca;color:#7f1d1d}
+  .microtask{margin-top:10px;padding-top:10px;border-top:1px dashed currentColor}
+  .scorecircle{width:116px;height:116px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:white;font-size:1.4rem;font-weight:900;background:var(--green)}
+  .profile-row{margin:12px 0}
+  .profile-head{display:flex;justify-content:space-between;font-size:.88rem;font-weight:700;margin-bottom:5px}
+  .profilebar{height:10px;border-radius:99px;background:#e2e8f0;overflow:hidden}
+  .profilefill{height:100%;background:var(--orange)}
+  textarea{width:100%;min-height:150px;border:1px solid #cbd5e1;border-radius:10px;padding:12px;font-family:monospace;font-size:.85rem}
+  .small{font-size:.83rem;color:var(--muted)}
+  .cert{border:5px solid var(--orange);padding:32px;text-align:center;background:white}
+  .cert h2{font-size:2rem;margin-bottom:4px}
+  .cert .name{font-size:1.55rem;font-weight:800;margin:18px 0 6px}
+  .cert .grade{display:inline-block;background:#ffedd5;color:#9a3412;padding:7px 12px;border-radius:999px;font-weight:800;margin-top:12px}
+  @media print{
+    body *{visibility:hidden}
+    #certificateModal,#certificateModal *{visibility:visible}
+    #certificateModal{position:absolute;inset:0;background:white;padding:0}
+    .no-print{display:none!important}
+    .cert{margin:0;border:5px solid var(--orange)}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Metropolia Ammattikorkeakoulu – SolidWorks perusteet</h1>
+    <div class="sub">Oppimista ohjaava osaamiskoe: käyttöliittymä, Sketch, Part, Assembly ja Drawing</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="startCard" class="card">
+    <h2>Osaamiskoe – 40 kysymystä</h2>
+    <p>Tämä koe mittaa muistamisen lisäksi mallinnusajattelua, työkalujen tarkoituksenmukaista valintaa, parametrisuutta, kokoonpanon vapausasteita ja mallinnusstrategiaa.</p>
+    <div class="card privacy">
+      <strong>Tietosuoja:</strong> nimi ja opiskelijanumero käsitellään vain tässä selaimessa raportin ja sertifikaatin muodostamiseksi.
+      Tämä HTML-versio ei lähetä vastauksia, nimiä tai opiskelijanumeroa ulkopuoliselle palvelimelle.
+    </div>
+    <div class="grid">
+      <div><label for="studentName">Etu- ja sukunimi</label><input id="studentName" type="text" placeholder="Opiskelijan nimi"></div>
+      <div><label for="studentId">Opiskelijanumero</label><input id="studentId" type="text" placeholder="Esim. HD12345"></div>
+    </div>
+    <div style="margin-top:16px">
+      <button class="primary" onclick="startQuiz()">Aloita koe</button>
+    </div>
+    <p class="small" style="margin-top:14px">Pisteet painottuvat osaamisen mukaan: tunnistaminen ja ymmärtäminen 1 p, soveltaminen 2 p, ongelmanratkaisu 3 p. Väärästä ensimmäisestä vastauksesta saat vihjeen ja toisen yrityksen.</p>
+  </section>
+
+  <section id="quiz" class="hidden">
+    <div class="card">
+      <div class="topline">
+        <strong>Kysymys <span id="qnum">1</span> / 40</strong>
+        <div class="progress"><div id="bar" class="bar"></div></div>
+      </div>
+      <div>
+        <span id="categoryBadge" class="badge"></span>
+        <span id="levelBadge" class="badge level"></span>
+      </div>
+      <div id="qtitle" class="qtitle"></div>
+      <div id="options"></div>
+      <div id="feedback" class="hidden"></div>
+      <div class="actions">
+        <button id="prevBtn" class="secondary" onclick="prevQuestion()">Edellinen</button>
+        <div>
+          <button id="checkBtn" class="primary" onclick="checkAnswer()">Tarkista vastaus</button>
+          <button id="nextBtn" class="green hidden" onclick="nextQuestion()">Seuraava</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" class="hidden">
+    <div class="card">
+      <div id="scoreCircle" class="scorecircle">0 %</div>
+      <h2 style="text-align:center">Osaamisprofiili</h2>
+      <p id="summary" style="text-align:center"></p>
+      <div id="profile"></div>
+    </div>
+
+    <div class="card">
+      <h2>Henkilökohtainen jatkoharjoittelu</h2>
+      <div id="recommendations"></div>
+    </div>
+
+    <div class="card">
+      <h2>Google Classroom -palautusraportti</h2>
+      <p class="small">Kopioi raportti Classroomin tehtäväpalautukseen. Tämä versio ei lähetä raporttia automaattisesti.</p>
+      <textarea id="classroomReport" readonly></textarea>
+      <div style="margin-top:10px"><button class="blue" onclick="copyReport()">Kopioi raportti</button></div>
+    </div>
+
+    <div class="card">
+      <div class="actions">
+        <button class="secondary" onclick="restartQuiz()">Tee koe uudelleen / korota</button>
+        <button id="certBtn" class="green hidden" onclick="showCertificate()">Näytä sertifikaatti</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="certificateModal" class="hidden" style="position:fixed;inset:0;background:rgba(15,23,42,.75);padding:24px;overflow:auto;z-index:10">
+  <div class="wrap">
+    <div class="cert">
+      <div class="no-print" style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="secondary" onclick="window.print()">Tulosta / Tallenna PDF</button>
+        <button class="secondary" onclick="closeCertificate()">Sulje</button>
+      </div>
+      <h2>METROPOLIA AMMATTIKORKEAKOULU</h2>
+      <div style="letter-spacing:.12em;color:#9a3412;font-weight:800">SOLIDWORKS PERUSTEET – OSAAMISSERTIFIKAATTI</div>
+      <p style="margin-top:28px">Tämä todistus osoittaa, että</p>
+      <div id="certName" class="name"></div>
+      <div id="certId" class="small"></div>
+      <p style="max-width:700px;margin:22px auto">on suorittanut hyväksytysti SolidWorksin kolmen peruspäivän osaamiskokeen, joka kattaa käyttöliittymän, Sketch- ja Part-mallinnuksen, Assembly-kokoonpanot, Drawing-piirustukset sekä mallinnusstrategian.</p>
+      <div id="certGrade" class="grade"></div>
+      <p id="certDate" class="small" style="margin-top:24px"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+{n:1,cat:"Käyttöliittymä & Sketch",level:"Tunnistan",w:1,q:"Saat tehtäväksi mallintaa yksinkertaisen suorakulmaisen kappaleen. Mikä on järkevin ensimmäinen vaihe?",o:["Extruded Boss/Base","Valitse tarkoituksenmukainen perustaso ja aloita Sketch","Assembly","Drawing"],a:1,h:"Ajattele, mitä 3D-piirre tarvitsee lähtötiedokseen.",e:"Useimmat peruspiirteet rakennetaan ensin skissistä valitulle tasolle.",t:"Avaa uusi Part ja kokeile Sketchin aloittamista Front-, Top- ja Right-tasoilta."},
+{n:2,cat:"Käyttöliittymä & Sketch",level:"Ymmärrän",w:1,q:"Miksi Front-, Top- tai Right-tason valinta kannattaa tehdä harkiten?",o:["Se määrää materiaalin","Se määrää tiedoston koon","Se vaikuttaa mallin orientaatioon ja myöhempien piirteiden rakentamiseen","Sillä ei ole käytännön merkitystä"],a:2,h:"Mieti, miten ensimmäinen skissi näkyy myöhemmin Front- ja Top-näkymissä.",e:"Perustason valinta vaikuttaa mallin loogiseen orientaatioon ja myöhempiin referensseihin.",t:"Tee sama suorakulmainen kappale kahdelle eri perustasolle ja vertaile näkymiä."},
+{n:3,cat:"Käyttöliittymä",level:"Tunnistan",w:1,q:"Mitä FeatureManager Design Tree ensisijaisesti kertoo?",o:["Kappaleen hinnan","Mallin rakenteen ja siihen tehdyt piirteet","Vain tiedostonimen","Tulostusasetukset"],a:1,h:"Katso SolidWorksin vasenta reunaa: siinä näkyy mallin historia.",e:"FeatureManager näyttää skissit, piirteet, referenssit ja mallin rakenteen.",t:"Valitse mallistasi kolme eri piirteitä ja etsi ne FeatureManagerista."},
+{n:4,cat:"Sketch",level:"Tunnistan",w:1,q:"Sininen skissiviiva tarkoittaa tavallisesti:",o:["Virhettä","Että geometrialla on vielä vapausasteita","Että skissi on valmis","Että geometria poistetaan seuraavassa vaiheessa"],a:1,h:"Vertaa sinistä ja mustaa skissigeometriaa.",e:"Sininen geometria on yleensä Under Defined eli sillä on vielä liikkumavaraa.",t:"Piirrä viiva ilman mittoja ja kokeile vetää sen päätepisteitä."},
+{n:5,cat:"Sketch",level:"Tunnistan",w:1,q:"Musta skissigeometria kertoo yleensä, että:",o:["Skissi on Fully Defined","Skissi on lukittu tiedostoksi","Geometria on 3D","Kappaleen materiaali on määritelty"],a:0,h:"Musta liittyy skissin vapausasteisiin.",e:"Fully Defined -skississä vapausasteet on poistettu mitoilla ja suhteilla.",t:"Mitoita yksinkertainen suorakulmio niin, että kaikki geometria muuttuu mustaksi."},
+{n:6,cat:"Sketch",level:"Ymmärrän",w:1,q:"Miksi Fully Defined -skissi on yleensä parempi kuin silmämääräisesti oikean näköinen skissi?",o:["Se renderöityy paremmin","Se vie vähemmän levytilaa","Sen geometrinen käyttäytyminen on hallittu myös muutosten jälkeen","SolidWorks ei hyväksy sinisiä viivoja"],a:2,h:"Ajattele tilannetta, jossa yksi mitta muuttuu myöhemmin.",e:"Täysin määritelty geometria käyttäytyy ennakoitavammin suunnittelumuutoksissa.",t:"Muuta yhtä Fully Defined -skissin mittaa ja seuraa geometrian päivittymistä."},
+{n:7,cat:"Sketch",level:"Tunnistan",w:1,q:"Mitä Smart Dimension tekee?",o:["Luo automaattisesti 3D-mallin","Määrittää geometrialle mittoja","Liittää kaksi Partia","Tekee piirustusarkin"],a:1,h:"Työkalun nimessä oleva Dimension viittaa mittoihin.",e:"Smart Dimension on skissien ja piirustusten keskeinen mitoitustyökalu.",t:"Mitoita suorakulmion leveys ja korkeus Smart Dimensionilla."},
+{n:8,cat:"Sketch",level:"Sovellan",w:2,q:"Ympyrän keskipisteen pitää pysyä origossa. Mikä on hyvä mallinnustapa?",o:["Sijoita se silmämääräisesti","Luo keskipisteelle geometrinen suhde origoon","Käytä Filletiä","Lukitse koko tiedosto"],a:1,h:"Tarvitset geometrisen suhteen kahden pisteen välille.",e:"Coincident-suhde origoon tekee sijainnista parametrisesti hallitun.",t:"Piirrä ympyrä ja sido sen keskipiste origoon."},
+{n:9,cat:"Part",level:"Tunnistan",w:1,q:"Sinulla on suljettu suorakulmainen skissi ja haluat siitä 30 mm paksun kappaleen. Mitä käytät?",o:["Extruded Boss/Base","Extruded Cut","Mate","Section View"],a:0,h:"Tavoite on lisätä materiaalia skissin perusteella.",e:"Extruded Boss/Base pursottaa suljetun skissin 3D-tilavuudeksi.",t:"Pursota 50 × 30 mm suorakulmio 30 mm paksuksi."},
+{n:10,cat:"Part",level:"Ymmärrän",w:1,q:"Mitä olennaista eroa on Boss/Base- ja Cut-toiminnoilla?",o:["Toinen lisää ja toinen poistaa materiaalia","Toinen toimii vain Drawingissa","Cut toimii vain ympyröille","Niillä ei ole eroa"],a:0,h:"Ajattele materiaalin määrää ennen ja jälkeen komennon.",e:"Boss/Base lisää tilavuutta, Cut poistaa sitä.",t:"Tee kappaleeseen ensin Boss ja sen jälkeen Cut samalla skissimuodolla."},
+{n:11,cat:"Sketch & Part",level:"Sovellan",w:2,q:"Kappaleessa on reikä, jonka paikka saattaa myöhemmin muuttua. Mikä on parempi tapa?",o:["Sijoittaa reikä silmämääräisesti","Mitoittaa ja sitoa reiän paikka tarkoituksellisesti","Fixata koko skissi","Tehdä reikä Drawingissa"],a:1,h:"Suunnittelumuutos on helpompi, jos sijainti on parametrinen.",e:"Mitat ja relaatiot tekevät reiän sijainnista hallitun ja muokattavan.",t:"Sijoita reikä kahdella reunamitalla ja muuta myöhemmin toinen mitoista."},
+{n:12,cat:"Parametrisuus",level:"Ymmärrän",w:1,q:"Muutat yhden mitan arvosta 40 mm arvoon 60 mm ja kappale päivittyy hallitusti. Mitä tämä osoittaa?",o:["Renderöinti toimii","Parametrisen mallinnuksen periaate toimii","Assembly on valmis","Materiaali on määritelty"],a:1,h:"Mitta toimii mallin ohjaavana parametrina.",e:"Parametrisessa mallissa geometrian käyttäytymistä ohjataan mitoilla ja suhteilla.",t:"Muuta peruspiirteen päämittaa ja tarkista päivittyvätkö myöhemmät piirteet."},
+{n:13,cat:"Part",level:"Tunnistan",w:1,q:"Haluat pyöristää kappaleen terävän reunan. Ensisijainen työkalu on:",o:["Shell","Fillet","Mate","Linear Pattern"],a:1,h:"Pyöristys liittyy reunan säteeseen.",e:"Fillet luo pyöristyksen valittuun reunaan tai reunajoukkoon.",t:"Lisää kappaleeseen 3 mm Fillet ja muuta sen säteeksi 8 mm."},
+{n:14,cat:"Part",level:"Tunnistan",w:1,q:"Haluat viistää reunan esimerkiksi 2 × 45°. Käytät:",o:["Fillet","Chamfer","Mirror","Shell"],a:1,h:"Viiste ei ole pyöristys.",e:"Chamfer tekee reunaan viisteen etäisyys- ja/tai kulmaehdoilla.",t:"Vertaa samaan reunaan Fillet- ja Chamfer-ratkaisua."},
+{n:15,cat:"Part",level:"Sovellan",w:2,q:"Kappaleessa tarvitaan kahdeksan samanlaista reikää tasaisin välein suorassa rivissä. Paras lähtökohta on:",o:["Piirtää kahdeksan reikää erikseen","Tehdä yksi reikä ja käyttää Linear Patternia","Käyttää Assemblyä","Käyttää Drawingia"],a:1,h:"Toistuva geometria kannattaa tehdä yhdestä ohjaavasta piirteestä.",e:"Linear Pattern tekee hallitun lineaarisen kopiosarjan yhdestä peruspiirteestä.",t:"Tee yksi reikä ja luo siitä 8 kappaleen Linear Pattern."},
+{n:16,cat:"Part",level:"Sovellan",w:2,q:"Reiät sijaitsevat tasaisesti ympyrän kehällä. Tarkoituksenmukainen toiminto on:",o:["Linear Pattern","Circular Pattern","Shell","Section View"],a:1,h:"Toisto tapahtuu akselin ympäri.",e:"Circular Pattern monistaa piirteen akselin ympäri.",t:"Tee 6 reiän Circular Pattern 360° alueelle."},
+{n:17,cat:"Part",level:"Sovellan",w:2,q:"Kappale on täysin symmetrinen keskitason suhteen. Mikä toiminto voi vähentää turhaa mallinnustyötä?",o:["Mirror","Exploded View","Balloon","BOM"],a:0,h:"Symmetria tarkoittaa peilausta.",e:"Mirror hyödyntää olemassa olevaa geometriaa symmetrisen vastapuolen muodostamiseen.",t:"Mallinna vain kappaleen toinen puoli ja peilaa tarvittava piirre keskitason yli."},
+{n:18,cat:"Part",level:"Sovellan",w:2,q:"Milloin Revolved Boss/Base on erityisen luonteva ratkaisu?",o:["Suorakulmaisen levyn tekemiseen","Akselisymmetrisen kappaleen tekemiseen profiilista","Kokoonpanon tekemiseen","PDF:n luomiseen"],a:1,h:"Revolve tarkoittaa pyöräyttämistä akselin ympäri.",e:"Revolve sopii akselisymmetrisiin kappaleisiin, kuten akseleihin, holkkeihin ja kiekkoihin.",t:"Piirrä puolikas akseliprofiili ja pyöräytä se Centerlinen ympäri."},
+{n:19,cat:"Part",level:"Tunnistan",w:1,q:"Mikä skississä on erityisen tärkeä Revolve-toiminnolle?",o:["Materiaali","Pyörähdysakseli / Centerline","BOM","Balloon"],a:1,h:"Profiilin pitää pyöriä jonkin ympäri.",e:"Revolve tarvitsee pyörähdysakselin, jota käytetään profiilin kiertämiseen.",t:"Kokeile vaihtaa pyörähdysakselia ja tarkkaile muodon muuttumista."},
+{n:20,cat:"Part",level:"Sovellan",w:2,q:"Haluat tehdä umpinaisesta kappaleesta tasapaksuseinäisen kotelon. Mitä kokeilet ensimmäisenä?",o:["Mirror","Mate","Shell","Projected View"],a:2,h:"Tavoite on onteloida kappale ja määrittää seinämän paksuus.",e:"Shell poistaa valittuja pintoja ja muodostaa tasapaksun kuorirakenteen.",t:"Tee laatikosta 2 mm seinämäpaksu kotelo Shell-komennolla."},
+{n:21,cat:"Mallinnusstrategia",level:"Ymmärrän",w:1,q:"Miksi yksi hyvin suunniteltu Pattern on yleensä parempi kuin kymmenen erikseen tehtyä samanlaista piirrettä?",o:["Se näyttää hienommalta FeatureManagerissa","Malli on loogisempi ja muutokset voidaan tehdä keskitetysti","SolidWorks ei salli erillisiä piirteitä","Pattern pienentää aina tiedostoa 90 %"],a:1,h:"Ajattele yhden peruspiirteen muuttamista myöhemmin.",e:"Pattern vähentää turhaa toistoa ja keskittää muutokset peruspiirteeseen.",t:"Muuta Patternin peruspiirrettä ja tarkkaile kaikkien instanssien päivittymistä."},
+{n:22,cat:"Mallinnusstrategia",level:"Sovellan",w:2,q:"Mallissa on 12 samanlaista reikää. Halkaisija pitää muuttaa 5 mm → 6 mm. Mikä rakenne helpottaa muutosta eniten?",o:["12 erillistä skissiä","Yksi hallittu peruspiirre + Pattern","12 Drawing-näkymää","12 erillistä Part-tiedostoa"],a:1,h:"Yksi lähtöpiirre voi ohjata kaikkia kopioita.",e:"Peruspiirteen muuttaminen päivittää Patternin instanssit automaattisesti.",t:"Muuta Patternin alkuperäisen reiän halkaisijaa."},
+{n:23,cat:"Mallinnusstrategia",level:"Ratkaisen",w:3,q:"FeatureManagerissa Fillet on tehty hyvin aikaisin ja myöhemmät piirteet riippuvat sen pinnoista. Mikä ongelma tästä voi syntyä?",o:["SolidWorks vaihtaa materiaalin","Myöhemmät piirteet voivat rikkoutua, jos geometria muuttuu","Assembly katoaa","Drawing muuttuu PDF:ksi"],a:1,h:"Mieti referenssien ketjua FeatureManagerissa.",e:"Varhaisiin, helposti muuttuviin pintoihin sidotut myöhemmät piirteet voivat menettää referenssinsä.",t:"Siirrä Fillet FeatureManagerissa myöhemmäksi ja tarkastele mallin riippuvuuksia."},
+{n:24,cat:"Mallinnusstrategia",level:"Ymmärrän",w:1,q:"Kumpi kuvaa parempaa parametrisen mallinnuksen ajattelua?",o:["Teen kappaleen mahdollisimman nopeasti oikean näköiseksi.","Rakennan mallin niin, että sen mittoja ja ominaisuuksia voidaan myöhemmin muuttaa hallitusti.","Teen kaikki muodot samaan skissiin.","Vältän mittojen käyttämistä."],a:1,h:"Parametrisuus liittyy muutosten hallintaan.",e:"Hyvä CAD-malli ei ole vain oikean näköinen, vaan tarkoituksellisesti ja muokattavasti rakennettu.",t:"Valitse vanha harjoitusmalli ja tunnista kolme kohtaa, jotka tekisit uudelleen paremmin parametrisesti."},
+{n:25,cat:"Mallinnusstrategia",level:"Sovellan",w:2,q:"Mallissa on täysin samanlainen geometria vasemmalla ja oikealla. Opiskelija mallintaa molemmat erikseen. Mitä suosittelisit tutkimaan?",o:["Shell","Mirror","BOM","Drawing"],a:1,h:"Geometria on symmetrinen.",e:"Mirror vähentää toistoa ja pitää symmetriset piirteet sidoksissa toisiinsa.",t:"Korvaa kaksi erillistä piirrettä yhdellä piirteellä ja Mirrorilla."},
+{n:26,cat:"Mallinnusstrategia",level:"Ratkaisen",w:3,q:"Mikä seuraavista kertoo parhaiten hyvin rakennetusta Part-mallista?",o:["FeatureManagerissa on mahdollisimman paljon piirteitä","Malli näyttää oikealta vain yhdestä suunnasta","Mallin rakenne vastaa kappaleen geometriaa ja muutokset käyttäytyvät ennakoitavasti","Kaikki mitat ovat samoja"],a:2,h:"Hyvä malli kestää muutoksia.",e:"Laadukas parametrinen malli heijastaa suunnittelutarkoitusta ja päivittyy ennakoitavasti.",t:"Muuta kolmea päämittaa omassa harjoitusmallissasi ja kirjaa, mikä rikkoutuu ja miksi."},
+{n:27,cat:"Assembly",level:"Ymmärrän",w:1,q:"Mikä Assemblyn perusidea on?",o:["Mallintaa kaikki osat yhdeksi Partiksi","Yhdistää erillisiä komponentteja hallituksi kokonaisuudeksi","Tehdä PDF","Mitoittaa skissi"],a:1,h:"Assembly rakentuu komponenteista.",e:"Assembly kokoaa Partit ja mahdolliset alikokoonpanot tuotteeksi.",t:"Luo uusi Assembly ja lisää siihen kaksi eri Part-tiedostoa."},
+{n:28,cat:"Assembly",level:"Sovellan",w:2,q:"Miksi ensimmäinen komponentti kannattaa sijoittaa kokoonpanossa hallitusti?",o:["Se muodostaa hyvän referenssin muulle kokoonpanolle","Muuten materiaali katoaa","Muuten Drawing ei avaudu","Sillä ei ole merkitystä"],a:0,h:"Muut komponentit suhteutetaan johonkin.",e:"Ensimmäinen hallittu komponentti toimii kokoonpanon vakaana lähtöreferenssinä.",t:"Vertaa kokoonpanoa, jossa ensimmäinen osa on Fixed, ja kokoonpanoa, jossa kaikki osat kelluvat."},
+{n:29,cat:"Assembly",level:"Sovellan",w:2,q:"Akselin pitää kulkea reiän keskilinjan kautta. Mikä Mate on luonteva?",o:["Distance","Concentric","Parallel","Tangent"],a:1,h:"Akselilla ja reiällä on yhteinen keskiakseli.",e:"Concentric kohdistaa sylinterimäiset pinnat tai pyöreät reunat samalle akselille.",t:"Liitä akseli reikään Concentric Mate -ehdolla ja tarkista, voiko akseli vielä liukua tai pyöriä."},
+{n:30,cat:"Assembly",level:"Sovellan",w:2,q:"Kahden tasopinnan pitää olla kiinni toisissaan. Mikä on todennäköinen ratkaisu?",o:["Coincident Mate","Circular Pattern","Fillet","Shell"],a:0,h:"Pintojen etäisyyden pitää olla nolla.",e:"Coincident Mate asettaa valitut geometriat samaan sijaintiin/kosketukseen.",t:"Tee Coincident Mate kahden tasopinnan välille ja kokeile jäljelle jääviä vapausasteita."},
+{n:31,cat:"Assembly",level:"Sovellan",w:2,q:"Osan pitää sijaita täsmälleen 25 mm toisesta pinnasta. Mitä käytät?",o:["Coincident","Distance Mate","Extrude","Mirror"],a:1,h:"Tarvitset numeerisesti määritellyn välimatkan.",e:"Distance Mate määrittää komponenttien välisen etäisyyden.",t:"Luo 25 mm Distance Mate ja muuta arvoksi 40 mm."},
+{n:32,cat:"Assembly",level:"Ratkaisen",w:3,q:"Osa näyttää olevan oikeassa paikassa mutta sitä pystyy edelleen liikuttamaan. Mitä tästä voidaan päätellä?",o:["Part on viallinen","Kaikkia tarvittavia vapausasteita ei ole rajoitettu","Drawing puuttuu","Materiaalia ei ole määritelty"],a:1,h:"Oikea sijainti ei vielä tarkoita Fully Defined -kokoonpanoa.",e:"Komponentilla voi olla jäljellä translatiivisia tai rotaation vapausasteita.",t:"Vedä komponenttia hiirellä ja päättele, mikä Mate poistaisi jäljellä olevan liikkeen."},
+{n:33,cat:"Assembly",level:"Ymmärrän",w:1,q:"Miksi kaikkia osia ei kannata vain Fixata paikalleen?",o:["Fix ei toimi SolidWorksissa","Mate-suhteet kuvaavat paremmin osien todellisia geometrisia suhteita ja liikettä","Fix poistaa osan","Fix muuttaa materiaalin"],a:1,h:"Kokoonpanon tarkoitus on kuvata komponenttien suhteita.",e:"Fix lukitsee osan, mutta Mate kertoo, miksi ja miten osat kuuluvat yhteen.",t:"Poista Fix yhdestä komponentista ja korvaa se tarkoituksenmukaisilla Mate-ehdoilla."},
+{n:34,cat:"Assembly",level:"Sovellan",w:2,q:"Haluat tarkistaa, menevätkö kaksi komponenttia fyysisesti toistensa sisään. Mitä käytät?",o:["Smart Dimension","Interference Detection","Shell","View Palette"],a:1,h:"Tarvitset työkalun, joka tunnistaa päällekkäiset tilavuudet.",e:"Interference Detection tunnistaa komponenttien geometriset päällekkäisyydet.",t:"Luo tarkoituksellinen törmäys kahden osan välille ja aja Interference Detection."},
+{n:35,cat:"Assembly",level:"Ymmärrän",w:1,q:"Mitä Exploded View auttaa ymmärtämään?",o:["Materiaalin lujuutta","Komponenttien rakennetta ja kokoonpanojärjestystä","Skissin vapausasteita","Mittakaavaa"],a:1,h:"Exploded View erottaa osia visuaalisesti toisistaan.",e:"Räjäytyskuva havainnollistaa rakennetta, osien suhteita ja asennusjärjestystä.",t:"Tee yksinkertainen Exploded View vähintään kolmesta komponentista."},
+{n:36,cat:"Drawing",level:"Ymmärrän",w:1,q:"Miksi BOM eli Bill of Materials on hyödyllinen?",o:["Se muuttaa 2D-piirustuksen 3D:ksi","Se muodostaa kokoonpanon komponenteista osaluettelon","Se määrittää Mate-suhteet","Se tekee Filletit"],a:1,h:"BOM liittyy tuotteen osiin ja määriin.",e:"BOM kokoaa komponentit, määrät ja usein myös ominaisuustietoja taulukoksi.",t:"Luo kokoonpanopiirustus ja lisää siihen BOM."},
+{n:37,cat:"Mallinnusstrategia",level:"Ratkaisen",w:3,q:"Saat tehtäväksi mallintaa yksinkertaisen kannellisen kotelon, jossa on neljä samanlaista kiinnitysreikää. Mikä työnkulku on järkevin?",o:["Drawing → Assembly → Sketch → Part","Perusgeometria → mitoitettu Sketch → Extrude → Shell → yksi reikä → Pattern → tarvittavat erilliset Partit → Assembly → Drawing","Assembly → Fillet → PDF","Kaikki geometria yhteen valtavaan skissiin"],a:1,h:"Etene geometriasta osiin, osista kokoonpanoon ja vasta lopuksi dokumentointiin.",e:"Hyvä työnkulku rakentaa ensin hallitut Partit, kokoaa ne Assemblyksi ja tekee Drawingin lopuksi.",t:"Kirjoita ennen mallinnusta 6–10 vaiheen oma mallinnussuunnitelma vastaavalle kotelolle."},
+{n:38,cat:"Virheenhaku",level:"Ratkaisen",w:3,q:"Muutat Partin yhtä päämittaa ja kolme myöhempää Featurea menee virhetilaan. Mikä on paras ensimmäinen ajatus?",o:["SolidWorks on rikkoutunut","Poista koko tiedosto","Tutki FeatureManagerista, mitkä myöhemmät piirteet käyttävät muuttunutta geometriaa referenssinä","Tee Drawing uudestaan"],a:2,h:"Aloita mallin riippuvuuksista, älä ohjelman uudelleenasennuksesta.",e:"Virheiden syy löytyy usein muuttuneista tai kadonneista referensseistä FeatureManagerin ketjussa.",t:"Avaa virheellinen feature, tarkista sen referenssit ja korjaa yksi kadonnut viittaus."},
+{n:39,cat:"Parametrisuus",level:"Ratkaisen",w:3,q:"Asiakas muuttaa kotelon leveyden 80 mm → 100 mm, mutta reikien pitää pysyä symmetrisesti reunoihin nähden. Mikä mallinnustapa auttaa eniten?",o:["Reiät on sijoitettu silmämääräisesti","Jokainen reikä on tehty itsenäisesti","Malli on mitoitettu ja sidottu suunnittelutarkoituksen mukaan käyttäen esimerkiksi symmetriaa, mittoja ja Pattern/Mirror-rakenteita","Malli on tallennettu PDF:nä"],a:2,h:"Tarvitset suhteita, jotka kuvaavat suunnittelutarkoitusta eivätkä vain nykyistä sijaintia.",e:"Design intent näkyy siinä, että muutokset säilyttävät geometrian olennaiset suhteet.",t:"Tee reikäpari symmetriseksi keskilinjan suhteen ja muuta kotelon leveyttä."},
+{n:40,cat:"Kokonaisosaaminen",level:"Ratkaisen",w:3,q:"Mikä kuvaa parhaiten kolmen päivän jälkeen tavoiteltavaa SolidWorks-osaamista?",o:["Muistan mahdollisimman monen komennon nimen","Osaan tehdä opettajan näyttämän kappaleen täsmälleen samalla tavalla","Osaan käyttää Extrudea, Filletiä ja Matea","Osaan tarkastella mallinnettavaa kohdetta, jakaa sen tarkoituksenmukaisiin geometrisiin rakenteisiin, valita sopivat työkalut ja rakentaa mallin niin, että sitä voidaan myöhemmin muuttaa hallitusti"],a:3,h:"Tavoite ei ole vain komentojen muistaminen, vaan itsenäinen mallinnusajattelu.",e:"SolidWorks-osaaminen on ennen kaikkea tarkoituksenmukaista, parametrisesti hallittua ongelmanratkaisua.",t:"Valitse arjen esine ja luonnostele, miten jakaisit sen Part-, Feature- ja Assembly-rakenteiksi ennen ohjelman avaamista."}
+];
+
+let idx=0, answers={}, attempts={}, earned={}, firstWrong={}, studentName="", studentId="";
+
+function startQuiz(){
+  studentName=document.getElementById("studentName").value.trim();
+  studentId=document.getElementById("studentId").value.trim();
+  if(!studentName || !studentId){alert("Syötä nimi ja opiskelijanumero.");return;}
+  document.getElementById("startCard").classList.add("hidden");
+  document.getElementById("quiz").classList.remove("hidden");
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q=questions[idx];
+  document.getElementById("qnum").textContent=idx+1;
+  document.getElementById("bar").style.width=((idx+1)/questions.length*100)+"%";
+  document.getElementById("categoryBadge").textContent=q.cat;
+  document.getElementById("levelBadge").textContent=q.level+" · "+q.w+" p";
+  document.getElementById("qtitle").textContent=q.n+". "+q.q;
+  const box=document.getElementById("options");
+  box.innerHTML=q.o.map((opt,i)=>`<label class="option"><input type="radio" name="answer" value="${i}" ${answers[q.n]===i?"checked":""}>${String.fromCharCode(65+i)}. ${opt}</label>`).join("");
+  const fb=document.getElementById("feedback");
+  fb.className="hidden";
+  fb.innerHTML="";
+  document.getElementById("prevBtn").disabled=idx===0;
+  const done=earned[q.n]!==undefined;
+  document.getElementById("checkBtn").classList.toggle("hidden",done);
+  document.getElementById("nextBtn").classList.toggle("hidden",!done);
+  document.getElementById("nextBtn").textContent=idx===questions.length-1?"Näytä tulokset":"Seuraava";
+  if(done){
+    fb.className="feedback ok";
+    fb.innerHTML=`<strong>Vastattu.</strong> ${q.e}<div class="microtask"><strong>Pieni harjoitus:</strong> ${q.t}</div>`;
+  }
+}
+
+function selected(){
+  const el=document.querySelector('input[name="answer"]:checked');
+  return el?Number(el.value):null;
+}
+
+function checkAnswer(){
+  const q=questions[idx], sel=selected();
+  if(sel===null){alert("Valitse vastaus.");return;}
+  answers[q.n]=sel;
+  attempts[q.n]=(attempts[q.n]||0)+1;
+  const fb=document.getElementById("feedback");
+  if(sel===q.a){
+    const factor=attempts[q.n]===1?1:0.6;
+    earned[q.n]=q.w*factor;
+    fb.className="feedback ok";
+    fb.innerHTML=`<strong>Oikein.</strong> ${q.e}<div class="microtask"><strong>Pieni harjoitus:</strong> ${q.t}</div>`;
+    document.getElementById("checkBtn").classList.add("hidden");
+    document.getElementById("nextBtn").classList.remove("hidden");
+  } else if(attempts[q.n]===1){
+    firstWrong[q.n]=true;
+    fb.className="feedback hint";
+    fb.innerHTML=`<strong>Ei vielä.</strong> ${q.h}<div class="microtask">Valitse uudelleen. Toisella yrityksellä oikeasta vastauksesta saat 60 % kysymyksen pisteistä.</div>`;
+  } else {
+    earned[q.n]=0;
+    fb.className="feedback bad";
+    fb.innerHTML=`<strong>Oikea vastaus:</strong> ${String.fromCharCode(65+q.a)}. ${q.o[q.a]}<br>${q.e}<div class="microtask"><strong>Tee tämä ennen seuraavaa harjoitusta:</strong> ${q.t}</div>`;
+    document.getElementById("checkBtn").classList.add("hidden");
+    document.getElementById("nextBtn").classList.remove("hidden");
+  }
+}
+
+function nextQuestion(){
+  if(idx<questions.length-1){idx++;renderQuestion();}else{showResults();}
+}
+function prevQuestion(){if(idx>0){idx--;renderQuestion();}}
+
+function groupKey(cat){
+  if(cat.includes("Assembly")) return "Assembly";
+  if(cat.includes("Drawing")) return "Drawing";
+  if(cat.includes("Sketch")) return "Sketch & käyttöliittymä";
+  if(cat.includes("Part")) return "Part-mallinnus";
+  if(cat.includes("Parametrisuus")||cat.includes("Mallinnusstrategia")||cat.includes("Virheenhaku")||cat.includes("Kokonaisosaaminen")) return "Mallinnusstrategia";
+  if(cat.includes("Käyttöliittymä")) return "Sketch & käyttöliittymä";
+  return cat;
+}
+
+function showResults(){
+  document.getElementById("quiz").classList.add("hidden");
+  document.getElementById("results").classList.remove("hidden");
+  const max=questions.reduce((s,q)=>s+q.w,0);
+  const pts=questions.reduce((s,q)=>s+(earned[q.n]||0),0);
+  const pct=Math.round(pts/max*100);
+  let grade=0;
+  if(pct>=90) grade=5;
+  else if(pct>=80) grade=4;
+  else if(pct>=65) grade=3;
+  else if(pct>=50) grade=2;
+  else if(pct>=40) grade=1;
+  const passed=grade>=1;
+  const circle=document.getElementById("scoreCircle");
+  circle.textContent=pct+" %";
+  circle.style.background=passed?"var(--green)":"var(--red)";
+  document.getElementById("summary").innerHTML=`${studentName}: <strong>${pts.toFixed(1)} / ${max} p</strong> · arvosanaehdotus <strong>${grade}/5</strong>${passed?"":" · hylätty"}`;
+
+  const groups={};
+  questions.forEach(q=>{
+    const g=groupKey(q.cat);
+    if(!groups[g]) groups[g]={got:0,max:0};
+    groups[g].got+=(earned[q.n]||0); groups[g].max+=q.w;
+  });
+  let prof="";
+  Object.entries(groups).forEach(([g,v])=>{
+    const p=Math.round(v.got/v.max*100);
+    prof+=`<div class="profile-row"><div class="profile-head"><span>${g}</span><span>${p}%</span></div><div class="profilebar"><div class="profilefill" style="width:${p}%"></div></div></div>`;
+  });
+  document.getElementById("profile").innerHTML=prof;
+
+  const weak=Object.entries(groups).map(([g,v])=>[g,Math.round(v.got/v.max*100)]).sort((a,b)=>a[1]-b[1]);
+  let rec="<p>Suositeltu harjoittelujärjestys perustuu kokeessa havaittuihin heikoimpiin alueisiin.</p><ol>";
+  weak.slice(0,3).forEach(([g,p])=>{
+    const map={
+      "Assembly":"Harjoittele Mate-suhteita, vapausasteiden tunnistamista ja Interference Detectionia.",
+      "Drawing":"Harjoittele Model View / Projected View -kuvantoja, mitoitusta ja BOM-rakennetta.",
+      "Sketch & käyttöliittymä":"Harjoittele perustason valintaa, Fully Defined -skissejä, Smart Dimensionia ja geometrisia suhteita.",
+      "Part-mallinnus":"Harjoittele Extrude/Cut-, Fillet/Chamfer-, Shell-, Pattern-, Mirror- ja Revolve-ratkaisuja.",
+      "Mallinnusstrategia":"Harjoittele design intent -ajattelua, parametrisia riippuvuuksia, FeatureManagerin virheenhakua ja tarkoituksenmukaista työjärjestystä."
+    };
+    rec+=`<li><strong>${g} (${p} %):</strong> ${map[g]||"Kertaa tämän alueen keskeiset työvaiheet."}</li>`;
+  });
+  rec+="</ol>";
+  document.getElementById("recommendations").innerHTML=rec;
+
+  const wrongCount=Object.values(firstWrong).filter(Boolean).length;
+  const report=
+`SOLIDWORKS PERUSTEET – OSAAMISKOE
+Opiskelija: ${studentName}
+Opiskelijanumero: ${studentId}
+Tulos: ${pts.toFixed(1)} / ${max} p (${pct} %)
+Arvosanaehdotus: ${grade}/5
+Ensimmäisellä yrityksellä väärin: ${wrongCount} / 40
+
+OSAAMISPROFIILI
+${Object.entries(groups).map(([g,v])=>`${g}: ${Math.round(v.got/v.max*100)} %`).join("\n")}
+
+SUOSITELTU JATKOHARJOITTELU
+${weak.slice(0,3).map(([g,p],i)=>`${i+1}. ${g} (${p} %)`).join("\n")}
+
+Huom.: tulos on muodostettu selaimessa paikallisesti.`;
+  document.getElementById("classroomReport").value=report;
+  document.getElementById("certBtn").classList.toggle("hidden",!passed);
+  window.scrollTo({top:0,behavior:"smooth"});
+  window._grade=grade; window._pct=pct;
+}
+
+function copyReport(){
+  const t=document.getElementById("classroomReport");
+  t.select();
+  navigator.clipboard?.writeText(t.value).then(()=>alert("Raportti kopioitu leikepöydälle.")).catch(()=>document.execCommand("copy"));
+}
+
+function showCertificate(){
+  document.getElementById("certName").textContent=studentName;
+  document.getElementById("certId").textContent="Opiskelijanumero: "+studentId;
+  document.getElementById("certGrade").textContent=`Arvosana ${window._grade}/5 · ${window._pct} %`;
+  document.getElementById("certDate").textContent="Suoritettu: "+new Date().toLocaleDateString("fi-FI");
+  document.getElementById("certificateModal").classList.remove("hidden");
+}
+function closeCertificate(){document.getElementById("certificateModal").classList.add("hidden");}
+function restartQuiz(){
+  idx=0;answers={};attempts={};earned={};firstWrong={};
+  document.getElementById("results").classList.add("hidden");
+  document.getElementById("quiz").classList.remove("hidden");
+  renderQuestion(); window.scrollTo({top:0,behavior:"smooth"});
+}
+</script>
+</body>
+</html>
