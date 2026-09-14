@@ -1,0 +1,2853 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ST315A Virtuaalikaksonen™ — 1:1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F0EDE8;--surf:#E6E2DB;--bdr:#CEC8BF;--tx:#252220;--txm:#504C48;--txl:#888480;
+  --clay:#BF5B28;--clayd:#8C3E10;--clayp:#F2E0D0;
+  --panel-bg:#222018;--panel-top:#2A2620;--panel-border:#0A0806;
+  --house:#C8C4BE;--house2:#B0ACA6;
+  --ledbg:#040200;--led:#FF1818;--ledglow:rgba(255,20,20,0.75);
+  --segbg:#050100;--segclr:#FF1414;
+  --btn-bg:#3C3A36;--btn-top:#484440;--btn-bdr:#1A1814;
+  --dot-on:#FF2020;--dot-off:#240808;--dotglow:rgba(255,24,24,0.7);
+  --grn:#28E850;--grnglow:rgba(40,232,80,0.7);
+  --mim-bg:#1A1814;--mim-grid:#2A2620;--mim-line:#383430;
+  --mim-ink:#4A4640;--mim-dim:rgba(255,30,30,0.18);--mim-on:#FF1818;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;}
+body{font-family:"Instrument Sans","Helvetica Neue",sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;line-height:1.5;}
+
+/* TOP BAR */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 18px;background:var(--surf);border-bottom:1px solid var(--bdr);
+  position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px;
+}
+.brand{font-family:"Georgia",serif;font-size:14px;font-weight:700;letter-spacing:.01em;}
+.brand span{font-size:9px;font-weight:400;color:var(--txl);display:block;letter-spacing:.08em;text-transform:uppercase;margin-top:1px;}
+.lum-ctrl{display:flex;align-items:center;gap:7px;}
+.lum-sl{-webkit-appearance:none;width:88px;height:3px;border-radius:2px;outline:none;cursor:pointer;background:linear-gradient(to right,#1A1612,#F8F3EC,#C4BCB0);}
+.lum-sl::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--clay);cursor:pointer;}
+.warm-row{display:flex;gap:3px;}
+.wb{padding:3px 8px;border-radius:3px;border:1px solid var(--bdr);background:var(--bg);font-size:9px;font-weight:700;cursor:pointer;color:var(--txl);letter-spacing:.05em;transition:all .12s;}
+.wb.on{background:var(--surf);color:var(--txm);}
+.kiln-row{display:flex;gap:5px;}
+.kb{padding:5px 12px;border-radius:14px;border:1px solid var(--bdr);background:var(--bg);font-size:11px;font-weight:600;color:var(--txm);cursor:pointer;transition:all .12s;letter-spacing:.02em;}
+.kb.on{background:var(--clay);color:white;border-color:var(--clay);}
+
+/* MAIN LAYOUT */
+.page{display:grid;grid-template-columns:510px 1fr;height:calc(100vh - 48px);overflow:hidden;}
+.left{background:var(--surf);border-right:1px solid var(--bdr);overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.right{overflow-y:auto;padding:18px 20px;background:var(--bg);}
+
+/* ══════════════════════════════════════
+   ST315A CONTROLLER FACE
+   ══════════════════════════════════════ */
+.ctrl-outer{
+  width:490px;
+  background:linear-gradient(145deg,#D0CCC6 0%,#C0BCB6 45%,#B0ACA6 100%);
+  border-radius:8px;padding:14px;
+  box-shadow:0 10px 36px rgba(0,0,0,.32),0 4px 10px rgba(0,0,0,.2),
+    inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(0,0,0,.14);
+  position:relative;
+}
+/* Label strip at top */
+.ctrl-label{
+  background:#F2F0EC;border:1px solid #CCCAC4;border-radius:3px;
+  text-align:center;padding:5px;margin-bottom:11px;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.1);
+}
+.ctrl-label .uname{
+  font-size:14px;font-weight:700;color:#181410;letter-spacing:.12em;
+  font-family:"Instrument Sans",sans-serif;
+}
+/* Front panel */
+.ctrl-panel{
+  background:linear-gradient(165deg,var(--panel-top) 0%,var(--panel-bg) 100%);
+  border-radius:5px;padding:14px 12px 11px 12px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(0,0,0,.5);
+  position:relative;
+}
+
+/* ── DISPLAY ROW ─────────────────────── */
+.disp-row{display:flex;align-items:stretch;gap:10px;margin-bottom:14px;}
+
+/* Main 7-seg display */
+.main-disp{
+  flex:1;background:var(--ledbg);border-radius:3px;
+  border:1px solid #160404;padding:8px 14px 8px 10px;
+  min-height:80px;display:flex;flex-direction:column;justify-content:center;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.85);position:relative;overflow:hidden;
+}
+/* Background ghost segments */
+.disp-ghost{
+  position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:flex-end;padding:8px 14px 8px 10px;
+  font-family:"DM Mono","Courier New",monospace;font-size:46px;font-weight:400;
+  color:rgba(160,10,10,0.12);letter-spacing:.08em;pointer-events:none;
+  line-height:1;
+}
+.disp-val{
+  font-family:"DM Mono","Courier New",monospace;font-size:46px;font-weight:400;
+  color:var(--led);letter-spacing:.08em;line-height:1;text-align:right;
+  text-shadow:0 0 8px var(--ledglow),0 0 20px rgba(255,18,18,.3);
+  position:relative;z-index:1;
+}
+.disp-val.blink{animation:b .75s step-end infinite;}
+@keyframes b{50%{opacity:.12;}}
+.disp-val.green{color:var(--grn);text-shadow:0 0 8px var(--grnglow),0 0 18px rgba(40,232,80,.25);}
+.disp-sub{
+  font-size:8px;color:#3A0C0C;text-transform:uppercase;letter-spacing:.14em;
+  margin-top:3px;text-align:right;font-family:"DM Mono",monospace;
+  min-height:11px;position:relative;z-index:1;
+}
+/* Lock indicator: left decimal point */
+.lock-dot{
+  position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  width:5px;height:5px;border-radius:50%;
+  background:rgba(255,18,18,0);transition:background .2s;
+}
+.lock-dot.on{background:var(--led);box-shadow:0 0 4px var(--ledglow);}
+
+/* Indicator dots: °C / °C/hr / hr.min */
+.inds{display:flex;flex-direction:column;justify-content:space-around;padding:4px 0;gap:0;}
+.ind{display:flex;align-items:center;gap:5px;}
+.ind-dot{
+  width:9px;height:9px;border-radius:50%;flex-shrink:0;
+  background:var(--dot-off);border:1px solid #1C0606;
+  transition:background .12s,box-shadow .12s;
+}
+.ind-dot.on{background:var(--dot-on);box-shadow:0 0 5px var(--dotglow),0 0 10px rgba(255,20,20,.4);}
+@keyframes lampblink { 0%,100%{opacity:1} 50%{opacity:0.06} }
+.lamp-blink { animation: lampblink 0.65s step-end infinite !important; }
+.ind-lbl{font-size:9px;color:#706860;font-family:"DM Mono",monospace;white-space:nowrap;letter-spacing:.02em;}
+
+/* START/STOP area */
+.start-area{display:flex;flex-direction:column;align-items:center;justify-content:space-around;padding:4px 0;}
+.start-lbl{font-size:8px;color:#706860;font-family:"DM Mono",monospace;letter-spacing:.08em;}
+/* Firing lamp above START (the round dot in photo) */
+.fire-lamp{
+  width:12px;height:12px;border-radius:50%;
+  background:#081408;border:1px solid #040A04;
+  transition:all .2s;margin-bottom:2px;
+}
+.fire-lamp.on{background:var(--grn);box-shadow:0 0 6px var(--grnglow),0 0 12px rgba(40,232,80,.4);}
+.start-btn{
+  width:44px;height:44px;border-radius:50%;cursor:pointer;
+  background:radial-gradient(circle at 38% 36%,#585450,#2C2A26);
+  border:2px solid #181410;
+  box-shadow:0 3px 8px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.07) inset;
+  display:flex;align-items:center;justify-content:center;transition:all .08s;
+}
+.start-btn:active{transform:scale(.91);box-shadow:0 1px 2px rgba(0,0,0,.5);}
+.pwr-ring{
+  width:19px;height:19px;border:2.5px solid #FF1818;border-radius:50%;
+  border-top-color:transparent;position:relative;
+  box-shadow:0 0 5px rgba(255,18,18,.55);
+}
+.pwr-ring::before{
+  content:"";position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+  width:2.5px;height:9px;background:#FF1818;box-shadow:0 0 5px rgba(255,18,18,.8);
+}
+.start-btn.running .pwr-ring{border-color:var(--grn);border-top-color:transparent;box-shadow:0 0 6px var(--grnglow);}
+.start-btn.running .pwr-ring::before{background:var(--grn);box-shadow:0 0 5px var(--grnglow);}
+.stop-lbl{font-size:8px;color:#555250;font-family:"DM Mono",monospace;letter-spacing:.08em;}
+
+/* ── CONTROL ROW ─────────────────────── */
+.ctrl-row{display:flex;align-items:flex-start;gap:10px;}
+
+/* 2×2 nav button grid */
+.nav-grid{display:grid;grid-template-columns:58px 58px;grid-template-rows:50px 50px;gap:6px;flex-shrink:0;}
+.nb{
+  background:linear-gradient(150deg,var(--btn-top),var(--btn-bg));
+  border:1px solid var(--btn-bdr);border-radius:5px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  box-shadow:0 3px 6px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.07) inset,0 -1px 0 rgba(0,0,0,.3) inset;
+  transition:all .07s;overflow:hidden;position:relative;user-select:none;
+}
+.nb::after{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:rgba(255,255,255,.09);}
+.nb:active,.nb.pressed{transform:translateY(1px);box-shadow:0 0 3px rgba(0,0,0,.5),inset 0 1px 3px rgba(0,0,0,.5);}
+.nb .arr{font-size:19px;color:#D4D0CC;line-height:1;}
+.nb .nl{font-size:7.5px;color:#706860;font-family:"DM Mono",monospace;letter-spacing:.07em;text-transform:uppercase;}
+.nb .ns{font-size:6.5px;color:#484440;font-family:"DM Mono",monospace;letter-spacing:.06em;}
+
+/* PROGRAM / SEGMENT mini displays */
+.ps-col{display:flex;flex-direction:column;gap:8px;flex-shrink:0;padding-top:2px;}
+.ps-grp{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
+.ps-lbl{font-size:6.5px;color:#504840;font-family:"DM Mono",monospace;letter-spacing:.10em;text-transform:uppercase;}
+.ps-val{
+  background:var(--segbg);border:1px solid #160404;border-radius:2px;
+  padding:3px 8px;font-family:"DM Mono",monospace;font-size:22px;
+  color:var(--segclr);text-shadow:0 0 5px rgba(255,18,18,.7);
+  min-width:40px;text-align:center;line-height:1;transition:all .1s;
+}
+.ps-val.active{border-color:#FF1818;box-shadow:0 0 6px rgba(255,18,18,0.4);}
+
+/* ── MIMIC DISPLAY ───────────────────── */
+.mimic-container{
+  flex:1;display:flex;align-items:flex-start;justify-content:flex-end;
+}
+
+/* ── BRANDING ROW ────────────────────── */
+.brand-row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;padding:0 2px;}
+.sf-name{font-size:10px;color:#4A4640;font-weight:700;letter-spacing:.04em;font-family:"Instrument Sans",sans-serif;}
+.sf-sub{font-size:7px;color:#3C3830;letter-spacing:.06em;}
+.model-txt{font-size:14px;color:#504C48;font-weight:700;letter-spacing:.04em;font-family:"Instrument Sans",sans-serif;}
+.ce-txt{font-size:9px;color:#3C3830;}
+.model-col{text-align:right;}
+
+/* ══════════════════════════════════════
+   STATUS + PROGRAM RECORD BELOW CONTROLLER
+   ══════════════════════════════════════ */
+.status-bar{
+  width:490px;background:var(--bg);border:1px solid var(--bdr);
+  border-radius:6px;padding:8px 13px;
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+}
+.sb-msg{font-size:11px;color:var(--txm);flex:1;}
+.sb-dur{font-family:"DM Mono",monospace;font-size:13px;color:var(--clay);font-weight:500;white-space:nowrap;}
+
+.prog-sheet{width:490px;}
+.ps-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.ps-head-lbl{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--txl);}
+.prog-btns{display:flex;gap:3px;}
+.pb{
+  width:24px;height:24px;border-radius:4px;border:1px solid var(--bdr);
+  background:var(--bg);font-size:11px;font-weight:600;color:var(--txm);
+  cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;
+}
+.pb.on{background:var(--clay);color:white;border-color:var(--clay);}
+.pb:hover:not(.on){border-color:var(--clay);color:var(--clay);}
+.delay-row{
+  display:flex;align-items:center;gap:8px;margin-bottom:6px;
+  padding:5px 10px;background:var(--surf);border-radius:5px;
+  border:1px solid var(--bdr);
+}
+.delay-row label{font-size:11px;color:var(--txm);font-weight:500;}
+.delay-inp{
+  width:64px;padding:3px 7px;border:1px solid var(--bdr);border-radius:4px;
+  font-family:"DM Mono",monospace;font-size:12px;text-align:center;
+  background:var(--bg);color:var(--tx);
+}
+.delay-inp:focus{outline:none;border-color:var(--clay);}
+.sheet-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.sheet-tbl th{
+  background:var(--surf);padding:5px 7px;border:1px solid var(--bdr);
+  font-weight:700;color:var(--txl);font-size:9px;text-align:center;
+  letter-spacing:.07em;text-transform:uppercase;
+}
+.sheet-tbl td{padding:4px 6px;border:1px solid var(--bdr);text-align:center;}
+.sheet-tbl td input{
+  width:100%;border:none;background:transparent;text-align:center;
+  font-family:"DM Mono",monospace;font-size:11px;color:var(--tx);outline:none;
+}
+.sheet-tbl td input:focus{background:var(--clayp);}
+.sheet-tbl tr.active td{background:#FFF6F0;border-color:rgba(191,91,40,.25);}
+.sheet-tbl tr.warn td{background:#FFF0EE;}
+.sheet-tbl tr.cool td{background:#F0F0FF;}
+.btn-add{
+  width:100%;margin-top:5px;padding:6px;border:1px dashed var(--bdr);
+  border-radius:5px;background:none;font-size:11px;font-weight:600;
+  color:var(--txl);cursor:pointer;transition:all .12s;font-family:"Instrument Sans",sans-serif;
+}
+.btn-add:hover{border-color:var(--clay);color:var(--clay);background:var(--clayp);}
+.btn-save{
+  width:490px;padding:10px;background:var(--clay);color:white;border:none;
+  border-radius:6px;font-family:"Instrument Sans",sans-serif;font-size:13px;
+  font-weight:600;cursor:pointer;letter-spacing:.04em;transition:background .12s;
+}
+.btn-save:hover{background:var(--clayd);}
+
+/* ══════════════════════════════════════
+   RIGHT PANEL
+   ══════════════════════════════════════ */
+.rp-title{font-family:"Georgia",serif;font-size:15px;margin-bottom:3px;}
+.rp-sub{font-size:11px;color:var(--txl);margin-bottom:12px;}
+#curve-svg{width:100%;border:1px solid var(--bdr);border-radius:8px;background:white;display:block;}
+.ph-leg{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;margin-bottom:12px;}
+.pc{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--txm);padding:2px 8px;border-radius:20px;background:var(--surf);border:1px solid var(--bdr);}
+.pd{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.seg-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px;}
+.seg-tbl th{background:var(--surf);padding:5px 7px;border:1px solid var(--bdr);font-weight:600;color:var(--txl);font-size:9px;text-align:center;text-transform:uppercase;letter-spacing:.05em;}
+.seg-tbl td{padding:4px 7px;border:1px solid var(--bdr);text-align:center;font-family:"DM Mono",monospace;}
+.seg-tbl tr.warn td{background:#FFF2F0;}.seg-tbl tr.dry td{background:#EFF4FF;}.seg-tbl tr.cool td{background:#F0F0FF;}
+.ic-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.ic{background:white;border:1px solid var(--bdr);border-radius:7px;padding:12px;}
+.ic-t{font-size:11px;font-weight:600;margin-bottom:4px;}.ic-b{font-size:10px;color:var(--txm);line-height:1.62;}
+.log-sec{border-top:1px solid var(--bdr);padding:13px 0;margin-top:10px;}
+.log-tog{display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:9px;}
+.log-tog h3{font-family:"Georgia",serif;font-size:13px;}
+#log-arr{color:var(--txl);transition:transform .2s;}
+#log-arr.open{transform:rotate(180deg);}
+.log-bd{display:none;}.log-bd.open{display:block;}
+.le{background:white;border:1px solid var(--bdr);border-radius:6px;padding:11px 13px;margin-bottom:7px;}
+.le-h{display:flex;justify-content:space-between;margin-bottom:6px;}
+.le-name{font-weight:600;font-size:12px;}.le-meta{font-size:10px;color:var(--txl);text-align:right;}
+.le-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.tag{background:var(--surf);border:1px solid var(--bdr);border-radius:3px;padding:2px 6px;font-size:10px;color:var(--txm);}
+.empty-log{text-align:center;padding:22px;color:var(--txl);font-size:12px;}
+footer{background:var(--surf);border-top:1px solid var(--bdr);padding:9px 18px;text-align:center;font-size:9px;color:var(--txl);letter-spacing:.04em;}
+@media(max-width:900px){.page{grid-template-columns:1fr;height:auto;overflow:visible;}.left,.right{overflow:visible;}.ic-grid{grid-template-columns:1fr;}}
+
+/* ═══════════ MODALS / OVERLAYS ═══════════ */
+.overlay{position:fixed;inset:0;z-index:1000;background:rgba(28,24,20,0.66);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;}
+.overlay.show{display:flex;}
+.modal{background:var(--bg);border-radius:16px;width:100%;max-width:600px;max-height:94vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.4);}
+.modal-head{background:var(--surf);border-bottom:1px solid var(--bdr);padding:16px 22px 13px;flex-shrink:0;}
+.modal-brand{font-family:"Georgia",serif;font-size:12px;color:var(--clay);letter-spacing:.05em;margin-bottom:9px;}
+.modal-prog{display:flex;gap:6px;margin-bottom:9px;}
+.mp-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr);transition:all .25s;}
+.mp-dot.done{background:var(--clay);}.mp-dot.active{background:var(--clay);width:22px;border-radius:4px;}
+.modal-title{font-family:"Georgia",serif;font-size:20px;color:var(--tx);margin-bottom:3px;}
+.modal-sub{font-size:13px;color:var(--txl);}
+.modal-body{flex:1;overflow-y:auto;padding:20px 22px;}
+.modal-foot{border-top:1px solid var(--bdr);padding:13px 22px;display:flex;justify-content:space-between;align-items:center;background:var(--surf);flex-shrink:0;gap:8px;}
+.mbtn{padding:9px 18px;border-radius:7px;font-family:"Instrument Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;}
+.mbtn-ghost{background:none;border:1px solid var(--bdr);color:var(--txm);}
+.mbtn-ghost:hover{border-color:var(--clay);color:var(--clay);}
+.mbtn-ghost:disabled{opacity:.3;pointer-events:none;}
+.mbtn-primary{background:var(--clay);color:white;}
+.mbtn-primary:hover{background:var(--clayd);}
+.mbtn-primary:disabled{background:var(--bdr);cursor:not-allowed;}
+.modal-counter{font-size:11px;color:var(--txl);}
+
+/* Wizard cards */
+.wsec-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--txl);margin:16px 0 8px;}
+.wsec-lbl:first-child{margin-top:0;}
+.wname-inp{width:100%;padding:13px 15px;border:2px solid var(--bdr);border-radius:10px;font-size:17px;background:white;color:var(--tx);transition:border-color .15s;}
+.wname-inp:focus{outline:none;border-color:var(--clay);}
+.wdate{font-size:12px;color:var(--txl);background:var(--surf);border-radius:6px;padding:7px 11px;display:inline-block;margin-top:9px;}
+.wcards{display:grid;gap:9px;}
+.wcards.c2{grid-template-columns:1fr 1fr;}
+.wcards.c3{grid-template-columns:1fr 1fr 1fr;}
+.wcard{padding:13px 11px;border:2px solid var(--bdr);border-radius:10px;background:white;cursor:pointer;transition:all .15s;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.wcard:hover{border-color:var(--clayd);background:var(--clayp);}
+.wcard.sel{border-color:var(--clay);background:var(--clayp);}
+.wcard.sel::after{content:"✓";position:absolute;top:7px;right:10px;font-size:13px;color:var(--clay);font-weight:700;}
+.wcard .ci{font-size:25px;line-height:1;}
+.wcard .cn{font-size:13px;font-weight:600;color:var(--tx);}
+.wcard .cd{font-size:11px;color:var(--txl);line-height:1.4;}
+.wkcard{padding:14px 16px;border:2px solid var(--bdr);border-radius:10px;background:white;cursor:pointer;transition:all .15s;display:grid;grid-template-columns:50px 1fr;align-items:center;gap:12px;position:relative;}
+.wkcard:hover{border-color:var(--clayd);background:var(--clayp);}
+.wkcard.sel{border-color:var(--clay);background:var(--clayp);}
+.wkcard.sel::after{content:"✓";position:absolute;top:11px;right:13px;font-size:13px;color:var(--clay);font-weight:700;}
+.wkbox{width:50px;height:50px;background:var(--surf);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:23px;}
+.wkn{font-size:14px;font-weight:600;}.wks{font-size:11px;color:var(--txl);margin-top:2px;}
+.wwarn{background:#FFF4EE;border-left:3px solid var(--clay);border-radius:0 7px 7px 0;padding:10px 13px;margin-top:12px;font-size:12px;color:#6A3010;line-height:1.6;}
+.wtemp{display:flex;align-items:center;gap:10px;background:white;border:2px solid var(--bdr);border-radius:10px;padding:12px 16px;margin-top:8px;}
+.wtemp input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bdr);outline:none;cursor:pointer;}
+.wtemp input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--clay);cursor:pointer;}
+.wtempv{font-family:"DM Mono",monospace;font-size:20px;color:var(--clay);font-weight:500;min-width:52px;text-align:right;}
+
+/* Photo upload */
+.photo-drop{border:2px dashed var(--bdr2);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:white;}
+.photo-drop:hover{border-color:var(--clay);background:var(--clayp);}
+.photo-drop.has-img{padding:8px;border-style:solid;}
+.photo-drop .pd-icon{font-size:30px;margin-bottom:6px;}
+.photo-drop .pd-txt{font-size:12px;color:var(--txm);font-weight:500;}
+.photo-drop .pd-sub{font-size:10px;color:var(--txl);margin-top:3px;}
+.photo-preview{max-width:100%;max-height:220px;border-radius:8px;display:block;margin:0 auto;}
+.ai-result{margin-top:12px;background:#F0F6F2;border:1px solid #C0DCC8;border-radius:9px;padding:13px 15px;font-size:13px;color:#2A4A36;line-height:1.6;}
+.ai-result.loading{background:var(--surf);border-color:var(--bdr);color:var(--txm);text-align:center;}
+.ai-result h4{font-size:12px;font-weight:700;margin-bottom:6px;color:#1E3A28;letter-spacing:.03em;}
+.ai-spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--bdr);border-top-color:var(--clay);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:7px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Preview step */
+.pv-name{width:100%;padding:10px 13px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;font-weight:600;background:white;color:var(--tx);}
+.pv-name:focus{outline:none;border-color:var(--clay);}
+.pv-curvebox{background:white;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;margin-top:8px;}
+#wiz-curve{width:100%;display:block;}
+.pv-stats{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px;}
+.pv-stat{flex:1;min-width:90px;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:9px 11px;text-align:center;}
+.pv-sv{font-family:"DM Mono",monospace;font-size:17px;color:var(--clay);font-weight:500;display:block;}
+.pv-sl{font-size:10px;color:var(--txl);margin-top:2px;}
+.pv-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;}
+.pv-tbl th{background:var(--surf);padding:5px 7px;border:1px solid var(--bdr);font-weight:600;color:var(--txm);font-size:10px;}
+.pv-tbl td{padding:4px 6px;border:1px solid var(--bdr);text-align:center;}
+.pv-tbl input{width:100%;border:none;background:transparent;text-align:center;font-family:"DM Mono",monospace;font-size:11px;color:var(--tx);outline:none;}
+.pv-tbl input:focus{background:var(--clayp);}
+
+/* Toolbar buttons in topbar */
+.tool-btns{display:flex;gap:6px;align-items:center;}
+.tbtn{padding:6px 12px;border-radius:7px;border:1px solid var(--bdr);background:var(--bg);font-size:11px;font-weight:600;color:var(--txm);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.tbtn:hover{border-color:var(--clay);color:var(--clay);}
+.tbtn.accent{background:var(--clay);color:white;border-color:var(--clay);}
+.tbtn.accent:hover{background:var(--clayd);}
+
+/* Settings */
+.set-row{margin-bottom:14px;}
+.set-row label{display:block;font-size:11px;font-weight:600;color:var(--txm);margin-bottom:5px;}
+.set-row input{width:100%;padding:9px 12px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;font-family:"DM Mono",monospace;background:white;color:var(--tx);}
+.set-row input:focus{outline:none;border-color:var(--clay);}
+.set-row .hint{font-size:11px;color:var(--txl);margin-top:4px;line-height:1.5;}
+.set-status{padding:9px 12px;border-radius:7px;font-size:12px;margin-top:8px;}
+.set-status.ok{background:#F0F6F2;color:#2A6040;border:1px solid #C0DCC8;}
+.set-status.err{background:#FBEEEC;color:#A03020;border:1px solid #E8C8C0;}
+
+/* Sheet import list */
+.sheet-list{display:flex;flex-direction:column;gap:7px;max-height:340px;overflow-y:auto;}
+.sheet-item{background:white;border:1px solid var(--bdr);border-radius:8px;padding:11px 13px;cursor:pointer;transition:all .12s;}
+.sheet-item:hover{border-color:var(--clay);background:var(--clayp);}
+.si-name{font-size:13px;font-weight:600;}
+.si-meta{font-size:11px;color:var(--txl);margin-top:2px;display:flex;gap:7px;flex-wrap:wrap;}
+.si-tag{background:var(--surf);border-radius:3px;padding:1px 6px;font-size:10px;}
+
+/* Loading guide */
+.lg-kiln-dims{display:flex;gap:8px;margin-top:8px;}
+.lg-dim{flex:1;}
+.lg-dim label{font-size:10px;color:var(--txl);display:block;margin-bottom:3px;}
+.lg-dim input{width:100%;padding:7px 9px;border:1px solid var(--bdr);border-radius:6px;font-family:"DM Mono",monospace;font-size:13px;text-align:center;background:white;color:var(--tx);}
+.lg-suggestion{background:white;border:1px solid var(--bdr);border-radius:10px;padding:14px;margin-top:12px;}
+.lg-shelf{border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:var(--surf);}
+.lg-shelf-h{font-size:12px;font-weight:700;color:var(--clay);margin-bottom:5px;}
+.lg-shelf-b{font-size:12px;color:var(--txm);line-height:1.6;}
+
+
+/* Curve editor popover */
+#seg-popover{position:fixed;inset:0;z-index:1100;background:rgba(28,24,20,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:16px;}
+#seg-popover.show{display:flex;}
+.pop-card{background:var(--bg);border-radius:14px;width:100%;max-width:300px;padding:18px 20px;box-shadow:0 24px 60px rgba(0,0,0,.4);}
+.pop-h{font-family:"Georgia",serif;font-size:16px;margin-bottom:14px;color:var(--clay);}
+.pop-row{margin-bottom:11px;}
+.pop-row label{display:block;font-size:11px;font-weight:600;color:var(--txm);margin-bottom:4px;}
+.pop-row input{width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-family:"DM Mono",monospace;font-size:16px;text-align:center;background:white;color:var(--tx);}
+.pop-row input:focus{outline:none;border-color:var(--clay);}
+.pop-btns{display:flex;gap:8px;margin-top:16px;}
+.pop-btns .mbtn{flex:1;}
+.pop-btns .mbtn-ghost{color:#C04030;border-color:#E0C0B8;}
+/* Edit hint bar */
+.edit-hint{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:10px;color:var(--txl);margin:8px 0 0;padding:7px 11px;background:var(--surf);border-radius:7px;border:1px solid var(--bdr);}
+.edit-hint b{color:var(--clay);font-weight:600;}
+.eh-sep{color:var(--bdr2);}
+
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="brand">ST315A Virtuaalikaksonen™<span>1:1 digitaalinen kaksonen · Metropolia AMK · Muotoilun Pajat</span></div>
+  <div class="kiln-row">
+    <button class="kb on" onclick="setKiln(0,this)">ISOUUNI 250L</button>
+    <button class="kb" onclick="setKiln(1,this)">AMMEMALLI 45L</button>
+  </div>
+  <div class="tool-btns">
+    <button class="tbtn accent" onclick="openWizard()">✨ Ohjattu aloitus</button>
+    <button class="tbtn" onclick="openLoadGuide()">📦 Latausopas</button>
+    <button class="tbtn" onclick="openSheetImport()">☁️ Tuo Sheetsistä</button>
+    <button class="tbtn" onclick="openSettings()">⚙️</button>
+  </div>
+  <div class="lum-ctrl">
+    <span style="font-size:12px;color:#888">☀</span>
+    <input type="range" class="lum-sl" id="lum-sl" min="65" max="115" value="100" oninput="applyLum()">
+    <span style="font-size:12px;color:#888">🌙</span>
+    <div class="warm-row">
+      <button class="wb on" id="wn" onclick="setWarm(0)">N</button>
+      <button class="wb" id="ww" onclick="setWarm(1)">L</button>
+      <button class="wb" id="wc" onclick="setWarm(2)">K</button>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- ═══ LEFT PANEL ═══ -->
+<div class="left">
+
+<!-- ╔═══════════════════════════════╗
+     ║   ST315A CONTROLLER FACE     ║
+     ╚═══════════════════════════════╝ -->
+<div class="ctrl-outer">
+
+  <!-- Label strip -->
+  <div class="ctrl-label">
+    <div class="uname" id="uname-ctrl">ISOUUNI</div>
+  </div>
+
+  <!-- Front panel -->
+  <div class="ctrl-panel">
+
+    <!-- ── DISPLAY ROW ── -->
+    <div class="disp-row">
+
+      <!-- Main 7-seg LED display -->
+      <div class="main-disp">
+        <div class="lock-dot" id="lock-dot"></div>
+        <!-- Background ghost (always dim "8888") -->
+        <div class="disp-ghost">8888</div>
+        <div class="disp-val" id="disp-val">20</div>
+        <div class="disp-sub" id="disp-sub"></div>
+      </div>
+
+      <!-- Three indicator LEDs: °C / °C/hr / hr.min -->
+      <div class="inds">
+        <div class="ind">
+          <div class="ind-dot on" id="dot-c"></div>
+          <span class="ind-lbl">°C</span>
+        </div>
+        <div class="ind">
+          <div class="ind-dot" id="dot-chr"></div>
+          <span class="ind-lbl">°C/hr</span>
+        </div>
+        <div class="ind">
+          <div class="ind-dot" id="dot-hm"></div>
+          <span class="ind-lbl">hr.min</span>
+        </div>
+      </div>
+
+      <!-- START/STOP area with firing lamp -->
+      <div class="start-area">
+        <div class="start-lbl">START</div>
+        <div class="fire-lamp" id="fire-lamp-top" title="Firing lamp"></div>
+        <button class="start-btn" id="start-btn" onclick="pressStart()">
+          <div class="pwr-ring"></div>
+        </button>
+        <div class="stop-lbl">STOP</div>
+      </div>
+
+    </div><!-- /disp-row -->
+
+    <!-- ── CONTROL ROW: buttons + prog/seg + mimic ── -->
+    <div class="ctrl-row">
+
+      <!-- 2×2 nav buttons -->
+      <div class="nav-grid">
+        <button class="nb" id="nb-step"
+          onclick="pressStep()"
+          title="STEP — ohjelmointi / parametrin valinta">
+          <span class="arr">&#x2192;</span>
+          <span class="nl">STEP</span>
+        </button>
+        <button class="nb" id="nb-up"
+          onmousedown="btnHoldStart(pressUp)" onmouseup="btnHoldStop()" onmouseleave="btnHoldStop()"
+          ontouchstart="btnHoldStart(pressUp)" ontouchend="btnHoldStop()"
+          title="UP — arvo ylös">
+          <span class="arr">&#x2191;</span>
+          <span class="nl">UP</span>
+        </button>
+        <button class="nb" id="nb-back"
+          onclick="pressBack()"
+          title="BACK — askel taaksepäin / kWh">
+          <span class="arr">&#x2190;</span>
+          <span class="nl">BACK</span>
+          <span class="ns">kWh</span>
+        </button>
+        <button class="nb" id="nb-dn"
+          onmousedown="btnHoldStart(pressDn)" onmouseup="btnHoldStop()" onmouseleave="btnHoldStop()"
+          ontouchstart="btnHoldStart(pressDn)" ontouchend="btnHoldStop()"
+          title="DOWN — arvo alas">
+          <span class="arr">&#x2193;</span>
+          <span class="nl">DOWN</span>
+        </button>
+      </div>
+
+      <!-- PROGRAM / SEGMENT mini displays -->
+      <div class="ps-col">
+        <div class="ps-grp">
+          <div class="ps-lbl">PROGRAM</div>
+          <div class="ps-val" id="prog-disp">1</div>
+        </div>
+        <div class="ps-grp">
+          <div class="ps-lbl">SEGMENT</div>
+          <div class="ps-val" id="seg-disp">1</div>
+        </div>
+      </div>
+
+      <!-- Segment mimic display -->
+      <div class="mimic-container"><svg id="mimic-svg" viewBox="0 0 220 155" width="220" height="155" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="lamp-glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      @keyframes lampblink { 0%,100%{opacity:1} 50%{opacity:0.07} }
+      .lamp-blink { animation: lampblink 0.65s step-end infinite; }
+    
+/* ═══════════ MODALS / OVERLAYS ═══════════ */
+.overlay{position:fixed;inset:0;z-index:1000;background:rgba(28,24,20,0.66);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;}
+.overlay.show{display:flex;}
+.modal{background:var(--bg);border-radius:16px;width:100%;max-width:600px;max-height:94vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.4);}
+.modal-head{background:var(--surf);border-bottom:1px solid var(--bdr);padding:16px 22px 13px;flex-shrink:0;}
+.modal-brand{font-family:"Georgia",serif;font-size:12px;color:var(--clay);letter-spacing:.05em;margin-bottom:9px;}
+.modal-prog{display:flex;gap:6px;margin-bottom:9px;}
+.mp-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr);transition:all .25s;}
+.mp-dot.done{background:var(--clay);}.mp-dot.active{background:var(--clay);width:22px;border-radius:4px;}
+.modal-title{font-family:"Georgia",serif;font-size:20px;color:var(--tx);margin-bottom:3px;}
+.modal-sub{font-size:13px;color:var(--txl);}
+.modal-body{flex:1;overflow-y:auto;padding:20px 22px;}
+.modal-foot{border-top:1px solid var(--bdr);padding:13px 22px;display:flex;justify-content:space-between;align-items:center;background:var(--surf);flex-shrink:0;gap:8px;}
+.mbtn{padding:9px 18px;border-radius:7px;font-family:"Instrument Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;}
+.mbtn-ghost{background:none;border:1px solid var(--bdr);color:var(--txm);}
+.mbtn-ghost:hover{border-color:var(--clay);color:var(--clay);}
+.mbtn-ghost:disabled{opacity:.3;pointer-events:none;}
+.mbtn-primary{background:var(--clay);color:white;}
+.mbtn-primary:hover{background:var(--clayd);}
+.mbtn-primary:disabled{background:var(--bdr);cursor:not-allowed;}
+.modal-counter{font-size:11px;color:var(--txl);}
+
+/* Wizard cards */
+.wsec-lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--txl);margin:16px 0 8px;}
+.wsec-lbl:first-child{margin-top:0;}
+.wname-inp{width:100%;padding:13px 15px;border:2px solid var(--bdr);border-radius:10px;font-size:17px;background:white;color:var(--tx);transition:border-color .15s;}
+.wname-inp:focus{outline:none;border-color:var(--clay);}
+.wdate{font-size:12px;color:var(--txl);background:var(--surf);border-radius:6px;padding:7px 11px;display:inline-block;margin-top:9px;}
+.wcards{display:grid;gap:9px;}
+.wcards.c2{grid-template-columns:1fr 1fr;}
+.wcards.c3{grid-template-columns:1fr 1fr 1fr;}
+.wcard{padding:13px 11px;border:2px solid var(--bdr);border-radius:10px;background:white;cursor:pointer;transition:all .15s;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.wcard:hover{border-color:var(--clayd);background:var(--clayp);}
+.wcard.sel{border-color:var(--clay);background:var(--clayp);}
+.wcard.sel::after{content:"✓";position:absolute;top:7px;right:10px;font-size:13px;color:var(--clay);font-weight:700;}
+.wcard .ci{font-size:25px;line-height:1;}
+.wcard .cn{font-size:13px;font-weight:600;color:var(--tx);}
+.wcard .cd{font-size:11px;color:var(--txl);line-height:1.4;}
+.wkcard{padding:14px 16px;border:2px solid var(--bdr);border-radius:10px;background:white;cursor:pointer;transition:all .15s;display:grid;grid-template-columns:50px 1fr;align-items:center;gap:12px;position:relative;}
+.wkcard:hover{border-color:var(--clayd);background:var(--clayp);}
+.wkcard.sel{border-color:var(--clay);background:var(--clayp);}
+.wkcard.sel::after{content:"✓";position:absolute;top:11px;right:13px;font-size:13px;color:var(--clay);font-weight:700;}
+.wkbox{width:50px;height:50px;background:var(--surf);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:23px;}
+.wkn{font-size:14px;font-weight:600;}.wks{font-size:11px;color:var(--txl);margin-top:2px;}
+.wwarn{background:#FFF4EE;border-left:3px solid var(--clay);border-radius:0 7px 7px 0;padding:10px 13px;margin-top:12px;font-size:12px;color:#6A3010;line-height:1.6;}
+.wtemp{display:flex;align-items:center;gap:10px;background:white;border:2px solid var(--bdr);border-radius:10px;padding:12px 16px;margin-top:8px;}
+.wtemp input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bdr);outline:none;cursor:pointer;}
+.wtemp input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--clay);cursor:pointer;}
+.wtempv{font-family:"DM Mono",monospace;font-size:20px;color:var(--clay);font-weight:500;min-width:52px;text-align:right;}
+
+/* Photo upload */
+.photo-drop{border:2px dashed var(--bdr2);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:white;}
+.photo-drop:hover{border-color:var(--clay);background:var(--clayp);}
+.photo-drop.has-img{padding:8px;border-style:solid;}
+.photo-drop .pd-icon{font-size:30px;margin-bottom:6px;}
+.photo-drop .pd-txt{font-size:12px;color:var(--txm);font-weight:500;}
+.photo-drop .pd-sub{font-size:10px;color:var(--txl);margin-top:3px;}
+.photo-preview{max-width:100%;max-height:220px;border-radius:8px;display:block;margin:0 auto;}
+.ai-result{margin-top:12px;background:#F0F6F2;border:1px solid #C0DCC8;border-radius:9px;padding:13px 15px;font-size:13px;color:#2A4A36;line-height:1.6;}
+.ai-result.loading{background:var(--surf);border-color:var(--bdr);color:var(--txm);text-align:center;}
+.ai-result h4{font-size:12px;font-weight:700;margin-bottom:6px;color:#1E3A28;letter-spacing:.03em;}
+.ai-spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--bdr);border-top-color:var(--clay);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:7px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Preview step */
+.pv-name{width:100%;padding:10px 13px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;font-weight:600;background:white;color:var(--tx);}
+.pv-name:focus{outline:none;border-color:var(--clay);}
+.pv-curvebox{background:white;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;margin-top:8px;}
+#wiz-curve{width:100%;display:block;}
+.pv-stats{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px;}
+.pv-stat{flex:1;min-width:90px;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:9px 11px;text-align:center;}
+.pv-sv{font-family:"DM Mono",monospace;font-size:17px;color:var(--clay);font-weight:500;display:block;}
+.pv-sl{font-size:10px;color:var(--txl);margin-top:2px;}
+.pv-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;}
+.pv-tbl th{background:var(--surf);padding:5px 7px;border:1px solid var(--bdr);font-weight:600;color:var(--txm);font-size:10px;}
+.pv-tbl td{padding:4px 6px;border:1px solid var(--bdr);text-align:center;}
+.pv-tbl input{width:100%;border:none;background:transparent;text-align:center;font-family:"DM Mono",monospace;font-size:11px;color:var(--tx);outline:none;}
+.pv-tbl input:focus{background:var(--clayp);}
+
+/* Toolbar buttons in topbar */
+.tool-btns{display:flex;gap:6px;align-items:center;}
+.tbtn{padding:6px 12px;border-radius:7px;border:1px solid var(--bdr);background:var(--bg);font-size:11px;font-weight:600;color:var(--txm);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.tbtn:hover{border-color:var(--clay);color:var(--clay);}
+.tbtn.accent{background:var(--clay);color:white;border-color:var(--clay);}
+.tbtn.accent:hover{background:var(--clayd);}
+
+/* Settings */
+.set-row{margin-bottom:14px;}
+.set-row label{display:block;font-size:11px;font-weight:600;color:var(--txm);margin-bottom:5px;}
+.set-row input{width:100%;padding:9px 12px;border:1px solid var(--bdr);border-radius:7px;font-size:13px;font-family:"DM Mono",monospace;background:white;color:var(--tx);}
+.set-row input:focus{outline:none;border-color:var(--clay);}
+.set-row .hint{font-size:11px;color:var(--txl);margin-top:4px;line-height:1.5;}
+.set-status{padding:9px 12px;border-radius:7px;font-size:12px;margin-top:8px;}
+.set-status.ok{background:#F0F6F2;color:#2A6040;border:1px solid #C0DCC8;}
+.set-status.err{background:#FBEEEC;color:#A03020;border:1px solid #E8C8C0;}
+
+/* Sheet import list */
+.sheet-list{display:flex;flex-direction:column;gap:7px;max-height:340px;overflow-y:auto;}
+.sheet-item{background:white;border:1px solid var(--bdr);border-radius:8px;padding:11px 13px;cursor:pointer;transition:all .12s;}
+.sheet-item:hover{border-color:var(--clay);background:var(--clayp);}
+.si-name{font-size:13px;font-weight:600;}
+.si-meta{font-size:11px;color:var(--txl);margin-top:2px;display:flex;gap:7px;flex-wrap:wrap;}
+.si-tag{background:var(--surf);border-radius:3px;padding:1px 6px;font-size:10px;}
+
+/* Loading guide */
+.lg-kiln-dims{display:flex;gap:8px;margin-top:8px;}
+.lg-dim{flex:1;}
+.lg-dim label{font-size:10px;color:var(--txl);display:block;margin-bottom:3px;}
+.lg-dim input{width:100%;padding:7px 9px;border:1px solid var(--bdr);border-radius:6px;font-family:"DM Mono",monospace;font-size:13px;text-align:center;background:white;color:var(--tx);}
+.lg-suggestion{background:white;border:1px solid var(--bdr);border-radius:10px;padding:14px;margin-top:12px;}
+.lg-shelf{border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;margin-bottom:8px;background:var(--surf);}
+.lg-shelf-h{font-size:12px;font-weight:700;color:var(--clay);margin-bottom:5px;}
+.lg-shelf-b{font-size:12px;color:var(--txm);line-height:1.6;}
+
+
+/* Curve editor popover */
+#seg-popover{position:fixed;inset:0;z-index:1100;background:rgba(28,24,20,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:16px;}
+#seg-popover.show{display:flex;}
+.pop-card{background:var(--bg);border-radius:14px;width:100%;max-width:300px;padding:18px 20px;box-shadow:0 24px 60px rgba(0,0,0,.4);}
+.pop-h{font-family:"Georgia",serif;font-size:16px;margin-bottom:14px;color:var(--clay);}
+.pop-row{margin-bottom:11px;}
+.pop-row label{display:block;font-size:11px;font-weight:600;color:var(--txm);margin-bottom:4px;}
+.pop-row input{width:100%;padding:10px 12px;border:1px solid var(--bdr);border-radius:8px;font-family:"DM Mono",monospace;font-size:16px;text-align:center;background:white;color:var(--tx);}
+.pop-row input:focus{outline:none;border-color:var(--clay);}
+.pop-btns{display:flex;gap:8px;margin-top:16px;}
+.pop-btns .mbtn{flex:1;}
+.pop-btns .mbtn-ghost{color:#C04030;border-color:#E0C0B8;}
+/* Edit hint bar */
+.edit-hint{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:10px;color:var(--txl);margin:8px 0 0;padding:7px 11px;background:var(--surf);border-radius:7px;border:1px solid var(--bdr);}
+.edit-hint b{color:var(--clay);font-weight:600;}
+.eh-sep{color:var(--bdr2);}
+
+</style>
+  </defs>
+  <!-- Panel background -->
+  <rect width="220" height="155" fill="#1A1814" rx="3"/>
+  <!-- Grid lines (6 cols × 5 rows), x=14..208, y=10..138 -->
+  <!-- Vertical lines -->
+  <line x1="14" y1="10" x2="14" y2="138" stroke="#2A2620" stroke-width=".8"/>
+  <line x1="46" y1="10" x2="46" y2="138" stroke="#252218" stroke-width=".5"/>
+  <line x1="79" y1="10" x2="79" y2="138" stroke="#252218" stroke-width=".5"/>
+  <line x1="111" y1="10" x2="111" y2="138" stroke="#252218" stroke-width=".5"/>
+  <line x1="143" y1="10" x2="143" y2="138" stroke="#252218" stroke-width=".5"/>
+  <line x1="176" y1="10" x2="176" y2="138" stroke="#252218" stroke-width=".5"/>
+  <line x1="208" y1="10" x2="208" y2="138" stroke="#2A2620" stroke-width=".8"/>
+  <!-- Horizontal lines -->
+  <line x1="14" y1="10" x2="208" y2="10" stroke="#2A2620" stroke-width=".8"/>
+  <line x1="14" y1="36" x2="208" y2="36" stroke="#252218" stroke-width=".5"/>
+  <line x1="14" y1="61" x2="208" y2="61" stroke="#252218" stroke-width=".5"/>
+  <line x1="14" y1="87" x2="208" y2="87" stroke="#252218" stroke-width=".5"/>
+  <line x1="14" y1="113" x2="208" y2="113" stroke="#252218" stroke-width=".5"/>
+  <line x1="14" y1="138" x2="208" y2="138" stroke="#2A2620" stroke-width=".8"/>
+
+  <!-- Axis labels -->
+  <text x="6" y="16" font-size="8" fill="#454038" font-family="monospace" font-weight="600">&#x2191;</text>
+  <text x="4" y="26" font-size="7" fill="#454038" font-family="monospace">&#xB0;C</text>
+  <text x="197" y="148" font-size="8" fill="#454038" font-family="monospace">t</text>
+  <text x="204" y="148" font-size="8" fill="#454038" font-family="monospace">&#x21D2;</text>
+
+  <!-- ═══ PRINTED CURVE LINES (always visible, dim ink) ═══ -->
+  <!-- Delay flat section: (24,125) → (38,125) before rising -->
+  <line x1="24" y1="125" x2="38" y2="125" stroke="#454038" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Heating ramp: delay point (38,125) → circle center (111,74) -->
+  <line x1="38" y1="125" x2="111" y2="74" stroke="#454038" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Soaking horizontal: circle (111,74) → right end (198,74) -->
+  <line x1="111" y1="74" x2="198" y2="74" stroke="#454038" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Cooling ramp: top-left (30,18) → circle (111,74) -->
+  <line x1="30" y1="18" x2="111" y2="74" stroke="#454038" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Phase labels (printed on device, always visible) -->
+  <text x="24" y="146" font-size="7.5" fill="#504840" font-family="monospace">Delay</text>
+  <text x="54" y="108" font-size="7.5" fill="#504840" font-family="monospace">Heating</text>
+  <text x="36" y="32" font-size="7.5" fill="#504840" font-family="monospace">Cooling</text>
+  <text x="148" y="64" font-size="7.5" fill="#504840" font-family="monospace">Soaking</text>
+
+  <!-- ═══ LAMP INDICATORS — 5 positions ═══ -->
+  <!-- Each: dim state + bright glow state, toggled by JS via fill+filter -->
+
+  <!-- 1. DELAYED START LAMP — bottom left, right-pointing triangle -->
+  <!-- Position: (24, 125) on delay line, pointing RIGHT -->
+  <polygon id="ml-delay" points="16,121 16,130 24,125"
+    fill="#200A04" stroke="#300E06" stroke-width=".8"/>
+
+  <!-- 2. HEATING RAMP LAMP — on rising diagonal, pointing upper-right -->
+  <!-- Midpoint of (38,125)→(111,74): (74, 100) -->
+  <!-- Triangle pointing along the line direction (up-right ~55°) -->
+  <!-- Right-pointing base, rotated to match line angle -->
+  <!-- Line angle: atan2(74-125, 111-38)=atan2(-51,73)≈-35° from horizontal -->
+  <!-- Arrow pointing up-right: center (74,100) -->
+  <polygon id="ml-heat" transform="translate(74,100) rotate(-34.9)"
+    points="-7,-5 -7,5 5,0" fill="#200A04" stroke="#300E06" stroke-width=".8"/>
+
+  <!-- 3. SOAK TEMPERATURE LAMP — circle at junction (111, 74) -->
+  <circle id="ml-soakT" cx="111" cy="74" r="7"
+    fill="#200A04" stroke="#300E06" stroke-width="1"/>
+
+  <!-- 4. SOAK TIME LAMP — on horizontal soaking line, pointing RIGHT -->
+  <!-- Midpoint of (111,74)→(198,74): (154, 74) -->
+  <polygon id="ml-soakH" transform="translate(154,74)"
+    points="-7,-5 -7,5 5,0" fill="#200A04" stroke="#300E06" stroke-width=".8"/>
+
+  <!-- 5. COOLING RAMP LAMP — on descending diagonal, pointing lower-right -->
+  <!-- Midpoint of (30,18)→(111,74): (70, 46) -->
+  <!-- Line angle: atan2(74-18, 111-30)=atan2(56,81)≈34.7° from horizontal -->
+  <!-- Arrow pointing down-right: center (70,46) -->
+  <polygon id="ml-cool" transform="translate(70,46) rotate(34.7)"
+    points="-7,-5 -7,5 5,0" fill="#200A04" stroke="#300E06" stroke-width=".8"/>
+
+  <!-- ═══ FIRING LAMP (separate, top-right corner) ═══ -->
+  <circle id="ml-fire" cx="207" cy="11" r="4.5"
+    fill="#040C04" stroke="#080F08" stroke-width=".8"/>
+</svg></div>
+
+    </div><!-- /ctrl-row -->
+
+    <!-- ── BRANDING ── -->
+    <div class="brand-row">
+      <div>
+        <div class="sf-name">STAFFORD INSTRUMENTS</div>
+        <div class="sf-sub">Temperature Programmer</div>
+      </div>
+      <div class="model-col">
+        <div class="model-txt">ST315A</div>
+        <div class="ce-txt">CE</div>
+      </div>
+    </div>
+
+  </div><!-- /ctrl-panel -->
+</div><!-- /ctrl-outer -->
+
+<!-- Status strip -->
+<div class="status-bar">
+  <div class="sb-msg" id="status-msg">Valmiustila — paina STEP ohjelmoidaksesi</div>
+  <div class="sb-dur" id="status-dur">—</div>
+</div>
+
+<!-- Quick ref -->
+<div style="width:490px;background:#F8F5F0;border:1px solid #D4CEC4;border-radius:7px;padding:11px 14px;font-size:10px;color:#58544E;">
+  <div style="font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8A8680;margin-bottom:7px;">ST315A · Ohjelmointikulku (manuaalin mukaan)</div>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 10px;align-items:start;">
+    <span style="font-family:'DM Mono',monospace;background:#E8E4DC;padding:1px 5px;border-radius:2px;font-size:9px;white-space:nowrap">STEP</span><span>IDLE → Prog# → Delay → [Rate→Temp→Aika]×seg → End</span>
+    <span style="font-family:'DM Mono',monospace;background:#E8E4DC;padding:1px 5px;border-radius:2px;font-size:9px">BACK</span><span>Askel taaksepäin · Pitkä = kWh-näyttö</span>
+    <span style="font-family:'DM Mono',monospace;background:#E8E4DC;padding:1px 5px;border-radius:2px;font-size:9px">UP/DN</span><span>Rate: End↔1–999↔FULL · Temp: ±10°C · Aika: ±1min</span>
+    <span style="font-family:'DM Mono',monospace;background:#E8E4DC;padding:1px 5px;border-radius:2px;font-size:9px">START</span><span>Käynnistää polton (myös ohjelmointitilasta) · Toinen STOP</span>
+    <span style="font-family:'DM Mono',monospace;background:#E8E4DC;padding:1px 5px;border-radius:2px;font-size:9px">10s</span><span>Timeout ohjelmoinnissa → palaa valmiustilaan automaattisesti</span>
+    <span style="font-family:'DM Mono',monospace;background:#E8E4DC;padding:1px 5px;border-radius:2px;font-size:9px">END</span><span>Rate=End → päättää ohjelman. FULL = täysteho</span>
+  </div>
+</div>
+
+<!-- Program sheet -->
+<div class="prog-sheet">
+  <div class="ps-head">
+    <div class="ps-head-lbl">Ohjelmarekisteri — Prog</div>
+    <div class="prog-btns" id="prog-btns"></div>
+  </div>
+  <div class="delay-row">
+    <label>Viivästetty käynnistys:</label>
+    <input type="text" class="delay-inp" id="delay-inp" value="00.00"
+      onchange="updateDelay(this.value)" placeholder="hh.mm"/>
+    <span style="font-size:10px;color:#888">hr.min (max 99:59)</span>
+  </div>
+  <table class="sheet-tbl">
+    <thead><tr>
+      <th style="width:32px">Seg</th>
+      <th>Rate °C/hr</th>
+      <th>Soak °C</th>
+      <th>Aika hr.min</th>
+      <th style="width:28px"></th>
+    </tr></thead>
+    <tbody id="sheet-body"></tbody>
+  </table>
+  <button class="btn-add" onclick="addSeg()">+ Lisää segmentti (max 9)</button>
+</div>
+
+<div style="display:flex;gap:8px;width:490px;">
+  <button class="btn-save" style="flex:1" onclick="saveToLog()">▶ Tallenna polttokirjaan</button>
+  <button class="btn-save" style="flex:1;background:#3C7050" onclick="exportToSheet()">☁️ Vie Sheetsiin</button>
+</div>
+
+</div><!-- /left -->
+
+<!-- ═══ RIGHT PANEL ═══ -->
+<div class="right">
+  <div class="rp-title">Polttokäyrä — Ohjelma <span id="rp-prog-n">1</span></div>
+  <div class="rp-sub">Lämmitysrampit (terrakotta) · Jäähdytysrampit (violetti) · Kriittiset vaiheet korostettu</div>
+  <div class="edit-hint">
+    ✋ <b>Kosketuseditori:</b>
+    <span>Vedä <b>nodea</b> pystyyn = lämpötila</span><span class="eh-sep">·</span>
+    <span>Vedä <b>ramppia</b> = nopeus</span><span class="eh-sep">·</span>
+    <span>Vedä <b>tasannetta</b> = pitoaika</span><span class="eh-sep">·</span>
+    <span><b>Tuplanapauta</b> = lisää segmentti</span><span class="eh-sep">·</span>
+    <span><b>Napauta node</b> = tarkat arvot</span>
+  </div>
+
+  <svg id="curve-svg" viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg">
+    <text x="360" y="148" text-anchor="middle" font-size="13" fill="#bbb" font-family="Instrument Sans,sans-serif">Lisää segmentit ohjelmarekisteriin</text>
+  </svg>
+
+  <div class="ph-leg">
+    <div class="pc"><div class="pd" style="background:#5A8CD2"></div>Kuivausvaihe 0–120°C</div>
+    <div class="pc"><div class="pd" style="background:#D0A040"></div>Org. palaminen</div>
+    <div class="pc"><div class="pd" style="background:#D04030"></div>⚠ 573°C</div>
+    <div class="pc"><div class="pd" style="background:#BF5B28"></div>Korppualue</div>
+    <div class="pc"><div class="pd" style="background:#3C966E"></div>Matala lasitus</div>
+    <div class="pc"><div class="pd" style="background:#3C64BE"></div>Korkea lasitus</div>
+    <div class="pc"><div class="pd" style="background:#6050C0"></div>Jäähdytysrampi</div>
+  </div>
+
+  <table class="seg-tbl">
+    <thead><tr>
+      <th>Seg</th><th>Rate °C/hr</th><th>Soak °C</th>
+      <th>Aika</th><th>Kesto</th><th style="text-align:left">Vaihe</th>
+    </tr></thead>
+    <tbody id="seg-sum-body"></tbody>
+  </table>
+
+  <div class="ic-grid">
+    <div class="ic">
+      <div class="ic-t">📋 ST315A — Ohjelmalogiikka</div>
+      <div class="ic-b">9 ohjelmaa · max 9 segmenttiä/ohjelma. Jokainen segmentti = Rate (°C/hr) + Soak temp (°C) + Soak time (hr.min). Rate=FULL = täysteho, Rate=End = ohjelman loppu. Mimic-näyttö näyttää aktiivisen vaiheen.</div>
+    </div>
+    <div class="ic">
+      <div class="ic-t">🔆 Mimic-näyttö</div>
+      <div class="ic-b">Delay-kolmio vilkkuu viivästystä ohjelmoidessa. Heating/Cooling vilkkuu Rate-vaiheessa suunnan mukaan. Soak Temp -pallo vilkkuu lämpötilaa ohjelmoidessa. Soaking-nuoli vilkkuu pitoaikaa ohjelmoidessa.</div>
+    </div>
+    <div class="ic">
+      <div class="ic-t">⚠️ 573°C — Kvartsifaasimuutos</div>
+      <div class="ic-b">Kvartsi muuttaa kiderakennetta. Max 30°C/hr välillä 540–600°C. Vaara sekä lämmityksessä että jäähtymisessä.</div>
+    </div>
+    <div class="ic">
+      <div class="ic-t">⚡ kWh &amp; Lukitus</div>
+      <div class="ic-b">BACK = kWh-näyttö 3s. UP+DOWN pidetty 5s = lukitsee/avaa (vasen desimaalipiste palaa). Soaking-vaiheen aikana näyttö vuorottelee temp/pitoaika 5s välein.</div>
+    </div>
+  </div>
+
+  <div class="log-sec">
+    <div class="log-tog" onclick="toggleLog()">
+      <h3>📋 Polttokirja</h3>
+      <span id="log-arr">▼</span>
+    </div>
+    <div class="log-bd" id="log-bd">
+      <div id="log-entries"></div>
+    </div>
+  </div>
+</div><!-- /right -->
+
+</div><!-- /page -->
+
+<footer>
+  <strong>ST315A Virtuaalikaksonen™ · KERAKO Poltto-ohjelmoija™</strong> &nbsp;·&nbsp;
+  © 2025 Mika Ihanus™ &nbsp;·&nbsp; Kaikki oikeudet pidätetään &nbsp;·&nbsp;
+  Rekisteröity tavaramerkki &nbsp;·&nbsp;
+  Metropolia AMK · Muotoilun Pajat · Arabia, Helsinki &nbsp;·&nbsp; v5.0<br>
+  ST315 User Handbook © 2004, 2005 Stafford Instruments Ltd.
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════════
+   ST315A VIRTUAL TWIN — 1:1 faithful implementation
+   Based on ST315 User Handbook Issue 1.002, Dec 2005
+   © 2025 Mika Ihanus — Metropolia AMK
+   ══════════════════════════════════════════════════ */
+
+/* ── CONSTANTS ── */
+var MAX_PROGS = 9;
+var MAX_SEGS  = 9;
+var RATE_END  = "End";
+var RATE_FULL = "FULL";
+var MAX_TEMP  = 1320;  // ST315 max soak temp
+var IDLE_TOUT = 10000; // 10s timeout exits programming
+
+/* ── STATE VARIABLES ── */
+var ctrlState = "IDLE";
+// States: IDLE | PROG_SEL | DELAY | SEG_RATE | SEG_TEMP | SEG_TIME
+//       | FIRING_DELAY | FIRING_RAMP | FIRING_SOAK | COOLING_DOWN | COMPLETE | KWH
+
+var curProg   = 0;   // 0-8 (shown as 1-9)
+var curSeg    = 0;   // 0-8 (shown as 1-9)
+var kilnIdx   = 0;   // 0=isouuni, 1=ammemalli
+var isLocked  = false;
+var kwhUsed   = 0.0;
+var idleTimer = null;
+var repeatTimer = null;
+var repeatInterval = null;
+
+var KILNS = [
+  { name:"ISOUUNI",   maxC:1280, kW:13,  vol:"250L" },
+  { name:"AMMEMALLI", maxC:1280, kW:4.4, vol:"45L"  }
+];
+
+/* 9 programs × 9 segs max
+   Each prog: { delay: minutes, segs: [{rate, temp, time_min}] }
+   rate: 1-999 | "FULL" | "End" */
+var progs = [];
+for (var i = 0; i < MAX_PROGS; i++) {
+  progs.push({ delay: 0, segs: [] });
+}
+/* Load defaults */
+progs[0].segs = [
+  { rate:20,  temp:120,  time_min:30 },
+  { rate:60,  temp:550,  time_min:0  },
+  { rate:30,  temp:600,  time_min:0  },
+  { rate:100, temp:860,  time_min:15 }
+];
+progs[1].segs = [
+  { rate:15,  temp:120,  time_min:30 },
+  { rate:70,  temp:550,  time_min:0  },
+  { rate:30,  temp:600,  time_min:0  },
+  { rate:50,  temp:1260, time_min:30 }
+];
+
+/* Firing simulation */
+var fireRunning  = false;
+var fireInterval = null;
+var simTemp      = 20;
+var fireSeg      = 0;
+var firePhase    = "";  // "DELAY"|"RAMP"|"SOAK"|"COMPLETE"
+var soakRemMin   = 0;
+var soakShowTemp = true;
+var soakAltTimer = null;
+var logData      = [];
+var LOGKEY       = "kerako-st315-v4";
+
+/* ══════════════════════════════════════════════════
+   RATE HELPERS
+   Rate order: End → 1 → 2 → ... → 999 → FULL → End
+   ══════════════════════════════════════════════════ */
+function rateUp(r) {
+  if (r === RATE_END)  return 1;
+  if (typeof r === "number" && r < 999) return r + 10;
+  if (r === 999)       return RATE_FULL;
+  if (r === RATE_FULL) return RATE_END;
+  return 1;
+}
+function rateDn(r) {
+  if (r === RATE_END)  return RATE_FULL;
+  if (r === RATE_FULL) return 999;
+  if (typeof r === "number" && r > 10) return r - 10;
+  if (r === 10 || r === 1) return RATE_END;
+  return RATE_END;
+}
+function rateDisp(r) {
+  if (r === RATE_END)  return "End";
+  if (r === RATE_FULL) return "FULL";
+  return String(r);
+}
+
+/* ══════════════════════════════════════════════════
+   TIME HELPERS  (minutes ↔ hr.min display)
+   ══════════════════════════════════════════════════ */
+function minsToHM(m) {
+  var h = Math.floor(m / 60);
+  var mm = Math.round(m % 60);
+  return (h < 10 ? "0" + h : h) + "." + (mm < 10 ? "0" + mm : mm);
+}
+function hmToMins(s) {
+  var parts = String(s).split(".");
+  return (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
+}
+function mUp(m)  { return Math.min(5999, m + 1); }
+function mDn(m)  { return Math.max(0, m - 1); }
+
+/* ══════════════════════════════════════════════════
+   IDLE TIMEOUT (10s exits programming — manual p.8)
+   ══════════════════════════════════════════════════ */
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(function() {
+    var prog_states = ["PROG_SEL","DELAY","SEG_RATE","SEG_TEMP","SEG_TIME"];
+    if (prog_states.indexOf(ctrlState) >= 0) {
+      ctrlState = "IDLE";
+      refreshDisplay();
+      renderSheet();
+    }
+  }, IDLE_TOUT);
+}
+function clearIdle() { clearTimeout(idleTimer); }
+
+/* ══════════════════════════════════════════════════
+   ENSURE SEG EXISTS
+   ══════════════════════════════════════════════════ */
+function ensureSeg(si) {
+  var p = progs[curProg];
+  while (p.segs.length <= si) {
+    p.segs.push({ rate: RATE_END, temp: 500, time_min: 0 });
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   EFFECTIVE SEGS (stops at End marker)
+   ══════════════════════════════════════════════════ */
+function effSegs(prog) {
+  var out = [];
+  for (var i = 0; i < prog.segs.length; i++) {
+    if (prog.segs[i].rate === RATE_END) break;
+    out.push(prog.segs[i]);
+  }
+  return out;
+}
+
+/* ══════════════════════════════════════════════════
+   BUTTON HANDLERS
+   ══════════════════════════════════════════════════ */
+
+function pressStep() {
+  var btn = document.getElementById("nb-step");
+  if (btn) { btn.classList.add("pressed"); setTimeout(function(){btn.classList.remove("pressed");},100); }
+  if (isLocked && !fireRunning) return;
+
+  if (fireRunning) {
+    /* During firing: STEP cycles through params to adjust (manual p.14) */
+    setMsg("STEP polton aikana: muokkaa parametrejä ohjelmarekisteristä →");
+    return;
+  }
+
+  var prog_states = ["PROG_SEL","DELAY","SEG_RATE","SEG_TEMP","SEG_TIME"];
+  switch (ctrlState) {
+    case "IDLE":
+      ctrlState = "PROG_SEL"; break;
+    case "PROG_SEL":
+      ctrlState = "DELAY"; break;
+    case "DELAY":
+      curSeg = 0;
+      ensureSeg(0);
+      ctrlState = "SEG_RATE"; break;
+    case "SEG_RATE":
+      var seg = progs[curProg].segs[curSeg];
+      if (seg.rate === RATE_END) {
+        /* End marker → terminate programming (manual p.8) */
+        clearIdle();
+        ctrlState = "IDLE";
+      } else {
+        ctrlState = "SEG_TEMP";
+      }
+      break;
+    case "SEG_TEMP":
+      ctrlState = "SEG_TIME"; break;
+    case "SEG_TIME":
+      curSeg++;
+      if (curSeg >= MAX_SEGS) {
+        /* Max 9 segments → auto terminate (manual p.8) */
+        clearIdle();
+        curSeg = 0;
+        ctrlState = "IDLE";
+      } else {
+        ensureSeg(curSeg);
+        ctrlState = "SEG_RATE";
+      }
+      break;
+  }
+  if (prog_states.indexOf(ctrlState) >= 0) resetIdleTimer();
+  else clearIdle();
+  refreshDisplay();
+  renderSheet();
+  drawCurve();
+  renderSummary();
+}
+
+function pressUp() {
+  if (isLocked && !fireRunning) return;
+  if (fireRunning) return;
+  var p = progs[curProg];
+  switch (ctrlState) {
+    case "PROG_SEL": curProg = (curProg + 1) % MAX_PROGS; break;
+    case "DELAY":    p.delay = mUp(p.delay); break;
+    case "SEG_RATE": ensureSeg(curSeg); p.segs[curSeg].rate = rateUp(p.segs[curSeg].rate); break;
+    case "SEG_TEMP": ensureSeg(curSeg); p.segs[curSeg].temp = Math.min(KILNS[kilnIdx].maxC, p.segs[curSeg].temp + 10); break;
+    case "SEG_TIME": ensureSeg(curSeg); p.segs[curSeg].time_min = mUp(p.segs[curSeg].time_min); break;
+  }
+  resetIdleTimer();
+  refreshDisplay();
+  renderSheet();
+  drawCurve();
+  renderSummary();
+}
+
+function pressDn() {
+  if (isLocked && !fireRunning) return;
+  if (fireRunning) return;
+  var p = progs[curProg];
+  switch (ctrlState) {
+    case "PROG_SEL": curProg = (curProg + MAX_PROGS - 1) % MAX_PROGS; break;
+    case "DELAY":    p.delay = mDn(p.delay); break;
+    case "SEG_RATE": ensureSeg(curSeg); p.segs[curSeg].rate = rateDn(p.segs[curSeg].rate); break;
+    case "SEG_TEMP": ensureSeg(curSeg); p.segs[curSeg].temp = Math.max(0, p.segs[curSeg].temp - 10); break;
+    case "SEG_TIME": ensureSeg(curSeg); p.segs[curSeg].time_min = mDn(p.segs[curSeg].time_min); break;
+  }
+  resetIdleTimer();
+  refreshDisplay();
+  renderSheet();
+  drawCurve();
+  renderSummary();
+}
+
+function pressBack() {
+  /* BACK = reverse through steps (manual p.8) / show kWh (manual p.18) */
+  if (isLocked) return;
+
+  if (ctrlState === "IDLE" || fireRunning) {
+    /* Show kWh display (manual p.18) */
+    showKwh(); return;
+  }
+  switch (ctrlState) {
+    case "PROG_SEL": ctrlState = "IDLE"; clearIdle(); break;
+    case "DELAY":    ctrlState = "PROG_SEL"; break;
+    case "SEG_RATE":
+      if (curSeg === 0) { ctrlState = "DELAY"; }
+      else { curSeg--; ctrlState = "SEG_TIME"; }
+      break;
+    case "SEG_TEMP": ctrlState = "SEG_RATE"; break;
+    case "SEG_TIME": ctrlState = "SEG_TEMP"; break;
+  }
+  resetIdleTimer();
+  refreshDisplay();
+  renderSheet();
+}
+
+function pressStart() {
+  /* START exits programming and starts firing immediately (manual p.8) */
+  if (isLocked) return;
+
+  if (fireRunning) {
+    /* STOP — halt firing (manual p.12: restart from beginning on next START) */
+    stopFiring(); return;
+  }
+  /* Exit programming mode if in it */
+  clearIdle();
+  ctrlState = "IDLE";
+  startFiring();
+}
+
+function showKwh() {
+  /* Show kWh on main display for 3 seconds (manual p.18) */
+  setMainVal(kwhUsed.toFixed(1), "kWh", false);
+  setIndicators(false, false, false);
+  setTimeout(function() { refreshDisplay(); }, 3000);
+}
+
+/* Hold UP+DOWN 5s = lock/unlock (manual p.18) */
+var lockHoldTimer = null;
+function startLockHold() {
+  lockHoldTimer = setTimeout(function() {
+    isLocked = !isLocked;
+    var dot = document.getElementById("lock-dot");
+    if (dot) dot.className = "lock-dot" + (isLocked ? " on" : "");
+    setMsg(isLocked ? "🔒 Näppäimistö lukittu (UP+DOWN 5s avataksesi)" : "🔓 Näppäimistö avattu");
+  }, 5000);
+}
+function cancelLockHold() { clearTimeout(lockHoldTimer); }
+
+/* ══════════════════════════════════════════════════
+   DISPLAY UPDATE — main LED, indicators, mimic
+   ══════════════════════════════════════════════════ */
+
+function setMainVal(val, sub, blink) {
+  var el = document.getElementById("disp-val");
+  var sl = document.getElementById("disp-sub");
+  if (!el) return;
+  el.textContent = val;
+  el.className = "disp-val" + (blink ? " blink" : "");
+  if (sl) sl.textContent = sub || "";
+}
+
+function setIndicators(c, chr, hm) {
+  var ec = document.getElementById("dot-c");
+  var echr = document.getElementById("dot-chr");
+  var ehm = document.getElementById("dot-hm");
+  if (ec)   ec.className   = "ind-dot" + (c   ? " on" : "");
+  if (echr) echr.className = "ind-dot" + (chr ? " on" : "");
+  if (ehm)  ehm.className  = "ind-dot" + (hm  ? " on" : "");
+}
+
+function setProgSeg(p, s) {
+  var ep = document.getElementById("prog-disp");
+  var es = document.getElementById("seg-disp");
+  if (ep) {
+    ep.textContent = p;
+    ep.className = "ps-val" + (ctrlState === "PROG_SEL" ? " active" : "");
+  }
+  if (es) {
+    es.textContent = s;
+    var segEditing = ["SEG_RATE","SEG_TEMP","SEG_TIME"].indexOf(ctrlState) >= 0;
+    es.className = "ps-val" + (segEditing ? " active" : "");
+  }
+}
+
+function setMsg(m) {
+  var el = document.getElementById("status-msg");
+  if (el) el.textContent = m;
+}
+
+function setDur(d) {
+  var el = document.getElementById("status-dur");
+  if (el) el.textContent = d;
+}
+
+/* MIMIC LAMP CONTROL */
+/* Lamp IDs: ml-delay, ml-heat, ml-soakT, ml-soakH, ml-cool, ml-fire */
+var LAMP_IDS = ["ml-delay","ml-heat","ml-soakT","ml-soakH","ml-cool","ml-fire"];
+
+function setLamp(id, state) {
+  /* For <g> elements the child polygon has its own fill attr that
+     overrides inherited CSS — so we must target the actual shape. */
+  var el = document.getElementById(id);
+  if (!el) return;
+  /* Get the actual renderable shape */
+  var shape = el;
+  if (el.nodeName.toLowerCase() === "g") {
+    shape = el.querySelector("polygon,circle") || el;
+  }
+  if (state === "off") {
+    shape.setAttribute("fill", "#200A04");
+    shape.style.filter = "none";
+    shape.style.opacity = "1";
+    shape.classList.remove("lamp-blink");
+  } else if (state === "on") {
+    shape.setAttribute("fill", "#FF1818");
+    shape.style.filter = "url(#lamp-glow)";
+    shape.style.opacity = "1";
+    shape.classList.remove("lamp-blink");
+  } else if (state === "blink") {
+    shape.setAttribute("fill", "#FF1818");
+    shape.style.filter = "url(#lamp-glow)";
+    shape.classList.add("lamp-blink");
+  }
+}
+
+function setFireLamp(on) {
+  var el = document.getElementById("ml-fire");
+  var fl = document.getElementById("fire-lamp-top");
+  var sb = document.getElementById("start-btn");
+  if (el) {
+    el.setAttribute("fill", on ? "#28E850" : "#040C04");
+    el.style.filter = on ? "url(#lamp-glow)" : "none";
+  }
+  if (fl) fl.className = "fire-lamp" + (on ? " on" : "");
+  if (sb) {
+    if (on) sb.classList.add("running"); else sb.classList.remove("running");
+  }
+}
+
+function setAllLampsOff() {
+  LAMP_IDS.forEach(function(id) {
+    if (id !== "ml-fire") setLamp(id, "off");
+  });
+  setFireLamp(false);
+}
+
+/* Which mimic lamp blinks for which programming field
+   Manual p.2: Delay→Delay lamp, Rate→Heat/Cool lamp, Temp→SoakT lamp, Time→SoakH lamp */
+function mimicForState() {
+  var p = progs[curProg];
+  setAllLampsOff();
+  if (ctrlState === "DELAY") {
+    setLamp("ml-delay", "blink");
+    return;
+  }
+  if (ctrlState === "SEG_RATE") {
+    var seg = p.segs[curSeg];
+    if (!seg || seg.rate === RATE_END) return;
+    /* Direction based on current stored soak temp vs previous segment */
+    var prevT = curSeg > 0 ? (p.segs[curSeg-1] ? p.segs[curSeg-1].temp : 20) : 20;
+    if (seg.temp >= prevT) {
+      setLamp("ml-heat", "blink");
+    } else {
+      setLamp("ml-cool", "blink");
+    }
+    return;
+  }
+  if (ctrlState === "SEG_TEMP") {
+    setLamp("ml-soakT", "blink");
+    return;
+  }
+  if (ctrlState === "SEG_TIME") {
+    setLamp("ml-soakH", "blink");
+    return;
+  }
+  /* PROG_SEL, IDLE: all off */
+}
+
+function refreshDisplay() {
+  var p = progs[curProg];
+  setProgSeg(curProg + 1, curSeg + 1);
+  var rp = document.getElementById("rp-prog-n");
+  if (rp) rp.textContent = curProg + 1;
+
+  switch (ctrlState) {
+    case "IDLE":
+      setMainVal(Math.round(simTemp), "", false);
+      setIndicators(true, false, false);
+      setMsg("IDLE · " + Math.round(simTemp) + "°C · Ohjelma " + (curProg+1) + "  →  paina STEP ohjelmoidaksesi · BACK = kWh");
+      setAllLampsOff();
+      setProgSeg(curProg+1, 1);
+      break;
+    case "PROG_SEL":
+      setMainVal("P  " + (curProg+1), "Ohjelma", true);
+      setIndicators(false, false, false);
+      setMsg("UP/DOWN: ohjelma 1–9 · STEP vahvistaa · BACK: peruuta");
+      setAllLampsOff();
+      break;
+    case "DELAY":
+      setMainVal(minsToHM(p.delay), "Viivästetty käynnistys", true);
+      setIndicators(false, false, true); /* hr.min LED */
+      setMsg("DELAY: UP/DOWN säätää viivästystä · STEP jatkaa");
+      mimicForState();
+      break;
+    case "SEG_RATE":
+      var seg_r = p.segs[curSeg] || { rate: RATE_END };
+      setMainVal(rateDisp(seg_r.rate), "Ramppinopeus °C/hr", true);
+      setIndicators(false, true, false); /* °C/hr LED */
+      var prevT_r = curSeg > 0 ? p.segs[curSeg-1].temp : 20;
+      var dir_hint = (seg_r.rate !== RATE_END) ? (seg_r.temp >= prevT_r ? "  ↑ Heating" : "  ↓ Cooling") : "";
+      setMsg("SEG " + (curSeg+1) + " · Rate °C/hr: End / 1–999 / FULL" + dir_hint + " · UP/DOWN · STEP →");
+      setProgSeg(curProg+1, curSeg+1);
+      mimicForState();
+      break;
+    case "SEG_TEMP":
+      var seg_t = p.segs[curSeg];
+      setMainVal(seg_t.temp, "Pitolämpötila °C", true);
+      setIndicators(true, false, false); /* °C LED */
+      setMsg("SEG " + (curSeg+1) + " Pitolämpötila · UP/DOWN (+10°C) · STEP jatkaa");
+      setProgSeg(curProg+1, curSeg+1);
+      mimicForState();
+      break;
+    case "SEG_TIME":
+      var seg_h = p.segs[curSeg];
+      setMainVal(minsToHM(seg_h.time_min), "Pitoaika hr.min", true);
+      setIndicators(false, false, true); /* hr.min LED */
+      setMsg("SEG " + (curSeg+1) + " Pitoaika · UP/DOWN · STEP = seuraava segmentti");
+      setProgSeg(curProg+1, curSeg+1);
+      mimicForState();
+      break;
+  }
+  calcDuration();
+}
+
+/* ══════════════════════════════════════════════════
+   FIRING SIMULATION
+   ══════════════════════════════════════════════════ */
+
+function startFiring() {
+  var p = progs[curProg];
+  var segs = effSegs(p);
+  if (!segs.length) { setMsg("Ei segmenttejä! Ohjelmoi ensin."); return; }
+  fireRunning = true;
+  fireSeg = 0;
+  simTemp = 20;
+  kwhUsed = 0;
+  setFireLamp(true);
+  setMsg("▶ KÄYNNISTYY — Ohjelma " + (curProg+1));
+  if (p.delay > 0) {
+    firePhase = "DELAY";
+    setAllLampsOff();
+    setLamp("ml-delay", "on");
+    setFireLamp(true);
+    runDelay(segs, p.delay);
+  } else {
+    runSeg(segs, 0);
+  }
+}
+
+function runDelay(segs, delayMins) {
+  var rem = delayMins;
+  clearInterval(fireInterval);
+  fireInterval = setInterval(function() {
+    if (!fireRunning) return;
+    rem -= 0.5;
+    setMainVal(minsToHM(Math.max(0, rem)), "Delay jäljellä", false);
+    setIndicators(false, false, true);
+    if (rem <= 0) {
+      clearInterval(fireInterval);
+      setLamp("ml-delay", "off");
+      runSeg(segs, 0);
+    }
+  }, 100);
+}
+
+function runSeg(segs, si) {
+  if (si >= segs.length || !fireRunning) { completeFiring(); return; }
+  fireSeg = si;
+  setProgSeg(curProg+1, si+1);
+  var s = segs[si];
+  var prevT = si > 0 ? segs[si-1].temp : 20;
+  var isHeat = (s.temp >= prevT);
+  var rateVal = typeof s.rate === "number" ? s.rate : 200;
+  var diff = Math.abs(s.temp - simTemp);
+  var rampMins = Math.max(0.5, (diff / rateVal) * 60);
+  var startT = simTemp;
+  var targetT = s.temp;
+  var elapsed = 0;
+  var tickMs = 150;
+
+  /* Set mimic lamps */
+  setAllLampsOff();
+  setFireLamp(true);
+  if (isHeat) setLamp("ml-heat", "on");
+  else setLamp("ml-cool", "on");
+
+  clearInterval(fireInterval);
+  fireInterval = setInterval(function() {
+    if (!fireRunning) return;
+    elapsed += tickMs / 60000;
+    var prog = Math.min(1, elapsed / rampMins);
+    simTemp = startT + (targetT - startT) * prog;
+    kwhUsed += KILNS[kilnIdx].kW * (tickMs / 3600000);
+    setMainVal(Math.round(simTemp), isHeat ? "Heating" : "Cooling", false);
+    setIndicators(true, false, false);
+    setDur("≈ " + calcTotalMins(progs[curProg]) + "min tot · " + kwhUsed.toFixed(2) + " kWh");
+    if (prog >= 1) {
+      simTemp = targetT;
+      clearInterval(fireInterval);
+      startSoak(segs, si);
+    }
+  }, tickMs);
+}
+
+function startSoak(segs, si) {
+  var s = segs[si];
+  soakRemMin = s.time_min;
+  if (soakRemMin <= 0) { runSeg(segs, si+1); return; }
+
+  setAllLampsOff();
+  setFireLamp(true);
+  setLamp("ml-soakT", "on");
+  soakShowTemp = true;
+  var elapsed = 0;
+  var tickMs = 200;
+
+  clearInterval(fireInterval);
+  fireInterval = setInterval(function() {
+    if (!fireRunning) return;
+    elapsed += tickMs / 60000;
+    soakRemMin = Math.max(0, s.time_min - elapsed * 15);
+    kwhUsed += KILNS[kilnIdx].kW * (tickMs / 3600000) * 0.3;
+
+    /* Alternate display every 5s (manual p.6): temp ↔ soak time remaining */
+    soakShowTemp = !soakShowTemp;
+    if (soakShowTemp) {
+      setMainVal(Math.round(simTemp), "Soaking °C", false);
+      setIndicators(true, false, false);  /* °C LED */
+      setLamp("ml-soakT", "on");
+      setLamp("ml-soakH", "off");
+    } else {
+      setMainVal(minsToHM(Math.max(0, soakRemMin)), "Soak jäljellä hr.min", false);
+      setIndicators(false, false, true);  /* hr.min LED */
+      setLamp("ml-soakT", "off");
+      setLamp("ml-soakH", "on");
+    }
+
+    if (soakRemMin <= 0) {
+      clearInterval(fireInterval);
+      runSeg(segs, si+1);
+    }
+  }, 350);
+}
+
+function completeFiring() {
+  fireRunning = false;
+  setFireLamp(false);
+  setAllLampsOff();
+  clearInterval(fireInterval);
+  setMainVal("End", "Poltto valmis", false);
+  setIndicators(true, false, false);
+  ctrlState = "IDLE";
+  setMsg("✓ Poltto valmis — " + kwhUsed.toFixed(2) + " kWh · Uuni jäähtyy itsekseen");
+  setDur(kwhUsed.toFixed(2) + " kWh");
+}
+
+function stopFiring() {
+  clearInterval(fireInterval);
+  fireRunning = false;
+  setFireLamp(false);
+  setAllLampsOff();
+  ctrlState = "IDLE";
+  setMsg("STOP — poltto pysäytetty · " + kwhUsed.toFixed(2) + " kWh · START käynnistää alusta");
+  setMainVal(Math.round(simTemp), "Pysäytetty", false);
+  setIndicators(true, false, false);
+}
+
+/* ══════════════════════════════════════════════════
+   DURATION
+   ══════════════════════════════════════════════════ */
+function calcTotalMins(prog) {
+  var tot = prog.delay || 0;
+  var prevT = 20;
+  var segs = effSegs(prog);
+  segs.forEach(function(s) {
+    var rate = typeof s.rate === "number" ? s.rate : 200;
+    tot += (Math.abs(s.temp - prevT) / rate) * 60;
+    tot += s.time_min;
+    prevT = s.temp;
+  });
+  return Math.round(tot);
+}
+function fmtDur(m) {
+  if (!m || m <= 0) return "—";
+  var h = Math.floor(m/60), mm = m%60;
+  return h > 0 ? (h + "t " + (mm > 0 ? mm + "min" : "")) : (mm + "min");
+}
+function calcDuration() {
+  var t = calcTotalMins(progs[curProg]);
+  setDur(t > 0 ? ("≈ " + fmtDur(t)) : "—");
+}
+
+/* ══════════════════════════════════════════════════
+   PROGRAM SHEET (right-side editable view)
+   ══════════════════════════════════════════════════ */
+function renderProgBtns() {
+  var el = document.getElementById("prog-btns");
+  if (!el) return;
+  el.innerHTML = "";
+  for (var i = 0; i < MAX_PROGS; i++) {
+    var btn = document.createElement("button");
+    btn.className = "pb" + (i === curProg ? " on" : "");
+    btn.textContent = i+1;
+    (function(idx) {
+      btn.onclick = function() {
+        curProg = idx; curSeg = 0; ctrlState = "IDLE";
+        clearIdle(); refreshDisplay(); renderSheet();
+        drawCurve(); renderSummary();
+      };
+    })(i);
+    el.appendChild(btn);
+  }
+}
+
+function renderSheet() {
+  renderProgBtns();
+  var p = progs[curProg];
+  var di = document.getElementById("delay-inp");
+  if (di) di.value = minsToHM(p.delay || 0);
+  var rp = document.getElementById("rp-prog-n");
+  if (rp) rp.textContent = curProg+1;
+  var tbody = document.getElementById("sheet-body");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  for (var i = 0; i < p.segs.length; i++) {
+    var s = p.segs[i];
+    var isEnd = (s.rate === RATE_END);
+    var isActive = (i === curSeg && ["SEG_RATE","SEG_TEMP","SEG_TIME"].indexOf(ctrlState) >= 0);
+    var prevT = i > 0 ? p.segs[i-1].temp : 20;
+    var isCool = (!isEnd && s.temp < prevT);
+    var isWarn = (!isEnd && s.temp >= 540 && s.temp <= 620);
+    var cls = isActive ? "active" : (isWarn ? "warn" : (isCool ? "cool" : ""));
+    var ii = i;
+    var tr = document.createElement("tr");
+    tr.className = cls;
+    tr.innerHTML =
+      '<td><span style="font-size:9px;font-weight:700;color:#BF5B28">S' + (i+1) + '</span></td>' +
+      '<td><input type="text" value="' + rateDisp(s.rate) + '" ' +
+        'style="color:' + (isCool?"#4060C0":"inherit") + '"' +
+        ' onchange="setRate(' + ii + ',this.value)"/></td>' +
+      '<td><input type="number" value="' + (isEnd ? "" : s.temp) + '"' +
+        (isEnd ? " disabled" : '') + ' min="0" max="' + KILNS[kilnIdx].maxC + '"' +
+        ' onchange="setTemp(' + ii + ',this.value)"/></td>' +
+      '<td><input type="text" value="' + minsToHM(s.time_min) + '"' +
+        (isEnd ? " disabled" : '') + ' onchange="setTime(' + ii + ',this.value)"/></td>' +
+      '<td><button onclick="delSeg(' + ii + ')" ' +
+        'style="background:none;border:1px solid #CCCAC0;border-radius:3px;' +
+        'padding:1px 5px;cursor:pointer;font-size:10px;color:#888">&times;</button></td>';
+    tbody.appendChild(tr);
+    if (isEnd) break;
+  }
+}
+
+function setRate(i, v) {
+  var s = progs[curProg].segs[i]; if(!s)return;
+  var vt = v.trim();
+  if (vt.toLowerCase()==="end") s.rate=RATE_END;
+  else if (vt.toUpperCase()==="FULL") s.rate=RATE_FULL;
+  else { var n=parseInt(vt); s.rate=(n>=1&&n<=999)?n:RATE_END; }
+  renderSheet(); drawCurve(); renderSummary(); calcDuration();
+}
+function setTemp(i, v) {
+  var s = progs[curProg].segs[i]; if(!s)return;
+  s.temp = Math.min(KILNS[kilnIdx].maxC, Math.max(0, parseInt(v)||0));
+  drawCurve(); renderSummary(); calcDuration();
+}
+function setTime(i, v) {
+  var s = progs[curProg].segs[i]; if(!s)return;
+  s.time_min = hmToMins(v);
+  drawCurve(); renderSummary(); calcDuration();
+}
+function updateDelay(v) {
+  progs[curProg].delay = hmToMins(v);
+  drawCurve(); renderSummary(); calcDuration();
+}
+function addSeg() {
+  var p = progs[curProg];
+  var pos = p.segs.length;
+  for (var i=0;i<p.segs.length;i++) { if(p.segs[i].rate===RATE_END){pos=i;break;} }
+  if (pos>=MAX_SEGS){alert("Max "+MAX_SEGS+" segmenttiä (ST315 rajoitus)");return;}
+  var prevT = pos>0?p.segs[pos-1].temp:20;
+  p.segs.splice(pos,0,{rate:50,temp:prevT+100,time_min:0});
+  renderSheet(); drawCurve(); renderSummary(); calcDuration();
+}
+function delSeg(i) {
+  progs[curProg].segs.splice(i,1);
+  if(curSeg>=progs[curProg].segs.length)curSeg=Math.max(0,progs[curProg].segs.length-1);
+  renderSheet(); drawCurve(); renderSummary(); calcDuration();
+}
+
+/* ══════════════════════════════════════════════════
+   SEGMENT SUMMARY TABLE
+   ══════════════════════════════════════════════════ */
+function segNote(temp, prevT) {
+  if (temp < prevT) return "🔵 Jäähdytysrampi";
+  if (temp<=130) return "💧 Kuivausvaihe";
+  if (temp>=540&&temp<=620) return "⚠️ Kvartsifaasimuutos";
+  if (temp>=780&&temp<=920) return "🏺 Korppualue";
+  if (temp>=1080&&temp<=1130) return "🌿 Matala lasitus";
+  if (temp>=1230) return "🔥 Korkea lasitus";
+  return "";
+}
+function renderSummary() {
+  var tb = document.getElementById("seg-sum-body");
+  if (!tb) return;
+  var segs = effSegs(progs[curProg]);
+  if (!segs.length) { tb.innerHTML="<tr><td colspan='6' style='text-align:center;color:#888;padding:14px'>—</td></tr>"; return; }
+  var prevT=20, html="";
+  segs.forEach(function(s,i){
+    var diff=Math.abs(s.temp-prevT);
+    var rate=typeof s.rate==="number"?s.rate:200;
+    var mins=Math.round((diff/rate)*60)+s.time_min;
+    var isCool=s.temp<prevT, isWarn=(s.temp>=540&&s.temp<=620), isDry=s.temp<=130;
+    var cls=isWarn?"warn":(isDry?"dry":(isCool?"cool":""));
+    var note=segNote(s.temp,prevT);
+    html+="<tr class='"+cls+"'><td>"+(i+1)+"</td><td>"+(s.rate===RATE_FULL?"FULL":s.rate)+"</td><td>"+(isCool?"↓":"")+s.temp+"°C</td><td>"+minsToHM(s.time_min)+"</td><td>"+fmtDur(mins)+"</td><td style='text-align:left;font-family:Instrument Sans,sans-serif;font-size:10px'>"+(note||"—")+"</td></tr>";
+    prevT=s.temp;
+  });
+  tb.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════════
+   LIVE CURVE
+   ══════════════════════════════════════════════════ */
+function drawCurve(fixed) {
+  var svg = document.getElementById("curve-svg");
+  if (!svg) return;
+  var prog = progs[curProg];
+  var segs = effSegs(prog);
+  if (!segs.length) {
+    svg.innerHTML = "<text x='360' y='148' text-anchor='middle' font-size='13' fill='#bbb' font-family='Instrument Sans,sans-serif'>Lis\xe4\xe4 segmentit \u2014 tai tuplanapauta t\xe4h\xe4n luodaksesi ensimm\xe4isen</text>";
+    window.CG = null;
+    return;
+  }
+  var pts = [{t:0,temp:20}];
+  var ct=0,ctemp=20;
+  if (prog.delay>0){ct+=prog.delay;pts.push({t:ct,temp:20});}
+  /* Per-segment geometry for hit-testing */
+  var segGeom = [];
+  segs.forEach(function(s, idx){
+    var startT = ct;
+    var diff=Math.abs(s.temp-ctemp);
+    var rate=typeof s.rate==="number"?s.rate:200;
+    var rampDur=(diff/rate)*60;
+    ct+=rampDur; ctemp=s.temp;
+    var nodeT = ct;
+    pts.push({t:ct,temp:ctemp});
+    var plateauStart = ct;
+    if(s.time_min>0){ct+=s.time_min;pts.push({t:ct,temp:ctemp});}
+    segGeom.push({ idx:idx, startT:startT, prevTemp:(idx>0?segs[idx-1].temp:20),
+      rampDur:rampDur, nodeT:nodeT, temp:s.temp, plateauStart:plateauStart,
+      plateauEnd:ct, timeMin:s.time_min });
+  });
+  var W=720,H=290,PL=50,PR=14,PT=15,PB=38,CW=W-PL-PR,CH=H-PT-PB;
+  var maxT=0; pts.forEach(function(p){if(p.temp>maxT)maxT=p.temp;});
+  var tempMax = (fixed && fixed.tempMax) ? fixed.tempMax : Math.min(1380,Math.ceil(maxT/100)*100+80);
+  var totalT  = (fixed && fixed.totalT)  ? fixed.totalT  : ct;
+  if (totalT <= 0) totalT = 1;
+  function tx(t){return PL+(t/totalT)*CW;}
+  function ty(temp){return PT+CH-(temp/tempMax)*CH;}
+  /* Store geometry globally for the gesture editor */
+  window.CG = { PL:PL, PT:PT, CW:CW, CH:CH, tempMax:tempMax, totalT:totalT,
+    invX:function(x){return (x-PL)/CW*totalT;}, invY:function(y){return (PT+CH-y)/CH*tempMax;},
+    tx:tx, ty:ty, segGeom:segGeom };
+  var h="";
+  [{t0:0,t1:130,fill:"rgba(90,140,210,0.10)"},{t0:130,t1:360,fill:"rgba(200,160,70,0.08)"},
+   {t0:558,t1:592,fill:"rgba(210,70,50,0.22)"},{t0:592,t1:920,fill:"rgba(180,90,40,0.07)"},
+   {t0:920,t1:1115,fill:"rgba(60,150,110,0.09)"},{t0:1115,t1:1380,fill:"rgba(60,100,190,0.09)"}
+  ].forEach(function(z){
+    if(z.t0>tempMax)return;
+    var y0=ty(Math.min(z.t1,tempMax)),y1=ty(z.t0),bh=y1-y0;
+    if(bh<2)return;
+    h+="<rect x='"+PL+"' y='"+y0+"' width='"+CW+"' height='"+bh+"' fill='"+z.fill+"'/>";
+  });
+  var tStep=tempMax<=400?50:tempMax<=800?100:200;
+  for(var t=0;t<=tempMax;t+=tStep){
+    var y=ty(t);
+    h+="<line x1='"+PL+"' y1='"+y+"' x2='"+(PL+CW)+"' y2='"+y+"' stroke='#e8e4da' stroke-width='1'/>";
+    h+="<text x='"+(PL-4)+"' y='"+(y+4)+"' text-anchor='end' font-size='9' fill='#aaa' font-family='DM Mono,monospace'>"+t+"</text>";
+  }
+  if(tempMax>573){
+    var qy=ty(573);
+    h+="<line x1='"+PL+"' y1='"+qy+"' x2='"+(PL+CW)+"' y2='"+qy+"' stroke='#D04030' stroke-width='1.4' stroke-dasharray='5,3' opacity='.85'/>";
+    h+="<text x='"+(PL+8)+"' y='"+(qy-4)+"' font-size='9' fill='#D04030' font-family='Instrument Sans,sans-serif' font-weight='600'>573\xb0C \u26a0 Kvartsifaasimuutos</text>";
+  }
+  var ticks=Math.max(1,Math.ceil(totalT/60));
+  var tsz=Math.max(1,Math.ceil(ticks/8))*60;
+  for(var tt=0;tt<=totalT;tt+=tsz){
+    var x=tx(tt);
+    h+="<line x1='"+x+"' y1='"+PT+"' x2='"+x+"' y2='"+(PT+CH)+"' stroke='#e8e4da' stroke-width='1'/>";
+    var lbl=tt<60?Math.round(tt)+"min":((tt/60).toFixed(1).replace(".0",""))+"h";
+    h+="<text x='"+x+"' y='"+(PT+CH+13)+"' text-anchor='middle' font-size='9' fill='#aaa' font-family='DM Mono,monospace'>"+lbl+"</text>";
+  }
+  /* Ramps + plateaus (visible) */
+  segGeom.forEach(function(g){
+    var isCool=g.temp<g.prevTemp;
+    var x1=tx(g.startT),y1=ty(g.prevTemp),x2=tx(g.nodeT),y2=ty(g.temp);
+    h+="<line x1='"+x1+"' y1='"+y1+"' x2='"+x2+"' y2='"+y2+"' stroke='"+(isCool?"#6050C0":"#BF5B28")+"' stroke-width='2.5' stroke-linecap='round'/>";
+    if(g.timeMin>0){
+      var xs=tx(g.plateauStart),xe=tx(g.plateauEnd),yh=ty(g.temp);
+      h+="<rect x='"+xs+"' y='"+(yh-4)+"' width='"+(xe-xs)+"' height='8' fill='rgba(191,91,40,0.15)' rx='2'/>";
+      h+="<line x1='"+xs+"' y1='"+yh+"' x2='"+xe+"' y2='"+yh+"' stroke='#BF5B28' stroke-width='2.5'/>";
+      if(xe-xs>28)h+="<text x='"+((xs+xe)/2)+"' y='"+(yh-8)+"' text-anchor='middle' font-size='9' fill='#BF5B28'>"+minsToHM(g.timeMin)+"</text>";
+    }
+  });
+  /* ─── INTERACTION HANDLES (drawn last, on top) ─── */
+  segGeom.forEach(function(g){
+    var x1=tx(g.startT),y1=ty(g.prevTemp),x2=tx(g.nodeT),y2=ty(g.temp);
+    /* Ramp hit-line (transparent, thick) */
+    h+="<line class='cv-ramp' data-seg='"+g.idx+"' x1='"+x1+"' y1='"+y1+"' x2='"+x2+"' y2='"+y2+"' stroke='transparent' stroke-width='16' style='cursor:ns-resize'/>";
+    /* Soak plateau hit-area */
+    if(g.timeMin>0){
+      var xs=tx(g.plateauStart),xe=tx(g.plateauEnd),yh=ty(g.temp);
+      h+="<rect class='cv-soak' data-seg='"+g.idx+"' x='"+xs+"' y='"+(yh-9)+"' width='"+Math.max(10,(xe-xs))+"' height='18' fill='transparent' style='cursor:ew-resize'/>";
+    }
+    /* Soak handle knob at node right edge (always, to add/extend soak) */
+    var hx=tx(g.plateauEnd),hy=ty(g.temp);
+    h+="<rect class='cv-soakh' data-seg='"+g.idx+"' x='"+(hx-3)+"' y='"+(hy-7)+"' width='10' height='14' rx='2' fill='#BF5B28' opacity='0.0' style='cursor:ew-resize'/>";
+    /* Visible node + larger transparent hit circle */
+    h+="<circle cx='"+x2+"' cy='"+y2+"' r='5' fill='white' stroke='#BF5B28' stroke-width='2'><title>SEG "+(g.idx+1)+": "+Math.round(g.temp)+"\xb0C</title></circle>";
+    h+="<circle class='cv-node' data-seg='"+g.idx+"' cx='"+x2+"' cy='"+y2+"' r='13' fill='transparent' style='cursor:grab'/>";
+  });
+  /* start point */
+  h+="<circle cx='"+tx(0)+"' cy='"+ty(20)+"' r='4' fill='white' stroke='#BF5B28' stroke-width='1.5'/>";
+  h+="<text x='"+(PL+CW/2)+"' y='"+(H-4)+"' text-anchor='middle' font-size='11' fill='#999' font-family='Instrument Sans'>Aika</text>";
+  h+="<text x='10' y='"+(PT+CH/2)+"' text-anchor='middle' font-size='11' fill='#999' font-family='Instrument Sans' transform='rotate(-90,10,"+(PT+CH/2)+")'>\xb0C</text>";
+  h+="<rect x='"+PL+"' y='"+PT+"' width='"+CW+"' height='"+CH+"' fill='none' stroke='#ddd' stroke-width='1' rx='2'/>";
+  svg.innerHTML = h;
+}
+
+/* ══════════════════════════════════════════════════
+   LOG
+   ══════════════════════════════════════════════════ */
+async function loadLog() {
+  try{var r=await window.storage.get(LOGKEY);if(r&&r.value)logData=JSON.parse(r.value);}
+  catch(e){try{var v=localStorage.getItem(LOGKEY);if(v)logData=JSON.parse(v);}catch(e2){}}
+}
+async function saveLogStore() {
+  try{await window.storage.set(LOGKEY,JSON.stringify(logData));}
+  catch(e){try{localStorage.setItem(LOGKEY,JSON.stringify(logData));}catch(e2){}}
+}
+function saveToLog() {
+  var segs=effSegs(progs[curProg]);
+  if(!segs.length){alert("Ei segmenttejä tallennettavaksi.");return;}
+  var entry={
+    id:Date.now(),kiln:KILNS[kilnIdx].name,prog:curProg+1,
+    delay:progs[curProg].delay,segs:segs.map(function(s){return Object.assign({},s);}),
+    duration:calcTotalMins(progs[curProg]),maxTemp:Math.max.apply(null,segs.map(function(s){return s.temp;})),
+    kWh:kwhUsed>0?kwhUsed.toFixed(2):null,savedAt:new Date().toLocaleString("fi-FI")
+  };
+  logData.unshift(entry); saveLogStore();
+  var btn=document.querySelector(".btn-save");
+  var orig=btn.textContent; btn.textContent="✓ Tallennettu!"; btn.style.background="#3C9065";
+  setTimeout(function(){btn.textContent=orig;btn.style.background="";},2000);
+  if(document.getElementById("log-bd").classList.contains("open"))renderLog();
+}
+function deleteLE(id){logData=logData.filter(function(e){return e.id!==id;});saveLogStore();renderLog();}
+function renderLog() {
+  var el=document.getElementById("log-entries");
+  if(!logData.length){el.innerHTML="<div class='empty-log'>Polttokirja on tyhjä.</div>";return;}
+  el.innerHTML=logData.map(function(e){
+    var tags="<span class='tag'>🌡 "+e.maxTemp+"°C</span><span class='tag'>⏱ "+fmtDur(e.duration)+"</span><span class='tag'>▦ "+e.segs.length+" seg</span><span class='tag'>📡 Ohj."+e.prog+"</span>";
+    if(e.kWh)tags+="<span class='tag'>⚡ "+e.kWh+" kWh</span>";
+    return "<div class='le'><div class='le-h'><div><div class='le-name'>"+e.kiln+" · "+e.savedAt+"</div></div><div class='le-meta'><button onclick='deleteLE("+e.id+")' style='background:none;border:none;color:#D04030;font-size:11px;cursor:pointer'>Poista</button></div></div><div class='le-tags'>"+tags+"</div></div>";
+  }).join("");
+}
+function toggleLog(){
+  var b=document.getElementById("log-bd"),a=document.getElementById("log-arr");
+  var open=b.classList.toggle("open");a.classList.toggle("open",open);
+  if(open)renderLog();
+}
+
+/* ══════════════════════════════════════════════════
+   KILN / LIGHTING
+   ══════════════════════════════════════════════════ */
+var warmMode=0;
+function applyLum(){
+  var lum=document.getElementById("lum-sl").value/100;
+  var sep=[0,.10,.0][warmMode],hue=[0,6,-6][warmMode];
+  document.body.style.filter="brightness("+lum+") sepia("+sep+") hue-rotate("+hue+"deg)";
+}
+function setWarm(m){
+  warmMode=m;
+  ["wn","ww","wc"].forEach(function(id,i){var el=document.getElementById(id);if(el)el.className="wb"+(i===m?" on":"");});
+  applyLum();
+}
+function setKiln(idx,btn){
+  kilnIdx=idx;
+  document.querySelectorAll(".kb").forEach(function(b){b.classList.remove("on");});
+  btn.classList.add("on");
+  document.getElementById("uname-ctrl").textContent=KILNS[idx].name;
+  drawCurve();
+}
+
+/* ══════════════════════════════════════════════════
+   BUTTON HOLD REPEAT (for UP/DOWN quick scroll)
+   ══════════════════════════════════════════════════ */
+function btnHoldStart(fn) {
+  fn();
+  repeatTimer = setTimeout(function() {
+    repeatInterval = setInterval(fn, 80);
+  }, 400);
+}
+function btnHoldStop() {
+  clearTimeout(repeatTimer);
+  clearInterval(repeatInterval);
+}
+
+/* CSS keyframe for lamp blink */
+var style = document.createElement("style");
+style.textContent = "@keyframes lampblink { 50% { opacity: 0.08; } }";
+document.head.appendChild(style);
+
+/* ══════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════
+   KERAKO STUDIO — Config, Wizard, Sheets, AI, Loading
+   ══════════════════════════════════════════════════ */
+
+var CFG = { url: "", nick: "" };
+
+function loadCfg() {
+  try {
+    var u = localStorage.getItem("kerako-cfg-url"); if (u) CFG.url = u;
+    var n = localStorage.getItem("kerako-cfg-nick"); if (n) CFG.nick = n;
+  } catch(e){}
+}
+function saveCfgStore() {
+  try {
+    localStorage.setItem("kerako-cfg-url", CFG.url);
+    localStorage.setItem("kerako-cfg-nick", CFG.nick);
+  } catch(e){}
+}
+
+function openOverlay(id){ document.getElementById(id).classList.add("show"); }
+function closeOverlay(id){ document.getElementById(id).classList.remove("show"); }
+
+/* ── SETTINGS ── */
+function openSettings(){
+  document.getElementById("set-url").value = CFG.url;
+  document.getElementById("set-nick").value = CFG.nick;
+  document.getElementById("set-status").innerHTML = "";
+  openOverlay("set-ov");
+}
+function saveSettings(){
+  CFG.url = document.getElementById("set-url").value.trim();
+  CFG.nick = document.getElementById("set-nick").value.trim();
+  saveCfgStore();
+  closeOverlay("set-ov");
+}
+async function testConnection(){
+  var url = document.getElementById("set-url").value.trim();
+  var st = document.getElementById("set-status");
+  if (!url) { st.innerHTML = "<div class='set-status err'>Anna ensin Apps Script -URL.</div>"; return; }
+  st.innerHTML = "<div class='set-status'><span class='ai-spinner'></span>Testataan…</div>";
+  try {
+    var r = await fetch(url + "?action=ping", { method:"GET" });
+    var j = await r.json();
+    if (j && j.ok) st.innerHTML = "<div class='set-status ok'>✓ Yhteys toimii! Sheets ja AI käytettävissä.</div>";
+    else st.innerHTML = "<div class='set-status err'>Vastaus saatu mutta odottamaton: " + JSON.stringify(j).substring(0,80) + "</div>";
+  } catch(e) {
+    st.innerHTML = "<div class='set-status err'>Yhteys epäonnistui. Tarkista URL ja että Web App on julkaistu 'Anyone'-oikeuksin.</div>";
+  }
+}
+
+/* ── AI CALL via Apps Script proxy ── */
+async function callAI(prompt, imageB64, mediaType){
+  if (!CFG.url) {
+    return { error: "no-config" };
+  }
+  var payload = { action: "analyzeImage", prompt: prompt };
+  if (imageB64) { payload.imageData = imageB64; payload.mediaType = mediaType || "image/jpeg"; }
+  try {
+    var r = await fetch(CFG.url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    var j = await r.json();
+    return j;
+  } catch(e) {
+    return { error: "fetch-failed", detail: String(e) };
+  }
+}
+
+/* Extract text from Anthropic API response shape */
+function aiText(resp){
+  if (!resp) return "";
+  if (resp.content && Array.isArray(resp.content)) {
+    return resp.content.filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("\n");
+  }
+  if (resp.text) return resp.text;
+  return "";
+}
+
+/* Parse JSON possibly wrapped in markdown fences */
+function parseAIJson(txt){
+  if (!txt) return null;
+  var clean = txt.replace(/```json/gi,"").replace(/```/g,"").trim();
+  try { return JSON.parse(clean); } catch(e) {
+    var m = clean.match(/\{[\s\S]*\}/);
+    if (m) { try { return JSON.parse(m[0]); } catch(e2){} }
+    return null;
+  }
+}
+
+/* File → base64 */
+function fileToB64(file, cb){
+  var r = new FileReader();
+  r.onload = function(){ cb(r.result.split(",")[1], file.type); };
+  r.readAsDataURL(file);
+}
+
+/* ══════════════════════════════════════════════════
+   GOOGLE SHEETS EXPORT / IMPORT
+   ══════════════════════════════════════════════════ */
+async function exportToSheet(){
+  if (!CFG.url) { alert("Aseta ensin Apps Script -URL asetuksista (⚙️)."); openSettings(); return; }
+  var prog = progs[curProg];
+  var segs = effSegs(prog);
+  if (!segs.length) { alert("Ei segmenttejä vietäväksi."); return; }
+  var btn = event.target;
+  var orig = btn.textContent;
+  btn.textContent = "☁️ Viedään…";
+  var payload = {
+    action: "saveProgram",
+    nickname: CFG.nick || "tuntematon",
+    kiln: KILNS[kilnIdx].name,
+    progName: document.getElementById("disp-val") ? ("Ohjelma " + (curProg+1)) : "",
+    progNum: curProg + 1,
+    delay: prog.delay,
+    segs: segs,
+    maxTemp: Math.max.apply(null, segs.map(function(s){return s.temp;})),
+    duration: calcTotalMins(prog),
+    savedAt: new Date().toISOString()
+  };
+  try {
+    var r = await fetch(CFG.url, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(payload) });
+    var j = await r.json();
+    if (j && j.ok) { btn.textContent = "✓ Viety!"; btn.style.background="#3C9065"; }
+    else { btn.textContent = "✗ Virhe"; btn.style.background="#C04030"; }
+  } catch(e) {
+    btn.textContent = "✗ Yhteysvirhe"; btn.style.background="#C04030";
+  }
+  setTimeout(function(){ btn.textContent=orig; btn.style.background=""; }, 2200);
+}
+
+function openSheetImport(){
+  openOverlay("sheet-ov");
+  loadFromSheet();
+}
+
+async function loadFromSheet(){
+  var body = document.getElementById("sheet-body");
+  if (!CFG.url) {
+    body.innerHTML = "<div class='wwarn'>Aseta ensin Apps Script -URL asetuksista (⚙️ oikeassa yläkulmassa). Yksi URL jaetaan kaikille Metropolian käyttäjille.</div>";
+    return;
+  }
+  body.innerHTML = "<div class='ai-result loading'><span class='ai-spinner'></span>Ladataan jaettuja ohjelmia…</div>";
+  try {
+    var r = await fetch(CFG.url + "?action=listPrograms", { method:"GET" });
+    var j = await r.json();
+    if (!j.programs || !j.programs.length) {
+      body.innerHTML = "<div class='wwarn'>Ei vielä tallennettuja ohjelmia jaetussa kirjastossa.</div>";
+      return;
+    }
+    body.innerHTML = "<div class='sheet-list'>" + j.programs.map(function(p, i){
+      var segCount = p.segs ? p.segs.length : 0;
+      return "<div class='sheet-item' onclick='importProgram(" + i + ")'>" +
+        "<div class='si-name'>" + (p.progName || ("Ohjelma " + p.progNum)) + "</div>" +
+        "<div class='si-meta'>" +
+          "<span class='si-tag'>👤 " + (p.nickname||"?") + "</span>" +
+          "<span class='si-tag'>🔥 " + (p.kiln||"?") + "</span>" +
+          "<span class='si-tag'>🌡 " + (p.maxTemp||"?") + "°C</span>" +
+          "<span class='si-tag'>▦ " + segCount + " seg</span>" +
+          "<span class='si-tag'>📅 " + (p.savedAt ? new Date(p.savedAt).toLocaleDateString("fi-FI") : "") + "</span>" +
+        "</div></div>";
+    }).join("") + "</div>";
+    window._sheetPrograms = j.programs;
+  } catch(e) {
+    body.innerHTML = "<div class='set-status err'>Lataus epäonnistui. Tarkista yhteys asetuksista.</div>";
+  }
+}
+
+function importProgram(idx){
+  var p = window._sheetPrograms[idx];
+  if (!p || !p.segs) return;
+  /* Load into current program slot */
+  progs[curProg].delay = p.delay || 0;
+  progs[curProg].segs = p.segs.map(function(s){
+    return { rate: s.rate, temp: s.temp, time_min: s.time_min };
+  });
+  /* add End marker */
+  progs[curProg].segs.push({ rate: RATE_END, temp: 500, time_min: 0 });
+  ctrlState = "IDLE"; curSeg = 0;
+  closeOverlay("sheet-ov");
+  refreshDisplay(); renderSheet(); drawCurve(); renderSummary();
+  setMsg("✓ Ohjelma tuotu jaetusta kirjastosta: " + (p.progName||"") + " (" + (p.nickname||"") + ")");
+}
+
+/* ══════════════════════════════════════════════════
+   WIZARD — guided start with photo upload + AI
+   ══════════════════════════════════════════════════ */
+var WSTEPS = [
+  { id:"nick",  t:"Kuka polttaa?",        s:"Nimimerkki kirjautuu polttokirjaan ja jaettuun kirjastoon" },
+  { id:"photo", t:"Kuva kappaleista",      s:"(Valinnainen) Ota kuva poltettavista — AI tunnistaa tyypin ja ehdottaa käyrää" },
+  { id:"object",t:"Mitä poltat?",          s:"Kappaleen tyyppi vaikuttaa nousunopeuteen" },
+  { id:"kiln",  t:"Kumpi uuni?",           s:"Valitse uuni koon mukaan" },
+  { id:"clay",  t:"Mikä savi?",            s:"Savi määrää lämpötila-alueen" },
+  { id:"fire",  t:"Mikä poltto?",          s:"Polttotyyppi ja tavoitelämpötila" },
+  { id:"glaze", t:"Lasitteen tuoteseloste",s:"(Valinnainen) Kuva lasitepurkin etiketistä — AI lukee polttolämpötilan" },
+  { id:"preview",t:"Esikatselu",           s:"Tarkista ja muokkaa — sitten ohjelma siirtyy ST315:lle" }
+];
+var WIZ = { step:0, data:{}, prevSegs:[] };
+
+function openWizard(){
+  WIZ.step = 0;
+  WIZ.data = { nick: CFG.nick||"", object:null, kiln:0, clay:null, fire:null, targetTemp:null, photoB64:null, photoType:null, glazeB64:null, glazeType:null, glazeInfo:null, productInfo:null };
+  openOverlay("wizard-ov");
+  renderWiz();
+}
+function skipWizard(){
+  closeOverlay("wizard-ov");
+  setMsg("Opastus ohitettu — voit aloittaa STEP-napilla tai avata opastuksen uudelleen '✨ Ohjattu aloitus' -napista.");
+}
+
+function renderWiz(){
+  var st = WSTEPS[WIZ.step];
+  document.getElementById("wiz-title").textContent = st.t;
+  document.getElementById("wiz-sub").textContent = st.s;
+  document.getElementById("wiz-count").textContent = (WIZ.step+1) + " / " + WSTEPS.length;
+  document.getElementById("wiz-prog").innerHTML = WSTEPS.map(function(_, i){
+    return "<div class='mp-dot " + (i<WIZ.step?"done":i===WIZ.step?"active":"") + "'></div>";
+  }).join("");
+  document.getElementById("wiz-back").disabled = WIZ.step===0;
+  var nb = document.getElementById("wiz-next");
+  nb.textContent = WIZ.step===WSTEPS.length-1 ? "✓ Siirrä ST315:lle" : "Seuraava →";
+
+  var body = document.getElementById("wiz-body");
+  var d = WIZ.data;
+  if (st.id === "nick") {
+    body.innerHTML = "<div class='wsec-lbl'>Nimimerkki</div>" +
+      "<input class='wname-inp' id='w-nick' value='" + (d.nick||"") + "' placeholder='esim. Mika' maxlength='40'/>" +
+      "<div class='wdate'>📅 " + new Date().toLocaleDateString("fi-FI",{weekday:"long",year:"numeric",month:"long",day:"numeric"}) + "</div>";
+    setTimeout(function(){ var el=document.getElementById("w-nick"); if(el){el.focus(); el.oninput=function(){d.nick=el.value; updateWizNext();};} },30);
+  }
+  else if (st.id === "photo") {
+    body.innerHTML = renderPhotoStep("product", d.photoB64, d.productInfo,
+      "Ota tai valitse kuva poltettavista kappaleista", "AI tunnistaa kappaletyypit ja ehdottaa sopivat polttoasetukset");
+  }
+  else if (st.id === "object") {
+    var opts = [
+      {id:"mukit",ci:"🫙",cn:"Mukit, kulhot",cd:"Keskipaksu seinämä"},
+      {id:"lautaset",ci:"🍽️",cn:"Lautaset, vadit",cd:"Ohuet, tasaiset"},
+      {id:"veistokset",ci:"🏺",cn:"Veistokset",cd:"Paksut · hidas nosto"},
+      {id:"suuret",ci:"📦",cn:"Suuret kappaleet",cd:"Erittäin hidas"},
+      {id:"pienet",ci:"🌸",cn:"Pienet / korut",cd:"Nopea nosto ok"},
+      {id:"testi",ci:"🔲",cn:"Testipalat",cd:"Nopein ohjelma"}
+    ];
+    body.innerHTML = "<div class='wcards c2'>" + opts.map(function(o){
+      return "<div class='wcard " + (d.object===o.id?"sel":"") + "' onclick='wizPick(\"object\",\"" + o.id + "\",this)'>" +
+        "<span class='ci'>" + o.ci + "</span><span class='cn'>" + o.cn + "</span><span class='cd'>" + o.cd + "</span></div>";
+    }).join("") + "</div>";
+  }
+  else if (st.id === "kiln") {
+    var ks = [
+      {i:0,ci:"🏭",n:"ISOUUNI",s:"Kerako 250L · 13kW · maks. 1280°C · edestä ladattava"},
+      {i:1,ci:"📦",n:"AMMEMALLI",s:"Kerako 45L · 4,4kW · maks. 1280°C · päältä ladattava"}
+    ];
+    body.innerHTML = ks.map(function(k){
+      return "<div class='wkcard " + (d.kiln===k.i?"sel":"") + "' onclick='wizPickKiln(" + k.i + ",this)' style='margin-bottom:9px'>" +
+        "<div class='wkbox'>" + k.ci + "</div><div><div class='wkn'>" + k.n + "</div><div class='wks'>" + k.s + "</div></div></div>";
+    }).join("");
+  }
+  else if (st.id === "clay") {
+    var cl = [
+      {id:"kerakea",ci:"🟤",cn:"Kerakea",cd:"Korkea · korppu 860°C · lasitus 1260°C"},
+      {id:"stoneware",ci:"🫙",cn:"Stoneware",cd:"Korkea · 1200–1280°C"},
+      {id:"earthen",ci:"🔴",cn:"Earthenware",cd:"Matala · 1000–1100°C"},
+      {id:"posliini",ci:"⚪",cn:"Posliini",cd:"Korkea · 1260–1280°C"},
+      {id:"raku",ci:"🌑",cn:"Raku",cd:"Erikoispoltto · nopea"},
+      {id:"muu",ci:"❓",cn:"Tuntematon",cd:"Varovainen ohjelma"}
+    ];
+    body.innerHTML = "<div class='wcards c2'>" + cl.map(function(o){
+      return "<div class='wcard " + (d.clay===o.id?"sel":"") + "' onclick='wizPick(\"clay\",\"" + o.id + "\",this)'>" +
+        "<span class='ci'>" + o.ci + "</span><span class='cn'>" + o.cn + "</span><span class='cd'>" + o.cd + "</span></div>";
+    }).join("") + "</div>";
+  }
+  else if (st.id === "fire") {
+    var ft = [
+      {id:"korpu",ci:"🏺",cn:"Korppupoltto",cd:"Ei lasitetta · huokoinen"},
+      {id:"glaze-high",ci:"✨",cn:"Korkea lasitus",cd:"1200–1280°C"},
+      {id:"glaze-low",ci:"🌿",cn:"Matala lasitus",cd:"1000–1100°C"},
+      {id:"deco",ci:"🎨",cn:"Koristepoltto",cd:"750–820°C"},
+      {id:"underglaze",ci:"🖌️",cn:"Alilasite",cd:"Underglaze + kirkas"},
+      {id:"engobe",ci:"🪣",cn:"Engobe",cd:"kuten korppu"}
+    ];
+    var ranges = { "korpu":[680,900,clayKorpu()], "glaze-high":[1160,1280,1260], "glaze-low":[980,1120,1080], "deco":[720,860,800], "underglaze":[980,1120,1080], "engobe":[680,900,860] };
+    var html = "<div class='wcards c2'>" + ft.map(function(o){
+      return "<div class='wcard " + (d.fire===o.id?"sel":"") + "' onclick='wizPickFire(\"" + o.id + "\")'>" +
+        "<span class='ci'>" + o.ci + "</span><span class='cn'>" + o.cn + "</span><span class='cd'>" + o.cd + "</span></div>";
+    }).join("") + "</div>";
+    if (d.fire && ranges[d.fire]) {
+      var rg = ranges[d.fire];
+      var kmax = KILNS[d.kiln].maxC;
+      var hi = Math.min(rg[1], kmax);
+      var tv = Math.min(d.targetTemp || rg[2], kmax);
+      html += "<div class='wsec-lbl' style='margin-top:16px'>Tavoitelämpötila</div>" +
+        "<div class='wtemp'><input type='range' id='w-temp' min='" + rg[0] + "' max='" + hi + "' value='" + tv + "' oninput='wizTemp(this.value)'/>" +
+        "<span class='wtempv' id='w-tempv'>" + tv + "</span><span style='font-size:11px;color:var(--txl)'>°C</span></div>" +
+        "<div style='font-size:11px;color:var(--txl);margin-top:5px'>Väli " + rg[0] + "–" + hi + "°C · " + KILNS[d.kiln].name + " maks. " + kmax + "°C</div>";
+      if (d.glazeInfo) html += "<div class='wwarn'>📋 Lasitteen tuoteselosteesta: " + d.glazeInfo + "</div>";
+    }
+    body.innerHTML = html;
+  }
+  else if (st.id === "glaze") {
+    if (d.fire === "korpu" || d.fire === "engobe") {
+      body.innerHTML = "<div class='wwarn'>Korppu-/engobepoltossa ei tarvita lasitteen tuoteselostetta. Voit jatkaa suoraan.</div>";
+    } else {
+      body.innerHTML = renderPhotoStep("glaze", d.glazeB64, d.glazeInfo,
+        "Ota kuva lasitepurkin etiketistä", "AI lukee suositellun polttolämpötilan ja -tyypin tuoteselosteesta");
+    }
+  }
+  else if (st.id === "preview") {
+    var prog = wizGenProgram();
+    WIZ.prevSegs = prog.map(function(s){return Object.assign({},s);});
+    var dur = calcMinutesArr(prog);
+    var maxT = Math.max.apply(null, prog.map(function(s){return s.temp;}));
+    body.innerHTML =
+      "<div class='wsec-lbl'>Ohjelman nimi</div>" +
+      "<input class='pv-name' id='w-pname' value='" + wizName() + "'/>" +
+      "<div class='wsec-lbl' style='margin-top:14px'>Polttokäyrä</div>" +
+      "<div class='pv-curvebox'><svg id='wiz-curve' viewBox='0 0 540 220' style='width:100%;display:block'></svg></div>" +
+      "<div class='pv-stats'>" +
+        "<div class='pv-stat'><span class='pv-sv'>≈ " + fmtDur(dur) + "</span><span class='pv-sl'>Kesto</span></div>" +
+        "<div class='pv-stat'><span class='pv-sv'>" + maxT + "°C</span><span class='pv-sl'>Huippu</span></div>" +
+        "<div class='pv-stat'><span class='pv-sv'>" + prog.length + "</span><span class='pv-sl'>Segmenttiä</span></div>" +
+      "</div>" +
+      "<div class='wsec-lbl' style='margin-top:14px'>Segmentit — muokattavissa</div>" +
+      "<table class='pv-tbl'><thead><tr><th>Seg</th><th>°C/h</th><th>→°C</th><th>Pito min</th><th>Vaihe</th></tr></thead><tbody>" +
+      prog.map(function(s,i){
+        return "<tr><td>" + (i+1) + "</td>" +
+          "<td><input type='number' value='" + s.rate + "' onchange='wizSeg(" + i + ",\"rate\",this.value)'/></td>" +
+          "<td><input type='number' value='" + s.temp + "' onchange='wizSeg(" + i + ",\"temp\",this.value)'/></td>" +
+          "<td><input type='number' value='" + s.time_min + "' onchange='wizSeg(" + i + ",\"time\",this.value)'/></td>" +
+          "<td style='font-family:Instrument Sans,sans-serif;font-size:10px;text-align:left'>" + (segNote(s.temp, i>0?prog[i-1].temp:20)||"—") + "</td></tr>";
+      }).join("") + "</tbody></table>";
+    setTimeout(drawWizCurve, 40);
+  }
+  updateWizNext();
+}
+
+function renderPhotoStep(kind, b64, info, title, sub){
+  var h = "<div class='photo-drop " + (b64?"has-img":"") + "' onclick='document.getElementById(\"w-file-" + kind + "\").click()'>";
+  if (b64) {
+    h += "<img class='photo-preview' src='data:image/jpeg;base64," + b64 + "'/>";
+  } else {
+    h += "<div class='pd-icon'>📷</div><div class='pd-txt'>" + title + "</div><div class='pd-sub'>" + sub + "</div>";
+  }
+  h += "</div>";
+  h += "<input type='file' id='w-file-" + kind + "' accept='image/*' capture='environment' style='display:none' onchange='wizPhoto(\"" + kind + "\",this)'/>";
+  if (b64) h += "<button class='mbtn mbtn-ghost' style='width:100%;margin-top:8px' onclick='wizAnalyze(\"" + kind + "\")'>🔍 Analysoi kuva AI:lla</button>";
+  if (info) h += "<div class='ai-result'><h4>AI-analyysi</h4>" + info + "</div>";
+  if (!CFG.url) h += "<div class='wwarn' style='margin-top:10px'>💡 AI-analyysi vaatii Apps Script -URL:n (⚙️ asetukset). Voit silti jatkaa ilman kuvaa.</div>";
+  return h;
+}
+
+function wizPhoto(kind, input){
+  if (!input.files || !input.files[0]) return;
+  fileToB64(input.files[0], function(b64, type){
+    if (kind === "product") { WIZ.data.photoB64 = b64; WIZ.data.photoType = type; }
+    else { WIZ.data.glazeB64 = b64; WIZ.data.glazeType = type; }
+    renderWiz();
+  });
+}
+
+async function wizAnalyze(kind){
+  var d = WIZ.data;
+  var b64 = kind==="product" ? d.photoB64 : d.glazeB64;
+  var type = kind==="product" ? d.photoType : d.glazeType;
+  if (!b64) return;
+  if (!CFG.url) { alert("Aseta Apps Script -URL asetuksista (⚙️) AI-toimintoja varten."); return; }
+  var resultDiv = document.querySelector("#wiz-body .ai-result");
+  if (!resultDiv) {
+    var btn = event.target;
+    btn.insertAdjacentHTML("afterend", "<div class='ai-result loading'><span class='ai-spinner'></span>AI analysoi kuvaa…</div>");
+    resultDiv = document.querySelector("#wiz-body .ai-result");
+  } else {
+    resultDiv.className = "ai-result loading";
+    resultDiv.innerHTML = "<span class='ai-spinner'></span>AI analysoi kuvaa…";
+  }
+  var prompt;
+  if (kind === "product") {
+    prompt = "Olet keramiikan poltto-asiantuntija. Analysoi tämä kuva poltettavista keramiikkakappaleista. Tunnista: kappaletyypit, arvioitu seinämäpaksuus, lukumäärä. Päättele sopiiko korppupoltto vai lasituspoltto ja onko kappaleissa erityishuomioita (paksut kohdat, ohuet rakenteet, korvat). Vastaa lyhyesti suomeksi 2-3 lauseella, käytännönläheisesti.";
+  } else {
+    prompt = "Olet keramiikan lasiteasiantuntija. Lue tästä lasitteen tuoteselosteen/etiketin kuvasta: suositeltu polttolämpötila (°C), polttotyyppi (hapetus/pelkistys), Orton-kartiot jos mainittu, ja erityisohjeet. Vastaa lyhyesti suomeksi. Jos näet selkeän lämpötilan, mainitse se muodossa esim. '1240°C'.";
+  }
+  var resp = await callAI(prompt, b64, type);
+  if (resp.error) {
+    resultDiv.className = "ai-result";
+    resultDiv.innerHTML = "<h4>AI ei käytettävissä</h4>" + (resp.error==="no-config" ? "Aseta Apps Script -URL asetuksista." : "Yhteysvirhe — tarkista asetukset.");
+    return;
+  }
+  var txt = aiText(resp);
+  resultDiv.className = "ai-result";
+  resultDiv.innerHTML = "<h4>AI-analyysi</h4>" + txt.replace(/\n/g,"<br>");
+  if (kind === "product") d.productInfo = txt;
+  else {
+    d.glazeInfo = txt;
+    /* Try to extract temperature */
+    var tm = txt.match(/(\d{3,4})\s*°?C/);
+    if (tm) {
+      var t = parseInt(tm[1]);
+      if (t >= 600 && t <= 1320) { d.targetTemp = t; }
+    }
+  }
+}
+
+function clayKorpu(){ var c=WIZ.data.clay; return (c==="earthen"||c==="raku")?680:860; }
+
+function wizPick(field, val, el){
+  WIZ.data[field] = val;
+  el.parentNode.querySelectorAll(".wcard").forEach(function(c){c.classList.remove("sel");});
+  el.classList.add("sel");
+  updateWizNext();
+}
+function wizPickKiln(i, el){
+  WIZ.data.kiln = i;
+  document.querySelectorAll(".wkcard").forEach(function(c){c.classList.remove("sel");});
+  el.classList.add("sel");
+  updateWizNext();
+}
+function wizPickFire(id){
+  WIZ.data.fire = id;
+  var defs = {"korpu":null,"glaze-high":1260,"glaze-low":1080,"deco":800,"underglaze":1080,"engobe":null};
+  if (defs[id]!==null && !WIZ.data.targetTemp) WIZ.data.targetTemp = defs[id];
+  renderWiz();
+}
+function wizTemp(v){
+  WIZ.data.targetTemp = parseInt(v);
+  document.getElementById("w-tempv").textContent = v;
+}
+function wizSeg(i, field, v){
+  if (!WIZ.prevSegs[i]) return;
+  if (field==="rate") WIZ.prevSegs[i].rate = parseInt(v)||50;
+  if (field==="temp") WIZ.prevSegs[i].temp = parseInt(v)||100;
+  if (field==="time") WIZ.prevSegs[i].time_min = parseInt(v)||0;
+  setTimeout(drawWizCurve, 30);
+}
+
+function updateWizNext(){
+  var st = WSTEPS[WIZ.step];
+  var d = WIZ.data;
+  var ok = true;
+  if (st.id==="nick") ok = (d.nick||"").trim().length>0;
+  if (st.id==="object") ok = !!d.object;
+  if (st.id==="clay") ok = !!d.clay;
+  if (st.id==="fire") ok = !!d.fire;
+  /* photo & glaze & kiln steps always passable */
+  document.getElementById("wiz-next").disabled = !ok;
+}
+
+function wizNext(){
+  var st = WSTEPS[WIZ.step];
+  if (st.id==="nick") {
+    var el = document.getElementById("w-nick");
+    if (el) WIZ.data.nick = el.value.trim();
+    if (!WIZ.data.nick) { alert("Anna nimimerkki."); return; }
+    CFG.nick = WIZ.data.nick; saveCfgStore();
+  }
+  if (st.id==="preview") {
+    /* Commit to ST315 */
+    var pn = document.getElementById("w-pname");
+    progs[curProg].delay = 0;
+    progs[curProg].segs = WIZ.prevSegs.map(function(s){return {rate:s.rate,temp:s.temp,time_min:s.time_min};});
+    progs[curProg].segs.push({rate:RATE_END,temp:500,time_min:0});
+    kilnIdx = WIZ.data.kiln;
+    document.querySelectorAll(".kb").forEach(function(b,i){ b.className = "kb" + (i===kilnIdx?" on":""); });
+    document.getElementById("uname-ctrl").textContent = KILNS[kilnIdx].name;
+    ctrlState = "IDLE"; curSeg = 0;
+    closeOverlay("wizard-ov");
+    refreshDisplay(); renderSheet(); drawCurve(); renderSummary();
+    setMsg("✓ Ohjelma luotu velholla — paina START tai muokkaa STEP-napilla");
+    return;
+  }
+  /* Skip glaze step if korpu/engobe */
+  WIZ.step = Math.min(WSTEPS.length-1, WIZ.step+1);
+  if (WSTEPS[WIZ.step].id==="glaze" && (WIZ.data.fire==="korpu"||WIZ.data.fire==="engobe")) {
+    WIZ.step = Math.min(WSTEPS.length-1, WIZ.step+1);
+  }
+  renderWiz();
+}
+function wizBack(){
+  WIZ.step = Math.max(0, WIZ.step-1);
+  if (WSTEPS[WIZ.step].id==="glaze" && (WIZ.data.fire==="korpu"||WIZ.data.fire==="engobe")) {
+    WIZ.step = Math.max(0, WIZ.step-1);
+  }
+  renderWiz();
+}
+
+function wizName(){
+  var d = WIZ.data;
+  var ftl = {korpu:"Korppupoltto","glaze-high":"Korkea lasitus","glaze-low":"Matala lasitus",deco:"Koristepoltto",underglaze:"Alilasite",engobe:"Engobe"};
+  var obl = {mukit:"Mukit",lautaset:"Lautaset",veistokset:"Veistokset",suuret:"Suuret",pienet:"Pienet",testi:"Testipalat"};
+  return [d.nick, ftl[d.fire]||"", obl[d.object]||"", new Date().toLocaleDateString("fi-FI")].filter(Boolean).join(" · ");
+}
+
+function wizGenProgram(){
+  var d = WIZ.data;
+  var ft = d.fire||"korpu";
+  var tv = d.targetTemp;
+  var kmax = KILNS[d.kiln].maxC;
+  var rf = {mukit:1.0,lautaset:1.1,veistokset:0.45,suuret:0.3,pienet:1.5,testi:2.0}[d.object]||1.0;
+  var dh = {mukit:20,lautaset:15,veistokset:60,suuret:120,pienet:10,testi:5}[d.object]||20;
+  function R(x){ return Math.max(5, Math.round(x)); }
+  if (ft==="korpu"||ft==="engobe") {
+    var tgt = Math.min(tv||({earthen:680,raku:680}[d.clay]||860), kmax);
+    return [{rate:R(15*rf),temp:120,time_min:dh},{rate:R(70*rf),temp:550,time_min:0},{rate:R(30*rf),temp:600,time_min:0},{rate:R(100*rf),temp:tgt,time_min:Math.max(0,Math.round(15/rf))}];
+  } else if (ft==="glaze-high") {
+    var t1 = Math.min(tv||1260, kmax);
+    return [{rate:R(15*rf),temp:120,time_min:Math.round(dh*.5)},{rate:R(70*rf),temp:550,time_min:0},{rate:R(30*rf),temp:600,time_min:0},{rate:R(50*rf),temp:t1,time_min:30}];
+  } else if (ft==="glaze-low"||ft==="underglaze") {
+    var t2 = Math.min(tv||1080, kmax);
+    return [{rate:R(20*rf),temp:120,time_min:Math.round(dh*.5)},{rate:R(80*rf),temp:550,time_min:0},{rate:R(30*rf),temp:600,time_min:0},{rate:R(80*rf),temp:t2,time_min:20}];
+  } else if (ft==="deco") {
+    var t3 = Math.min(tv||800, kmax);
+    return [{rate:R(80*rf),temp:120,time_min:10},{rate:R(150*rf),temp:550,time_min:0},{rate:R(50*rf),temp:600,time_min:0},{rate:R(150*rf),temp:t3,time_min:15}];
+  }
+  return [{rate:50,temp:860,time_min:15}];
+}
+
+function calcMinutesArr(arr){
+  var m=0,cur=20;
+  arr.forEach(function(s){ m+=(Math.abs(s.temp-cur)/(s.rate||50))*60; m+=s.time_min; cur=s.temp; });
+  return Math.round(m);
+}
+
+function drawWizCurve(){
+  var svg = document.getElementById("wiz-curve");
+  if (!svg) return;
+  var ps = WIZ.prevSegs;
+  if (!ps.length){ svg.innerHTML=""; return; }
+  var pts=[{t:0,temp:20}],ct=0,ctemp=20;
+  ps.forEach(function(s){ var diff=Math.abs(s.temp-ctemp); ct+=(diff/(s.rate||50))*60; ctemp=s.temp; pts.push({t:ct,temp:ctemp}); if(s.time_min>0){ct+=s.time_min;pts.push({t:ct,temp:ctemp});} });
+  var W=540,H=220,PL=46,PR=12,PT=14,PB=34,CW=W-PL-PR,CH=H-PT-PB;
+  var maxT=0; pts.forEach(function(p){if(p.temp>maxT)maxT=p.temp;});
+  var tempMax=Math.min(1340,Math.ceil(maxT/100)*100+80),totalT=ct;
+  function tx(t){return PL+(t/totalT)*CW;} function ty(tp){return PT+CH-(tp/tempMax)*CH;}
+  var h="";
+  [{a:0,b:130,f:"rgba(90,140,210,.12)"},{a:558,b:592,f:"rgba(210,70,50,.2)"},{a:592,b:920,f:"rgba(180,90,40,.08)"},{a:920,b:1340,f:"rgba(60,140,180,.08)"}].forEach(function(z){if(z.a>tempMax)return;var y0=ty(Math.min(z.b,tempMax)),y1=ty(z.a);if(y1-y0>1)h+="<rect x='"+PL+"' y='"+y0+"' width='"+CW+"' height='"+(y1-y0)+"' fill='"+z.f+"'/>";});
+  if(tempMax>573){var qy=ty(573);h+="<line x1='"+PL+"' y1='"+qy+"' x2='"+(PL+CW)+"' y2='"+qy+"' stroke='#D04030' stroke-width='1.2' stroke-dasharray='4,3' opacity='.8'/>";}
+  var ts=tempMax<=500?100:200;
+  for(var t=0;t<=tempMax;t+=ts){var y=ty(t);h+="<line x1='"+PL+"' y1='"+y+"' x2='"+(PL+CW)+"' y2='"+y+"' stroke='#eee'/><text x='"+(PL-4)+"' y='"+(y+4)+"' text-anchor='end' font-size='9' fill='#bbb' font-family='DM Mono,monospace'>"+t+"</text>";}
+  h+="<path d='M "+pts.map(function(p){return tx(p.t)+","+ty(p.temp);}).join(" L ")+"' fill='none' stroke='#BF5B28' stroke-width='2.5' stroke-linejoin='round'/>";
+  pts.forEach(function(p,i){var x=tx(p.t),y=ty(p.temp);h+="<circle cx='"+x+"' cy='"+y+"' r='"+(i===0||i===pts.length-1?4:3)+"' fill='white' stroke='#BF5B28' stroke-width='1.6'/>";});
+  h+="<rect x='"+PL+"' y='"+PT+"' width='"+CW+"' height='"+CH+"' fill='none' stroke='#ddd' rx='2'/>";
+  svg.innerHTML=h;
+}
+
+/* ══════════════════════════════════════════════════
+   KILN LOADING GUIDE
+   ══════════════════════════════════════════════════ */
+var LOAD = { b64:null, type:null };
+
+function openLoadGuide(){
+  LOAD = { b64:null, type:null };
+  var k = KILNS[kilnIdx];
+  var dims = kilnIdx===0 ? {w:57,d:60,h:76} : {w:35,d:35,h:40};
+  document.getElementById("load-body").innerHTML =
+    "<div class='wsec-lbl'>Uunin sisämitat (" + k.name + ")</div>" +
+    "<div class='lg-kiln-dims'>" +
+      "<div class='lg-dim'><label>Leveys cm</label><input type='number' id='lg-w' value='" + dims.w + "'/></div>" +
+      "<div class='lg-dim'><label>Syvyys cm</label><input type='number' id='lg-d' value='" + dims.d + "'/></div>" +
+      "<div class='lg-dim'><label>Korkeus cm</label><input type='number' id='lg-h' value='" + dims.h + "'/></div>" +
+    "</div>" +
+    "<div class='wsec-lbl' style='margin-top:14px'>Kuva poltettavista kappaleista</div>" +
+    "<div class='photo-drop' id='lg-drop' onclick='document.getElementById(\"lg-file\").click()'>" +
+      "<div class='pd-icon'>📷</div><div class='pd-txt'>Ota kuva kaikista poltettavista kappaleista</div>" +
+      "<div class='pd-sub'>AI ehdottaa uunilevyjen asettelun ja kerrosjaon</div></div>" +
+    "<input type='file' id='lg-file' accept='image/*' capture='environment' style='display:none' onchange='loadPhoto(this)'/>" +
+    "<div class='wsec-lbl' style='margin-top:14px'>Polttotyyppi</div>" +
+    "<div class='wcards c2'>" +
+      "<div class='wcard sel' id='lg-ft-korpu' onclick='loadFireType(\"korpu\")'><span class='cn'>Korppupoltto</span><span class='cd'>Voi ladata tiiviisti</span></div>" +
+      "<div class='wcard' id='lg-ft-glaze' onclick='loadFireType(\"glaze\")'><span class='cn'>Lasituspoltto</span><span class='cd'>Väli kappaleiden välissä</span></div>" +
+    "</div>" +
+    (CFG.url ? "" : "<div class='wwarn' style='margin-top:12px'>💡 AI-ehdotus vaatii Apps Script -URL:n (⚙️ asetukset).</div>") +
+    "<div id='lg-result'></div>";
+  LOAD.fireType = "korpu";
+  openOverlay("load-ov");
+}
+function loadFireType(ft){
+  LOAD.fireType = ft;
+  document.getElementById("lg-ft-korpu").className = "wcard" + (ft==="korpu"?" sel":"");
+  document.getElementById("lg-ft-glaze").className = "wcard" + (ft==="glaze"?" sel":"");
+}
+function loadPhoto(input){
+  if (!input.files || !input.files[0]) return;
+  fileToB64(input.files[0], function(b64, type){
+    LOAD.b64 = b64; LOAD.type = type;
+    var drop = document.getElementById("lg-drop");
+    drop.className = "photo-drop has-img";
+    drop.innerHTML = "<img class='photo-preview' src='data:image/jpeg;base64," + b64 + "'/>";
+  });
+}
+async function analyzeLoad(){
+  if (!LOAD.b64) { alert("Ota ensin kuva kappaleista."); return; }
+  if (!CFG.url) { alert("Aseta Apps Script -URL asetuksista (⚙️)."); openSettings(); return; }
+  var w = document.getElementById("lg-w").value;
+  var d = document.getElementById("lg-d").value;
+  var hgt = document.getElementById("lg-h").value;
+  var res = document.getElementById("lg-result");
+  res.innerHTML = "<div class='ai-result loading'><span class='ai-spinner'></span>AI suunnittelee uunin latausta…</div>";
+  var ftTxt = LOAD.fireType==="korpu" ? "korppupoltto (lasittamaton, kappaleet voivat koskea toisiaan, voi ladata tiiviisti sisäkkäin ja päällekkäin)" : "lasituspoltto (kappaleet EIVÄT saa koskea toisiaan tai uunin seiniä, väli väh. 2-3cm, pohjat puhtaat lasitteesta)";
+  var prompt = "Olet keramiikan uunimestarin avustaja. Uunin sisämitat ovat " + w + "cm (leveys) x " + d + "cm (syvyys) x " + hgt + "cm (korkeus). Poltetaan: " + ftTxt + ". " +
+    "Analysoi kuvassa näkyvät kappaleet ja ehdota tehokas uunilevyjen asettelu. " +
+    "Anna vastaus JSON-muodossa ilman muuta tekstiä: " +
+    "{\"yhteenveto\":\"lyhyt arvio kappaleista\",\"kerrokset\":[{\"taso\":1,\"korkeus_cm\":N,\"sisalto\":\"mitä tälle tasolle\",\"pilarit\":\"pilarisuositus\"}],\"vinkit\":[\"vinkki1\",\"vinkki2\"],\"varoitukset\":[\"varoitus jos jokin ei mahdu tai on riski\"]}";
+  var resp = await callAI(prompt, LOAD.b64, LOAD.type);
+  if (resp.error) {
+    res.innerHTML = "<div class='ai-result'><h4>AI ei käytettävissä</h4>Tarkista Apps Script -URL asetuksista.</div>";
+    return;
+  }
+  var txt = aiText(resp);
+  var data = parseAIJson(txt);
+  if (!data) {
+    res.innerHTML = "<div class='ai-result'><h4>AI-ehdotus</h4>" + txt.replace(/\n/g,"<br>") + "</div>";
+    return;
+  }
+  var html = "<div class='lg-suggestion'><h4 style='font-size:13px;margin-bottom:8px;color:var(--clay)'>📦 Latausehdotus</h4>";
+  if (data.yhteenveto) html += "<div style='font-size:12px;color:var(--txm);margin-bottom:10px'>" + data.yhteenveto + "</div>";
+  if (data.kerrokset) {
+    data.kerrokset.forEach(function(k){
+      html += "<div class='lg-shelf'><div class='lg-shelf-h'>Taso " + k.taso + (k.korkeus_cm?" · "+k.korkeus_cm+"cm":"") + "</div>" +
+        "<div class='lg-shelf-b'>" + (k.sisalto||"") + (k.pilarit?"<br><span style='color:var(--txl)'>Pilarit: "+k.pilarit+"</span>":"") + "</div></div>";
+    });
+  }
+  if (data.vinkit && data.vinkit.length) {
+    html += "<div style='margin-top:8px;font-size:12px'><strong style='color:var(--clay)'>💡 Vinkit:</strong><ul style='margin:5px 0 0 18px;color:var(--txm)'>" +
+      data.vinkit.map(function(v){return "<li>"+v+"</li>";}).join("") + "</ul></div>";
+  }
+  if (data.varoitukset && data.varoitukset.length) {
+    html += "<div class='wwarn' style='margin-top:10px'><strong>⚠️ Huomioi:</strong><ul style='margin:5px 0 0 18px'>" +
+      data.varoitukset.map(function(v){return "<li>"+v+"</li>";}).join("") + "</ul></div>";
+  }
+  html += "</div>";
+  res.innerHTML = html;
+}
+
+
+
+/* ══════════════════════════════════════════════════
+   KOSKETUSELEINEN KÄYRÄEDITORI (Pointer Events)
+   - Node pystyveto = lämpötila
+   - Ramppi (diagonaali) veto = nopeus °C/hr
+   - Tasanne / kahva veto = pitoaika
+   - Tuplanapautus tyhjään = lisää segmentti
+   - Yksittäisnapautus nodeen = numerosyöttö
+   ══════════════════════════════════════════════════ */
+var DRAG = null;       /* active drag state */
+var lastTap = 0;       /* for double-tap detection */
+var tapMoved = false;
+
+function svgPoint(svg, evt){
+  var r = svg.getBoundingClientRect();
+  var vb = svg.viewBox.baseVal;
+  var x = (evt.clientX - r.left) / r.width * vb.width;
+  var y = (evt.clientY - r.top) / r.height * vb.height;
+  return { x:x, y:y };
+}
+
+function curveDown(evt){
+  if (fireRunning) return; /* no editing while firing */
+  var svg = document.getElementById("curve-svg");
+  var target = evt.target;
+  var cls = target.getAttribute && target.getAttribute("class");
+  var segAttr = target.getAttribute && target.getAttribute("data-seg");
+  var p = svgPoint(svg, evt);
+  tapMoved = false;
+
+  if (cls && segAttr !== null && (cls.indexOf("cv-node")>=0 || cls.indexOf("cv-ramp")>=0 || cls.indexOf("cv-soak")>=0 || cls.indexOf("cv-soakh")>=0)) {
+    var si = parseInt(segAttr);
+    var seg = progs[curProg].segs[si];
+    if (!seg) return;
+    var type = cls.indexOf("cv-node")>=0 ? "temp" :
+               cls.indexOf("cv-ramp")>=0 ? "rate" : "time";
+    /* Freeze scale at drag start for smooth interaction */
+    DRAG = {
+      seg: si, type: type,
+      startX: p.x, startY: p.y,
+      origRate: (typeof seg.rate==="number"?seg.rate:200),
+      origTemp: seg.temp, origTime: seg.time_min,
+      fixed: { tempMax: window.CG.tempMax, totalT: window.CG.totalT },
+      g: JSON.parse(JSON.stringify(window.CG.segGeom[si])),
+      moved: false
+    };
+    try { svg.setPointerCapture(evt.pointerId); } catch(e){}
+    evt.preventDefault();
+  } else {
+    /* Empty area: detect double-tap to add a segment */
+    var now = Date.now();
+    if (now - lastTap < 350) {
+      addSegmentAt(p);
+      lastTap = 0;
+    } else {
+      lastTap = now;
+    }
+  }
+}
+
+function curveMove(evt){
+  if (!DRAG) return;
+  var svg = document.getElementById("curve-svg");
+  var p = svgPoint(svg, evt);
+  var CG = window.CG;
+  var seg = progs[curProg].segs[DRAG.seg];
+  if (!seg) return;
+  if (Math.abs(p.x-DRAG.startX)>3 || Math.abs(p.y-DRAG.startY)>3) { DRAG.moved = true; tapMoved = true; }
+
+  var kmax = KILNS[kilnIdx].maxC;
+
+  if (DRAG.type === "temp") {
+    /* Vertical drag → soak temperature */
+    var newTemp = CG.invY(p.y);
+    newTemp = Math.round(newTemp/5)*5;
+    seg.temp = Math.max(0, Math.min(kmax, newTemp));
+  }
+  else if (DRAG.type === "rate") {
+    /* Drag ramp → change duration → back-calc rate.
+       Horizontal position from ramp start defines duration. */
+    var startX = CG.tx(DRAG.g.startT);
+    var durMin = (p.x - startX) / CG.CW * DRAG.fixed.totalT;
+    durMin = Math.max(0.5, durMin);
+    var diff = Math.abs(seg.temp - DRAG.g.prevTemp);
+    if (diff < 1) diff = 1;
+    var newRate = Math.round((diff / durMin) * 60);
+    newRate = Math.max(1, Math.min(999, newRate));
+    seg.rate = newRate;
+  }
+  else if (DRAG.type === "time") {
+    /* Drag plateau / handle → soak time */
+    var pStartX = CG.tx(DRAG.g.plateauStart);
+    var newTime = (p.x - pStartX) / CG.CW * DRAG.fixed.totalT;
+    seg.time_min = Math.max(0, Math.round(newTime));
+  }
+
+  /* Redraw with frozen scale to avoid jitter */
+  drawCurve(DRAG.fixed);
+  renderSheet();
+  renderSummary();
+  /* live status */
+  if (DRAG.type==="temp") setMsg("SEG "+(DRAG.seg+1)+" pitolämpötila: "+seg.temp+"°C");
+  else if (DRAG.type==="rate") setMsg("SEG "+(DRAG.seg+1)+" ramppinopeus: "+seg.rate+"°C/hr");
+  else setMsg("SEG "+(DRAG.seg+1)+" pitoaika: "+minsToHM(seg.time_min));
+}
+
+function curveUp(evt){
+  var svg = document.getElementById("curve-svg");
+  if (DRAG) {
+    var wasMoved = DRAG.moved;
+    var si = DRAG.seg, type = DRAG.type;
+    try { svg.releasePointerCapture(evt.pointerId); } catch(e){}
+    DRAG = null;
+    drawCurve();   /* re-fit scale */
+    renderSheet(); renderSummary(); calcDuration();
+    if (!wasMoved && type==="temp") {
+      /* Tap (no drag) on node → numeric popover */
+      openSegPopover(si);
+    } else {
+      updateDur();
+    }
+  }
+}
+
+/* Double-tap empty area → insert segment at that temp/time */
+function addSegmentAt(p){
+  if (!window.CG) {
+    /* No segments yet — create first one */
+    var t1 = Math.max(50, Math.round(KILNS[kilnIdx].maxC*0.5/10)*10);
+    progs[curProg].segs = [{rate:60, temp:t1, time_min:0},{rate:RATE_END,temp:500,time_min:0}];
+    ctrlState="IDLE"; curSeg=0;
+    refreshDisplay(); renderSheet(); drawCurve(); renderSummary();
+    setMsg("Ensimmäinen segmentti luotu — tuplanapauta lisätäksesi tai vedä muokataksesi");
+    return;
+  }
+  var CG = window.CG;
+  var tTime = CG.invX(p.x);
+  var tTemp = Math.round(CG.invY(p.y)/10)*10;
+  tTemp = Math.max(0, Math.min(KILNS[kilnIdx].maxC, tTemp));
+  /* Find insertion index by time */
+  var segs = progs[curProg].segs;
+  var pos = 0;
+  for (var i=0;i<CG.segGeom.length;i++){
+    if (tTime > CG.segGeom[i].nodeT) pos = i+1;
+  }
+  /* compute reasonable rate from previous temp */
+  var prevT = pos>0 ? segs[pos-1].temp : 20;
+  segs.splice(pos, 0, { rate: 60, temp: tTemp, time_min: 0 });
+  /* ensure End marker exists */
+  var hasEnd=false; segs.forEach(function(s){if(s.rate===RATE_END)hasEnd=true;});
+  if(!hasEnd) segs.push({rate:RATE_END,temp:500,time_min:0});
+  refreshDisplay(); renderSheet(); drawCurve(); renderSummary(); calcDuration();
+  setMsg("✓ Segmentti lisätty kohtaan "+tTemp+"°C — vedä hienosäätääksesi");
+}
+
+/* Numeric popover for precise editing */
+function openSegPopover(si){
+  var seg = progs[curProg].segs[si];
+  if (!seg || seg.rate===RATE_END) return;
+  var pop = document.getElementById("seg-popover");
+  if (!pop) {
+    pop = document.createElement("div");
+    pop.id = "seg-popover";
+    document.body.appendChild(pop);
+  }
+  var kmax = KILNS[kilnIdx].maxC;
+  pop.innerHTML =
+    "<div class='pop-card'>" +
+    "<div class='pop-h'>Segmentti "+(si+1)+"</div>" +
+    "<div class='pop-row'><label>Ramppinopeus °C/hr</label>" +
+      "<input type='number' id='pop-rate' value='"+(typeof seg.rate==='number'?seg.rate:200)+"' min='1' max='999'/></div>" +
+    "<div class='pop-row'><label>Pitolämpötila °C</label>" +
+      "<input type='number' id='pop-temp' value='"+seg.temp+"' min='0' max='"+kmax+"'/></div>" +
+    "<div class='pop-row'><label>Pitoaika (min)</label>" +
+      "<input type='number' id='pop-time' value='"+seg.time_min+"' min='0'/></div>" +
+    "<div class='pop-btns'>" +
+      "<button class='mbtn mbtn-ghost' onclick='delSegPop("+si+")'>Poista</button>" +
+      "<button class='mbtn mbtn-primary' onclick='applySegPop("+si+")'>Valmis</button>" +
+    "</div></div>";
+  pop.classList.add("show");
+  setTimeout(function(){var el=document.getElementById("pop-temp"); if(el){el.focus();el.select();}},40);
+}
+function applySegPop(si){
+  var seg = progs[curProg].segs[si];
+  if (seg) {
+    var r=parseInt(document.getElementById("pop-rate").value)||60;
+    var t=parseInt(document.getElementById("pop-temp").value)||100;
+    var h=parseInt(document.getElementById("pop-time").value)||0;
+    seg.rate=Math.max(1,Math.min(999,r));
+    seg.temp=Math.max(0,Math.min(KILNS[kilnIdx].maxC,t));
+    seg.time_min=Math.max(0,h);
+  }
+  closeSegPopover();
+  refreshDisplay(); renderSheet(); drawCurve(); renderSummary(); calcDuration();
+}
+function delSegPop(si){
+  progs[curProg].segs.splice(si,1);
+  closeSegPopover();
+  refreshDisplay(); renderSheet(); drawCurve(); renderSummary(); calcDuration();
+}
+function closeSegPopover(){
+  var pop=document.getElementById("seg-popover");
+  if(pop) pop.classList.remove("show");
+}
+
+function setupCurveEditor(){
+  var svg = document.getElementById("curve-svg");
+  if (!svg) return;
+  svg.style.touchAction = "none";
+  svg.addEventListener("pointerdown", curveDown);
+  svg.addEventListener("pointermove", curveMove);
+  svg.addEventListener("pointerup", curveUp);
+  svg.addEventListener("pointercancel", curveUp);
+}
+
+
+window.addEventListener("load", async function() {
+  loadCfg();
+  await loadLog();
+  applyLum();
+  refreshDisplay();
+  renderSheet();
+  drawCurve();
+  renderSummary();
+  setupCurveEditor();
+  /* Auto-open guided wizard at start (like v3) */
+  openWizard();
+});
+</script>
+
+<!-- ════════ WIZARD OVERLAY ════════ -->
+<div class="overlay" id="wizard-ov">
+<div class="modal">
+  <div class="modal-head">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div class="modal-brand">KERAKO Studio™ · Ohjattu polton aloitus</div>
+      <button onclick="skipWizard()" style="background:none;border:none;color:var(--txl);font-size:12px;cursor:pointer;padding:0;white-space:nowrap;font-family:'Instrument Sans',sans-serif;">Ohita opastus →</button>
+    </div>
+    <div class="modal-prog" id="wiz-prog" style="margin-top:9px;"></div>
+    <div class="modal-title" id="wiz-title">Tervetuloa</div>
+    <div class="modal-sub" id="wiz-sub"></div>
+  </div>
+  <div class="modal-body" id="wiz-body"></div>
+  <div class="modal-foot">
+    <button class="mbtn mbtn-ghost" id="wiz-back" onclick="wizBack()">← Takaisin</button>
+    <span class="modal-counter" id="wiz-count"></span>
+    <button class="mbtn mbtn-primary" id="wiz-next" onclick="wizNext()">Seuraava →</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════ LOADING GUIDE OVERLAY ════════ -->
+<div class="overlay" id="load-ov">
+<div class="modal">
+  <div class="modal-head">
+    <div class="modal-brand">KERAKO Studio™ · Uunin latausopas</div>
+    <div class="modal-title">📦 Uunin lataaminen</div>
+    <div class="modal-sub">Ota kuva poltettavista kappaleista — AI ehdottaa uunilevyjen asettelun</div>
+  </div>
+  <div class="modal-body" id="load-body"></div>
+  <div class="modal-foot">
+    <button class="mbtn mbtn-ghost" onclick="closeOverlay('load-ov')">Sulje</button>
+    <button class="mbtn mbtn-primary" id="load-analyze" onclick="analyzeLoad()">🔍 Analysoi &amp; ehdota asettelu</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════ SHEET IMPORT OVERLAY ════════ -->
+<div class="overlay" id="sheet-ov">
+<div class="modal">
+  <div class="modal-head">
+    <div class="modal-brand">KERAKO Studio™ · Jaettu ohjelmakirjasto</div>
+    <div class="modal-title">☁️ Tuo ohjelma Google Sheetsistä</div>
+    <div class="modal-sub">Metropolian yhteinen poltto-ohjelmakirjasto</div>
+  </div>
+  <div class="modal-body" id="sheet-body">
+    <div class="ai-result loading"><span class="ai-spinner"></span>Ladataan ohjelmia…</div>
+  </div>
+  <div class="modal-foot">
+    <button class="mbtn mbtn-ghost" onclick="closeOverlay('sheet-ov')">Sulje</button>
+    <button class="mbtn mbtn-primary" onclick="loadFromSheet()">🔄 Päivitä lista</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════ SETTINGS OVERLAY ════════ -->
+<div class="overlay" id="set-ov">
+<div class="modal">
+  <div class="modal-head">
+    <div class="modal-brand">KERAKO Studio™</div>
+    <div class="modal-title">⚙️ Asetukset</div>
+    <div class="modal-sub">Google Sheets -synkronointi ja AI-toiminnot</div>
+  </div>
+  <div class="modal-body">
+    <div class="set-row">
+      <label>Apps Script Web App -URL (jaettu backend)</label>
+      <input type="text" id="set-url" placeholder="https://script.google.com/macros/s/.../exec"/>
+      <div class="hint">Tämä yksi URL hoitaa sekä Google Sheets -synkronoinnin että AI-kuva-analyysit. Opettaja asentaa backendin kerran ja jakaa URL:n. Katso erillinen <strong>kerako_apps_script.gs</strong> -ohje.</div>
+    </div>
+    <div class="set-row">
+      <label>Oma nimimerkki</label>
+      <input type="text" id="set-nick" placeholder="esim. Mika" style="font-family:'Instrument Sans',sans-serif"/>
+      <div class="hint">Kirjautuu polttokirjaan ja jaettuun Sheets-dokumenttiin.</div>
+    </div>
+    <button class="mbtn mbtn-ghost" style="width:100%" onclick="testConnection()">🔌 Testaa yhteys</button>
+    <div id="set-status"></div>
+  </div>
+  <div class="modal-foot">
+    <button class="mbtn mbtn-ghost" onclick="closeOverlay('set-ov')">Peruuta</button>
+    <button class="mbtn mbtn-primary" onclick="saveSettings()">💾 Tallenna asetukset</button>
+  </div>
+</div>
+</div>
+
+</body>
+</html>
