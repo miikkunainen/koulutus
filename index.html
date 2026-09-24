@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SolidWorks · loppukoe</title>
+<style>
+:root{font-family:system-ui,Segoe UI,sans-serif;color:#203143;background:#f3f6f6}
+*{box-sizing:border-box}
+body{margin:0}
+header{background:#153b47;color:white;padding:2rem max(1rem,calc((100vw - 900px)/2))}
+h1{margin:.3rem 0;font-size:clamp(1.8rem,4vw,2.8rem)}
+main{max-width:900px;margin:auto;padding:1.4rem}
+section,.card{background:#fff;border-radius:13px;padding:1.3rem;margin-bottom:1rem;box-shadow:0 2px 12px #132d3812}
+.muted{color:#526775}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem}
+label{display:block;margin:.5rem 0}
+input[type=text]{width:100%;padding:.8rem;border:1px solid #9aadb0;border-radius:8px;font:inherit}
+fieldset{border:0;padding:0;margin:0}
+legend{font-weight:700;font-size:1.07rem;padding:0 0 .65rem}
+.choice{display:flex;gap:.65rem;align-items:flex-start;padding:.72rem;border:1px solid #d8e2e2;border-radius:8px;cursor:pointer}
+.choice:has(input:checked){border-color:#176c79;background:#e7f6f5}
+button{background:#126c77;color:white;border:0;padding:.85rem 1.2rem;border-radius:8px;font:inherit;font-weight:700;cursor:pointer}
+button.secondary{background:#e5eeee;color:#173946}
+button:disabled{opacity:.5;cursor:not-allowed}
+.toolbar{display:flex;justify-content:space-between;gap:1rem;align-items:center;flex-wrap:wrap}
+.progress{height:9px;background:#dbe6e5;border-radius:8px;overflow:hidden}
+.progress span{display:block;height:100%;background:#1f928f}
+.pill{font-size:.8rem;font-weight:700;letter-spacing:.06em;color:#177076;text-transform:uppercase}
+.feedback{padding:1rem;border-left:4px solid #177076;background:#eaf5f4;margin-top:1rem}
+.bad{border-left-color:#b04a35;background:#fff0eb}
+.instructions-box{background:#f0f7f8;border:1px solid #b6d5d5;border-radius:8px;padding:1rem;margin:1rem 0}
+.certificate{border:7px double #b9904b;text-align:center;padding:3rem 2rem;background:#fffdf6;max-width:790px;margin:1rem auto}
+.certificate h2{font-family:Georgia,serif;font-size:2.4rem;color:#163c47;margin-top:0}
+.certname{font-family:Georgia,serif;font-size:2rem;color:#925e25;overflow-wrap:anywhere;margin:1rem 0}
+.certificate p{font-size:1.1rem;margin:0.5rem 0}
+#screenCert{display:none}
+#printCert{display:none}
+a{color:#126c77}
+@media print{
+  body{background:white}
+  header,main,#screenCert{display:none!important}
+  #printCert{display:block!important}
+  .certificate{margin:0;min-height:94vh;display:flex;flex-direction:column;justify-content:center;box-shadow:none;break-inside:avoid}
+  @page{size:A4 landscape;margin:12mm}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="pill" style="color:#8ae0da">Metropolia · harjoituskoe</div>
+  <h1>SolidWorks – loppukoe</h1>
+  <p>50 kysymystä · mallinnuksesta Sustainability-, Costing- ja Simulation-aiheisiin</p>
+</header>
+
+<main>
+  <!-- ALOITUS -->
+  <section id="intro">
+    <h2>Suoritusohje</h2>
+    <p>Vastaa yhteen vaihtoehtoon kerrallaan. Saat heti palautteen ja siirryt seuraavaan kysymykseen. Hyväksytty tulos on vähintään 26/50. Arvosana 3: 26–34, 4: 35–44, 5: 45–50.</p>
+    
+    <div class="instructions-box">
+      <strong>📌 Classroom-palautusohje:</strong>
+      <p style="margin:.4rem 0 0 0;">Kokeen suoritettuasi saat hyväksytystä tuloksesta todistuksen. Tallenna todistus PDF-tiedostona ja palauta se Google Classroomin kyseiseen tehtävään suoritusmerkintää varten.</p>
+    </div>
+
+    <p class="muted">Kirjoita nimesi ja kurssitunnus täsmälleen siinä muodossa kuin haluat ne sertifikaattiin.</p>
+    <div class="grid">
+      <label>Opiskelijan koko nimi<input id="student" type="text" maxlength="100" autocomplete="name" required></label>
+      <label>Kurssitunnus<input id="course" type="text" maxlength="60" required></label>
+    </div>
+    <button id="start">Aloita koe</button>
+    <p id="startError" role="alert" style="color:#b04a35;font-weight:700;"></p>
+  </section>
+
+  <!-- KOE -->
+  <section id="exam" hidden>
+    <div class="toolbar">
+      <span id="count"></span>
+      <span id="topic" class="pill"></span>
+      <strong id="score"></strong>
+    </div>
+    <div class="progress" aria-label="Kokeen eteneminen"><span id="bar"></span></div>
+    <div class="card">
+      <fieldset>
+        <legend id="question"></legend>
+        <div id="choices"></div>
+      </fieldset>
+      <div id="feedback" role="status" aria-live="polite"></div>
+    </div>
+    <div class="toolbar">
+      <span class="muted">Vastaus lukitaan valinnan jälkeen.</span>
+      <button id="next" disabled>Seuraava</button>
+    </div>
+  </section>
+
+  <!-- TULOS -->
+  <section id="result" hidden>
+    <h2>Tulos</h2>
+    <p id="summary" style="font-size:1.15rem;font-weight:600;"></p>
+    
+    <div id="classroomInstructionBox" class="instructions-box" hidden>
+      <strong>📥 Toimi näin hyväksytyn kokeen jälkeen:</strong>
+      <ol style="margin:.5rem 0 0 1.2rem;padding:0;">
+        <li>Klikkaa alla olevaa <strong>”Näytä todistus ja tallenna PDF”</strong> -painiketta.</li>
+        <li>Paina <strong>”Tulosta / tallenna PDF”</strong> ja valitse tulostimesta <em>”Tallenna PDF-muodossa”</em> (Save as PDF).</li>
+        <li>Mene Google Classroomiin kyseisen tehtävän kohdalle, liitä tallentamasi PDF ja klikkaa <strong>”Palauta”</strong> (Turn in).</li>
+      </ol>
+    </div>
+
+    <div id="review"></div>
+    <div style="margin-top:1.2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+      <button id="showCert" hidden>Näytä todistus ja tallenna PDF</button>
+      <button id="restart" class="secondary">Aloita uusi suoritus</button>
+    </div>
+  </section>
+
+  <!-- SERTIFIKAATTI RUUDULLA -->
+  <div id="screenCert">
+    <div class="certificate" id="certBody"></div>
+    <div class="toolbar" style="max-width:790px;margin:1rem auto;">
+      <button id="print">Tulosta / tallenna PDF</button>
+      <span class="muted">Valitse avautuvassa tulostusikkunassa kohteeksi ”Tallenna PDF-muodossa” ja palauta tiedosto Classroomiin.</span>
+    </div>
+  </div>
+</main>
+
+<!-- SERTIFIKAATTI TULOSTEENA -->
+<div id="printCert"><div class="certificate" id="printBody"></div></div>
+
+<script>
+const QUESTIONS=[
+  {"topic": "Yhtälöt", "q": "Kuvan aiheena ovat kaavat ja globaalit muuttujat. Mikä on Global Variable -muuttujan hyöty?", "options": ["Samaa nimettyä arvoa voidaan käyttää useissa mitoissa", "Se lisää automaattisesti materiaalin", "Se korvaa kaikki sketsirelaatiot", "Se tekee aina valmistuspiirustuksen"], "correct": 0},
+  {"topic": "Yhtälöt", "q": "Jos pöydän leveyttä ohjataan muuttujalla Leveys, mikä on järkevä tapa mitoittaa symmetriset jalat?", "options": ["Sido jalkojen sijainnit Leveys-mittaan yhtälöillä ja symmetrialla", "Mitoita molemmat summittaisesti", "Poista origon sidonta", "Lukitse osat kuvakaappaukseen"], "correct": 0},
+  {"topic": "Yhtälöt", "q": "Mitä ongelmaa linkitetyt mitat ratkaisevat?", "options": ["Usea mitta voi seurata samaa ohjaavaa arvoa", "Massan laskenta ilman materiaalia", "Automaattinen muotin valmistus", "Renderöinnin tekstuurin lukitus"], "correct": 0},
+  {"topic": "Yhtälöt", "q": "Miten yhtälömallin muutettavuus tarkistetaan?", "options": ["Muuta ohjaavaa muuttujaa ja tarkista rebuild sekä riippuvat piirteet", "Tarkista vain väri", "Poista historia", "Tarkista vain tiedoston koko"], "correct": 0},
+  {"topic": "Yhtälöt", "q": "Miksi yhtälöiden syklisiä riippuvuuksia vältetään?", "options": ["Mitat eivät saa määritellä toisiaan kehämäisesti", "Ne lisäävät materiaalin massaa", "Ne poistavat piirustuksen", "Ne vaihtavat tiedostopäätteen"], "correct": 0},
+  {"topic": "Pintamallinnus", "q": "Kuvan pintamallinnusjakson hiihtoa ja hiirtä muistuttavat muodot hyötyvät usein mistä?", "options": ["Useasta profiilista ja ohjauskäyristä hallitun pinnan luomiseksi", "Yhdestä satunnaisesta mitasta", "Pelkästä materiaaliväristä", "Ainoastaan kokoonpanon Mate-ehdoista"], "correct": 0},
+  {"topic": "Pintamallinnus", "q": "Milloin Lofted Surface soveltuu muodon rakentamiseen?", "options": ["Kun pinta kulkee usean poikkileikkausprofiilin kautta", "Kun osaluettelo tehdään", "Kun levityskuva tulostetaan", "Kun kurssitunnus syötetään"], "correct": 0},
+  {"topic": "Pintamallinnus", "q": "Mitä Boundary Surface -piirteellä voi ohjata?", "options": ["Pinnan muotoa ja jatkuvuutta kahteen suuntaan", "Työstökonetta suoraan", "Kappaleen hintaa varmasti", "Opiskelijan arvosanaa"], "correct": 0},
+  {"topic": "Pintamallinnus", "q": "Miksi vierekkäisten muotoilupintojen jatkuvuus tarkistetaan?", "options": ["Näkyvät taitteet ja tangentiaalinen siirtymä vaikuttavat laatuun", "Se määrää automaattisesti massan", "Se korvaa kuormitusehdot", "Se on vain tiedoston nimeämistä"], "correct": 0},
+  {"topic": "Pintamallinnus", "q": "Mitä Knit Surface tekee?", "options": ["Yhdistää viereisiä pintoja ja voi suljetusta kokonaisuudesta muodostaa solidin", "Määrittää ruuviliitoksen", "Laskee kuljetuspäästön", "Luo levityskuvan"], "correct": 0},
+  {"topic": "Ohutlevy", "q": "Kuvan ohutlevyharjoituksissa mikä on Flat Pattern?", "options": ["Taivutetun osan levitetty muoto valmistusta varten", "Pintamallin tekstuuri", "Kokoonpanon räjäytyskuva", "Jännityskuva"], "correct": 0},
+  {"topic": "Ohutlevy", "q": "Mitä Base Flange/Tab aloittaa?", "options": ["Ohutlevykappaleen perusmuodon ja paksuuden", "Materiaalin elinkaarilaskennan", "Kokoonpanon osaluettelon", "Muottipinnan jakolinjan"], "correct": 0},
+  {"topic": "Ohutlevy", "q": "Mikä taivutuksen syöte vaikuttaa levityspituuteen?", "options": ["Taivutussäde ja taivutusvara tai K-tekijä", "Pinnan RGB-väri", "Tiedoston luontipäivä", "Kurssin arvosanaraja"], "correct": 0},
+  {"topic": "Ohutlevy", "q": "Miksi taivutuksen viereen jätetään tarvittaessa relief?", "options": ["Se helpottaa valmistusta ja vähentää materiaalin repeämisriskiä", "Se nostaa automaattisesti lujuutta", "Se korvaa materiaalitiedon", "Se lukitsee kokoonpanon"], "correct": 0},
+  {"topic": "Ohutlevy", "q": "Miten ohutlevyosan valmistettavuus tarkistetaan?", "options": ["Tarkista levityskuva, taivutussäteet ja aukkojen etäisyydet", "Katso vain renderöity väri", "Poista kaikki sketsit", "Vaihda vain tiedostonimi"], "correct": 0},
+  {"topic": "Muottimallinnus", "q": "Kuvan lautasmuotin harjoituksessa mikä on parting line?", "options": ["Jakolinja, jossa muotin puolikkaat kohtaavat", "Materiaalin hintakäyrä", "Kokoonpanon massakeskipiste", "Piirustuksen otsikko"], "correct": 0},
+  {"topic": "Muottimallinnus", "q": "Miksi Draft Analysis tehdään muottikappaleelle?", "options": ["Tarkistetaan päästökulmat suhteessa muotin avautumissuuntaan", "Mitataan vain tuotteen massa", "Vaihdetaan tulostimen asetukset", "Tehdään levityskuva"], "correct": 0},
+  {"topic": "Muottimallinnus", "q": "Mitä negatiivinen tai riittämätön päästökulma voi aiheuttaa?", "options": ["Kappale voi tarttua muottiin avattaessa", "Se takaa automaattisen irtoamisen", "Se poistaa jakopinnan tarpeen", "Se muuttaa kokoonpanon piirustukseksi"], "correct": 0},
+  {"topic": "Muottimallinnus", "q": "Miksi kutistuma huomioidaan muottisuunnittelussa?", "options": ["Valmistettava materiaali voi jäähtyessään pienentyä", "Se vaikuttaa vain renderöintiin", "Se laskee kokeen pisteet", "Se tarkoittaa aina vähemmän osia"], "correct": 0},
+  {"topic": "Muottimallinnus", "q": "Mitä Parting Surface auttaa muodostamaan?", "options": ["Muottipuolikkaiden välisen jakopinnan", "Taivutetun levyn levityskuvan", "Simulaation kuorman", "Globaalin muuttujan"], "correct": 0},
+  {"topic": "Muottimallinnus", "q": "Miten Core ja Cavity liittyvät muottiin?", "options": ["Ne muodostavat tuotteen muotoa vastaavat muottiosat", "Ne ovat piirustuksen mittakaavoja", "Ne ovat kaksi arvosanaa", "Ne ovat pelkkiä materiaalivärejä"], "correct": 0},
+  {"topic": "Kokoonpano", "q": "Kuvan tuoli- ja työpöytäharjoituksessa miten erilliset osat saadaan kohdakkain?", "options": ["Valitaan kokoonpanossa tarkoituksenmukaiset Mate-ehdot", "Yhdistetään kaikki samaan sketsiin", "Vaihdetaan vain ulkoasua", "Poistetaan osien kaikki viitteet"], "correct": 0},
+  {"topic": "Kokoonpano", "q": "Miten pöydän pyörän pyörimisvapaus säilytetään?", "options": ["Älä lukitse pyörimisastetta tarpeettomilla Mate-ehdoilla", "Kiinnitä kaikki pinnat toisiinsa", "Poista akseli", "Muuta piirustus pdf:ksi"], "correct": 0},
+  {"topic": "Piirustus", "q": "Kuvan piirustusjakson mukaisesti mistä valmistuspiirustuksen näkymät luodaan?", "options": ["Part- tai Assembly-mallista", "Sustainability-tuloskuvasta", "Pelkästä selaimen sivusta", "Vain renderöinnistä"], "correct": 0},
+  {"topic": "Visualisointi", "q": "Mikä erottaa Visualize-renderöinnin valmistuspiirustuksesta?", "options": ["Renderöinti havainnollistaa ulkoasua, piirustus välittää valmistustiedon", "Molemmat korvaavat mitoituksen", "Renderöinti määrää toleranssit", "Piirustus sisältää aina materiaalin elinkaaren"], "correct": 0},
+  {"topic": "Sustainability", "q": "Mitä Sustainability-arvioinnin tulkinta edellyttää?", "options": ["Materiaalin, valmistuksen, käytön ja kuljetuksen oletusten tuntemista", "Vain tuotteen värin", "Vain tiedostopäätteen", "Aina yhtä oikeaa pistelukua"], "correct": 0},
+  {"topic": "Sustainability", "q": "Mikä on elinkaariarvioinnin tarkoitus?", "options": ["Arvioida vaikutuksia tuotteen elinkaaren vaiheissa", "Laskea vain sketsin pisteet", "Asettaa Mates automaattisesti", "Korvata lujuusanalyysi"], "correct": 0},
+  {"topic": "Sustainability", "q": "Miksi kahden materiaalin vertailussa pidetään tehtävä ja geometria vertailukelpoisina?", "options": ["Jotta erot voidaan tulkita materiaalin ja prosessin vaikutuksiksi", "Jotta väritys täsmää", "Jotta kaikki kuormat katoavat", "Jotta tiedostokoko pysyy samana"], "correct": 0},
+  {"topic": "Sustainability", "q": "Mitä hiilijalanjälki kuvaa?", "options": ["Kasvihuonekaasupäästöjen ilmastovaikutusta CO₂-ekvivalentteina", "Osan massaa grammoina", "Suurinta siirtymää", "Tuotteen myyntikatetta"], "correct": 0},
+  {"topic": "Sustainability", "q": "Miksi pienin massa ei aina tarkoita pienintä ympäristövaikutusta?", "options": ["Materiaali, prosessi ja elinkaari voivat muuttaa kokonaistulosta", "Koska massa ei ole mitattavissa", "Koska kaikki materiaalit ovat samanlaisia", "Koska valmistusta ei huomioida koskaan"], "correct": 0},
+  {"topic": "Sustainability", "q": "Mikä tekee kuljetusoletuksesta merkittävän?", "options": ["Kuljetusmatka ja -tapa vaikuttavat vaikutusarvioon", "Se lukitsee sketsin", "Se vaihtaa materiaalin lujuuden", "Se luo piirustuksen"], "correct": 0},
+  {"topic": "Sustainability", "q": "Miten kierrätettävyys tulisi tulkita?", "options": ["Toteutuminen riippuu myös materiaalien erottelusta ja keräyksestä", "Kaikki kierrätetään automaattisesti", "Se mittaa pelkän lujuuden", "Se ei liity rakenteeseen"], "correct": 0},
+  {"topic": "Sustainability", "q": "Mikä on hyvä tapa raportoida Sustainability-vertailu?", "options": ["Kerro vaihtoehdot, oletukset, mittarit ja epävarmuudet", "Näytä vain voittajan väri", "Piilota syöttöarvot", "Ilmoita tarkka prosentti ilman lähdettä"], "correct": 0},
+  {"topic": "Costing", "q": "Mitä Costing yleensä arvioi?", "options": ["Valmistuskustannusta mallin ja kustannusoletusten perusteella", "Markkinoiden lopullista myyntihintaa varmasti", "Luokkakokeen pisteitä", "Vain kokoonpanon törmäyksiä"], "correct": 0},
+  {"topic": "Costing", "q": "Miksi materiaalin hinta on syötettävä tai tarkistettava?", "options": ["Arvio riippuu käytetystä hintatiedosta", "Hinta voidaan johtaa väristä", "Hinta ei vaikuta kokonaisuuteen", "Materiaali valitaan aina automaattisesti oikein"], "correct": 0},
+  {"topic": "Costing", "q": "Mitä eräkoko voi muuttaa kustannusarviossa?", "options": ["Asetuskustannuksen jakautumista kappaleille", "Poistaa geometriset toleranssit", "Vaihtaa automaattisesti yksiköt", "Määrittää hyväksymisrajan"], "correct": 0},
+  {"topic": "Costing", "q": "Mikä erottaa valmistuskustannuksen myyntihinnasta?", "options": ["Myyntihinta voi sisältää katteen ja muita liiketoiminnan eriä", "Ne ovat määritelmän mukaan samat", "Valmistuskustannus sisältää aina verot", "Myyntihinta on vain materiaalin massa"], "correct": 0},
+  {"topic": "Costing", "q": "Miksi kustannuspohjan työstönopeudet ja tuntihinnat tarkistetaan?", "options": ["Ne ohjaavat laskennan työvaiheiden kustannuksia", "Ne määrittävät automaattisesti lujuuden", "Ne ovat pelkkiä näyttöasetuksia", "Ne korvaavat tuotannon mittaukset"], "correct": 0},
+  {"topic": "Costing", "q": "Miten kahden valmistustavan Costing-vertailu tehdään uskottavasti?", "options": ["Käytä vertailukelpoisia oletuksia ja tarkista prosessikohtaiset syötteet", "Vertaile vain näyttökuvia", "Vaihda kaikki ehdot samalla kertaa", "Käytä aina nollahintaa"], "correct": 0},
+  {"topic": "Costing", "q": "Mikä on kustannusarvion keskeinen rajoitus?", "options": ["Se riippuu mallista, prosessista ja ajantasaisista lähtötiedoista", "Se on sitova tarjous kaikilta valmistajilta", "Se ennustaa kysynnän tarkasti", "Se korvaa prototyypin"], "correct": 0},
+  {"topic": "Simulation", "q": "Mikä on staattisen lujuusanalyysin lähtökohta?", "options": ["Materiaali, tuennat, kuormat ja verkko", "Pelkkä renderöity kuva", "Vain piirustuksen otsikko", "Opiskelijan nimi"], "correct": 0},
+  {"topic": "Simulation", "q": "Mitä tuenta eli fixture kuvaa?", "options": ["Mallin liikkeen rajoitusta valitulla alueella", "Materiaalin hintaa", "Pinnan väriä", "Kierrätysastetta"], "correct": 0},
+  {"topic": "Simulation", "q": "Miksi kuorman suunta on tarkistettava?", "options": ["Väärä suunta voi muuttaa jännitykset ja siirtymät olennaisesti", "Suunta muuttaa vain näkymää", "Kuorma on aina saman suuruinen kaikissa suunnissa", "Suuntaa ei tallenneta"], "correct": 0},
+  {"topic": "Simulation", "q": "Mitä elementtiverkko tekee?", "options": ["Jaa geometrian laskennallisiin elementteihin", "Määrittää opiskelijan arvosanan", "Poistaa kaikki reunaehdot", "Luo valmistuspiirustuksen"], "correct": 0},
+  {"topic": "Simulation", "q": "Miten verkon riittävyyttä arvioidaan?", "options": ["Tarkennetaan verkkoa ja tarkistetaan kiinnostavien tulosten lähentyminen", "Valitaan aina harvin verkko", "Katsotaan vain mallin väriä", "Poistetaan kaikki kiinnitykset"], "correct": 0},
+  {"topic": "Simulation", "q": "Mitä von Mises -jännitystä voi käyttää arvioimaan sitkeälle materiaalille?", "options": ["Myötölujuuteen liittyvää myötämisriskiä", "Myyntihintaa", "Hiilijalanjälkeä", "Pinnan väriä"], "correct": 0},
+  {"topic": "Simulation", "q": "Miksi erittäin suuri jännityspiikki terävässä nurkassa vaatii harkintaa?", "options": ["Se voi olla singulariteetti, jonka arvo riippuu verkosta", "Se todistaa aina kappaleen murtuvan", "Se kertoo vain massasta", "Se poistaa kuorman"], "correct": 0},
+  {"topic": "Simulation", "q": "Mitä varmuuskerroin vertaa yksinkertaistetusti?", "options": ["Materiaalin lujuusrajaa laskettuun kuormitustasoon", "Kappaleiden lukumäärää hintaan", "Työstöaikaa kuljetusmatkaan", "Näkymien määrää sketseihin"], "correct": 0},
+  {"topic": "Simulation", "q": "Mikä pitää tarkistaa ennen tuloksen hyväksymistä?", "options": ["Reunaehtojen realismi sekä jännitys, siirtymä ja mahdollinen nurjahdus", "Vain väriskaalan maksimi", "Vain tiedostonimi", "Ainoastaan renderöinnin laatu"], "correct": 0},
+  {"topic": "Simulation", "q": "Mitä staattinen lineaarinen analyysi ei automaattisesti huomioi?", "options": ["Kaikkia epälineaarisia kontakteja, plastisuutta tai väsymistä", "Määritettyä materiaalia", "Määritettyjä kuormia", "Solmujen siirtymiä"], "correct": 0}
+];
+
+const $=id=>document.getElementById(id);
+let order=[],index=0,points=0,answers=[],student='',course='';
+
+function shuffle(a){
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [b[i],b[j]]=[b[j],b[i]];
+  }
+  return b;
+}
+
+function show(id){
+  for(const x of ['intro','exam','result'])$(x).hidden=x!==id;
+}
+
+function render(){
+  const item=order[index];
+  $('count').textContent=`Kysymys ${index+1} / 50`;
+  $('topic').textContent=item.topic;
+  $('score').textContent=`Pisteet ${points} / ${index}`;
+  $('bar').style.width=`${index*2}%`;
+  $('question').textContent=`${index+1}. ${item.q}`;
+  $('choices').replaceChildren();
+  $('feedback').replaceChildren();$('next').disabled=true;
+  $('next').textContent=index===49?'Näytä tulos':'Seuraava';
+  
+  item.options.forEach((s,i)=>{
+    const label=document.createElement('label');
+    label.className='choice';
+    const input=document.createElement('input');
+    input.type='radio';
+    input.name='answer';
+    input.value=String(i);
+    input.addEventListener('change',()=>answer(i));
+    const span=document.createElement('span');
+    span.textContent=s;
+    label.append(input,span);
+    $('choices').append(label);
+  });
+}
+
+function answer(chosen){
+  const item=order[index],ok=chosen===item.correct;
+  if(ok)points++;
+  answers.push({item,chosen,ok});
+  $('choices').querySelectorAll('input').forEach(el=>el.disabled=true);
+  
+  const fb=document.createElement('div');
+  fb.className='feedback'+(ok?'':' bad');
+  fb.textContent=ok?'Oikein.':'Väärin. Oikea vastaus: '+item.options[item.correct];
+  $('feedback').append(fb);$('next').disabled=false;
+  $('score').textContent=`Pisteet ${points} / ${index+1}`;
+}
+
+$('start').onclick=()=>{
+  student=$('student').value.trim();
+  course=$('course').value.trim();
+  if(!student||!course){
+    $('startError').textContent='Täytä nimi ja kurssitunnus.';
+    return;
+  }
+  $('startError').textContent='';
+  order=shuffle(QUESTIONS).map(q=>{
+    const mixed=shuffle(q.options.map((value,i)=>({value,i})));
+    return{...q,options:mixed.map(x=>x.value),correct:mixed.findIndex(x=>x.i===q.correct)};
+  });
+  index=0;
+  points=0;
+  answers=[];
+  $('screenCert').style.display='none';
+  show('exam');
+  render();
+};
+
+$('next').onclick=()=>{
+  if($('next').disabled)return;
+  if(++index===50)finish();
+  else render();
+};
+
+function certificate(target,grade){
+  target.replaceChildren();
+  const h=document.createElement('h2');
+  h.textContent='Todistus · SolidWorks-loppukoe';
+  const lead=document.createElement('p');
+  lead.textContent='Tämä dokumentoi selaimessa suoritetun loppukokeen tuloksen.';
+  const name=document.createElement('div');
+  name.className='certname';
+  name.textContent=student;
+  const c=document.createElement('p');
+  c.textContent='Kurssitunnus: '+course;
+  const s=document.createElement('p');
+  s.style.fontWeight='700';
+  s.textContent=`Tulos: ${points}/50 pistettä · Arvosana: ${grade}`;
+  const d=document.createElement('p');
+  d.textContent='Suorituspäivä: '+new Intl.DateTimeFormat('fi-FI',{day:'numeric',month:'numeric',year:'numeric'}).format(new Date());
+  
+  const clNote=document.createElement('p');
+  clNote.style.color='#176c79';
+  clNote.style.fontWeight='bold';
+  clNote.textContent='Tallenna tämä todistus PDF-muodossa ja palauta se Google Classroomiin.';
+
+  const note=document.createElement('small');
+  note.style.display='block';
+  note.style.marginTop='1rem';
+  note.textContent='Automaattisesti muodostettu suoritusdokumentti. Opettaja vahvistaa suorituksen ja arvosanan Classroom-palautuksen perusteella.';
+  
+  target.append(h,lead,name,c,s,d,clNote,note);
+}
+
+function finish(){
+  show('result');
+  const grade=points>=45?'5':points>=35?'4':points>=26?'3':'Hylätty';
+  const passed=points>=26;
+  
+  $('summary').textContent=`${student} · ${course} · ${points}/50 pistettä · Arvosana: ${grade}. ${passed?'Hyväksytty suoritus!':'Hyväksymisraja on 26 pistettä.'}`;
+  
+  $('classroomInstructionBox').hidden=!passed;
+  $('showCert').hidden=!passed;
+  
+  $('review').replaceChildren();
+  const details=document.createElement('details');
+  const title=document.createElement('summary');
+  title.textContent='Katso vastaukset ja oikeat vaihtoehdot';
+  details.append(title);
+  answers.forEach((a,i)=>{
+    const p=document.createElement('p');
+    p.textContent=`${i+1}. ${a.item.q} — ${a.ok?'Oikein':'Väärin: '+a.item.options[a.chosen]+'. Oikea vastaus: '+a.item.options[a.item.correct]}`;
+    details.append(p);
+  });
+  $('review').append(details);
+  
+  if(passed){
+    certificate($('certBody'),grade);
+    certificate($('printBody'),grade);
+  }
+}
+
+$('showCert').onclick=()=>{
+  $('screenCert').style.display='block';$('screenCert').scrollIntoView({behavior:'smooth'});
+};
+
+$('print').onclick=()=>window.print();
+
+$('restart').onclick=()=>{
+  show('intro');
+  $('screenCert').style.display='none';
+  window.scrollTo(0,0);
+};
+</script>
+</body>
+</html>
