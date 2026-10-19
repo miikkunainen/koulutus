@@ -1,0 +1,336 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mikan opetus TM 2027</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: pajan seinätaulu — yksi kapea lukupalsta, leveät taulut ja vuosikello omissa vierityslaatikoissaan */
+:root{
+  --bg:#eef0ee;        /* betonilattia */
+  --paper:#f8f9f7;
+  --ink:#1d2427;
+  --muted:#5b6669;
+  --line:#c9cfcd;
+  --steel:#2f5f7a;     /* lähiopetus */
+  --steel-soft:#a9c3d1;/* pajatyö / vaalea */
+  --tail:#7f9aa8;      /* itsenäinen häntä */
+  --plan:#3f7d5a;      /* ehdotus */
+  --warn:#c2410c;      /* työturvaoranssi: ristiriita */
+  --warn-bg:#fbe6da;
+  --amber:#a16207; --amber-bg:#f6ecd3;
+  --ok:#2f6b4a; --ok-bg:#dcece2;
+  --other:#b9b3a6;
+  --f-display:"Archivo", "Arial Narrow", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a1c; --paper:#1b2326; --ink:#e4e9e8; --muted:#9aa7aa; --line:#334044;
+  --steel:#6fa8c8; --steel-soft:#355a6c; --tail:#4f6b78; --plan:#6fbf8f;
+  --warn:#f08a4b; --warn-bg:#3a2216; --amber:#e0b04a; --amber-bg:#352a12; --ok:#7cc79b; --ok-bg:#16301f; --other:#5d5a52; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a1c; --paper:#1b2326; --ink:#e4e9e8; --muted:#9aa7aa; --line:#334044;
+  --steel:#6fa8c8; --steel-soft:#355a6c; --tail:#4f6b78; --plan:#6fbf8f;
+  --warn:#f08a4b; --warn-bg:#3a2216; --amber:#e0b04a; --amber-bg:#352a12; --ok:#7cc79b; --ok-bg:#16301f; --other:#5d5a52; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+.col{max-width:70ch}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(2rem,5vw,3.3rem);font-weight:800;font-stretch:80%;letter-spacing:-.01em}
+h2{font-size:1.55rem;font-weight:750;font-stretch:85%}
+h3{font-size:1.08rem;font-weight:700;font-stretch:95%}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono);font-size:.86em}
+section{display:flex;flex-direction:column;gap:16px}
+.lead{font-size:1.08rem;max-width:68ch}
+header{display:flex;flex-direction:column;gap:14px;border-bottom:3px solid var(--ink);padding-bottom:22px}
+.facts{display:flex;flex-wrap:wrap;gap:10px 28px;font-size:.92rem;color:var(--muted)}
+.facts b{color:var(--ink);font-family:var(--f-display);font-size:1.25rem;font-weight:750;font-stretch:85%;margin-right:4px;font-variant-numeric:tabular-nums}
+
+/* malli */
+.model{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;background:var(--line);border:2px solid var(--line)}
+.model div{background:var(--paper);padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.model .t{font-family:var(--f-mono);font-size:.76rem;color:var(--muted)}
+.chip{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+@media (max-width:760px){.model{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* vuosikello */
+.scroll{overflow-x:auto;border:1px solid var(--line);background:var(--paper)}
+.gantt{min-width:980px;display:grid;grid-template-columns:210px repeat(52,1fr);font-size:.78rem}
+.gantt .lbl{padding:5px 8px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;line-height:1.25;position:sticky;left:0;background:var(--paper);z-index:2}
+.gantt .lbl small{color:var(--muted);font-family:var(--f-mono);font-size:.68rem}
+.gantt .c{border-bottom:1px solid var(--line);border-left:1px solid color-mix(in srgb,var(--line) 45%,transparent);min-height:34px;position:relative}
+.gantt .wk{font-family:var(--f-mono);font-size:.62rem;color:var(--muted);text-align:center;padding:4px 0;border-bottom:1px solid var(--line)}
+.gantt .mon{font-family:var(--f-mono);font-size:.66rem;color:var(--ink);padding:3px 0 0 3px;border-left:1px solid var(--line)}
+.gantt .grp{grid-column:1/-1;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 8px 4px;border-bottom:1px solid var(--line);background:var(--bg)}
+.c.hol{background:repeating-linear-gradient(135deg,transparent 0 4px,color-mix(in srgb,var(--muted) 18%,transparent) 4px 5px)}
+.bar{position:absolute;inset:7px 0}
+.bar.on{background:var(--steel)}
+.bar.lt{background:var(--steel-soft)}
+.bar.tail{background:repeating-linear-gradient(90deg,var(--tail) 0 3px,transparent 3px 6px);inset:13px 0}
+.bar.plan{border-top:2px dashed var(--plan);border-bottom:2px dashed var(--plan);background:color-mix(in srgb,var(--plan) 16%,transparent)}
+.bar.oth{background:var(--other);inset:12px 0}
+.bar.none{border:1.5px dashed var(--muted);inset:9px 0;background:transparent}
+.pin{position:absolute;top:2px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:var(--warn);color:#fff;font:700 .62rem/16px var(--f-mono);text-align:center;z-index:1}
+.pin.ev{background:var(--ink);color:var(--paper)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:.84rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:26px;height:12px;display:inline-block}
+
+/* löydökset */
+.findings{display:flex;flex-direction:column;gap:2px;background:var(--line);border:1px solid var(--line)}
+.f{background:var(--paper);display:grid;grid-template-columns:118px minmax(0,1fr);gap:16px;padding:16px 18px;border-left:5px solid var(--sev)}
+.f[data-s="k"]{--sev:var(--warn)} .f[data-s="t"]{--sev:var(--amber)} .f[data-s="h"]{--sev:var(--muted)}
+.sev{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:var(--sev);padding-top:2px}
+.f .body{display:flex;flex-direction:column;gap:6px;min-width:0}
+.f .fix{font-size:.92rem;color:var(--muted)}
+.f .fix b{color:var(--ink);font-weight:600}
+@media (max-width:620px){.f{grid-template-columns:1fr;gap:6px}}
+
+/* taulut */
+.tbl{overflow-x:auto;border:1px solid var(--line);background:var(--paper)}
+table{border-collapse:collapse;width:100%;min-width:860px;font-size:.86rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--bg)}
+td.code{font-family:var(--f-mono);font-size:.78rem;white-space:nowrap}
+td .x{color:var(--warn);font-weight:600}
+td .q{color:var(--amber);font-weight:600}
+td .y{color:var(--ok);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* TAS-mittarit */
+.meters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:700px){.meters{grid-template-columns:1fr}}
+.meter{display:flex;flex-direction:column;gap:8px;background:var(--paper);border:1px solid var(--line);padding:16px}
+.mrow{display:grid;grid-template-columns:76px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:.84rem}
+.track{height:14px;background:var(--bg);position:relative;border:1px solid var(--line)}
+.fill{position:absolute;inset:0 auto 0 0;background:var(--steel)}
+.fill.over{background:var(--warn)}
+.fill.after{background:var(--plan)}
+.mrow .v{font-family:var(--f-mono);font-size:.78rem;font-variant-numeric:tabular-nums;text-align:right}
+.mrow .lab{font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+.note{font-size:.88rem;color:var(--muted)}
+ol.steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px;max-width:72ch}
+a{color:var(--steel)}
+:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Teollinen muotoilu · Arabian kampus · lukuvuosi 2027</span>
+  <h1>Mikan opetus TM 2027</h1>
+  <p class="lead">Ristiintarkastelu neljästä lähteestä: opetustarjonta ja lukkari (kevät ja syksy 2027), TAS 2027 (TM + Pamu) ja pedagoginen suunnitelma. Lähtökohtana on opetusmalli, jossa kurssit tapahtuvat pajoissa ja niiden lähellä olevissa tietokoneluokissa. Lähiopetus on aamupäivisin, iltapäivisin tehdään pajatyötä pajamestarien valvonnassa, ja opettaja on siellä, missä apua tarvitaan.</p>
+  <div class="facts">
+    <span><b>11</b>opintojaksoa + ohjaukset</span>
+    <span><b>55 op</b>kursseja (sis. jaettu KK&amp;E, ei Turbiinia)</span>
+    <span><b>1 508 h</b>suunniteltu TAS:ssa</span>
+    <span><b>5</b>kriittistä korjattavaa</span>
+  </div>
+</header>
+
+<section>
+  <h2>Opetusmalli, jota lukkarin pitäisi näyttää</h2>
+  <p class="col">Lukkarissa Mikan kurssit on nyt merkitty kokopäivinä samalla värillä. Silloin se ei erottele lähiopetusta (enintään 45 h / 5 op) pajatyöstä eikä itsenäisestä osuudesta, jotka kuuluvat malliin. Tämän takia 3D CAD 1 ja TM &amp; uudet teknologiat näyttävät lukkarissa yli 45 tunnin lähiopetukselta.</p>
+  <div class="model">
+    <div><span class="t">klo 9.15–12</span><h3><i class="chip" style="background:var(--steel)"></i>Lähiopetus</h3><p>Teoria, tehtävänannot ja demot luokassa tai lähi-ATK-luokassa. 15 × 3 h.</p></div>
+    <div><span class="t">klo 13–16</span><h3><i class="chip" style="background:var(--steel-soft)"></i>Pajatyö</h3><p>Harjoitustyöt pajoilla pajamestarien valvonnassa. Opettaja liikkuu tarpeen mukaan.</p></div>
+    <div><span class="t">n. 1 kk kurssin jälkeen</span><h3><i class="chip" style="background:var(--tail)"></i>Itsenäinen osuus</h3><p>Pääosin pajoilla, pajamestarit valvovat. Päättyy karonkkaan.</p></div>
+    <div><span class="t">edellytys</span><h3><i class="chip" style="background:var(--plan)"></i>Avoimet pajat</h3><p>Pajat auki ja pajamestari paikalla klo 8–16, myös hännän aikana.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Vuosikello 2027</h2>
+  <p class="col">Kevään palkit ovat lukkarista sellaisinaan. Syksyllä Mikan kursseille ei ole vielä merkitty yhtään päivää, joten syksyn palkit ovat alla perusteltu ehdotus. Numeroidut pallot viittaavat löydöksiin.</p>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--steel)"></i>lähiopetus lukkarissa</span>
+    <span><i class="sw" style="background:var(--steel-soft)"></i>vaalea merkintä (pe)</span>
+    <span><i class="sw" style="background:repeating-linear-gradient(90deg,var(--tail) 0 3px,transparent 3px 6px)"></i>itsenäinen häntä (laskettu)</span>
+    <span><i class="sw" style="border:2px dashed var(--plan);background:color-mix(in srgb,var(--plan) 16%,transparent)"></i>ehdotus</span>
+    <span><i class="sw" style="background:var(--other)"></i>ryhmällä muu opettaja</span>
+    <span><i class="sw" style="background:repeating-linear-gradient(135deg,transparent 0 4px,color-mix(in srgb,var(--muted) 30%,transparent) 4px 5px)"></i>loma</span>
+  </div>
+  <div class="scroll"><div class="gantt" id="gantt"></div></div>
+</section>
+
+<section>
+  <h2>Löydökset</h2>
+  <div class="findings">
+    <div class="f" data-s="k"><span class="sev">Kriittinen 1</span><div class="body">
+      <h3>Mika on kahdessa paikassa 3.2., 10.2., 11.2. ja 12.2.</h3>
+      <p>Käyttäjäkeskeisen suunnittelun ja ergonomian (KXE25) Mikan päivät osuvat samoille päiville kuin TM ja uudet teknologiat (KXE26). Molemmat on väritetty Mikan siniseksi aamuksi ja iltapäiväksi.</p>
+      <p class="fix"><b>Korjaus:</b> Siirrä KK&amp;E:n Mikan osuus esimerkiksi viikolle 9 (1.–5.3.), jolloin KXE26 on Elävän mallin piirustuksessa. Toinen vaihtoehto on vaihtaa nämä neljä päivää Juhalle.</p></div></div>
+
+    <div class="f" data-s="k"><span class="sev">Kriittinen 2</span><div class="body">
+      <h3>Syksy on aikatauluttamatta, ja 3D CAD 2:ssa lukee ”Mika ei ehdi! Joku muu??”</h3>
+      <p>Syksyllä Mikalla on viisi KXE27-kurssia (25 op) ja 3D CAD 2 (KXE26), eikä niille ole lukkarissa yhtään päivää. Lukkarin huomautuksen mukaan 3D CAD 2 on päällekkäin Teollisen muotoilun kanssa. KXE27:llä on Mikan kursseille 74 vapaata arkipäivää, kun syysloma, itsenäisyyspäivä ja Ilonan Värihavainto on vähennetty.</p>
+      <p class="fix"><b>Korjaus:</b> Aja 3D CAD 2 Ilonan Värihavainnon aikana 4.–17.11. (10 päivää), jolloin Mika on vapaa KXE27:stä. Kytke se Tuomon Tuotemuotoiluprojekti 1:een niin, että mallinnetaan projektin oma tuote SolidWorksilla. Ehdotus on alempana.</p></div></div>
+
+    <div class="f" data-s="k"><span class="sev">Kriittinen 3</span><div class="body">
+      <h3>Teollinen muotoilu (KQ00DN10): kuka opettaa?</h3>
+      <p>Opetustarjonnassa opettaja on Tuomo Äijälä. TAS:ssa ja syksyn lukkarissa opettaja on Mika (90 h). Pedagogisessa suunnitelmassa kurssi on sekä Tuomon vanhalla rivillä että Mikan uudella rivillä.</p>
+      <p class="fix"><b>Korjaus:</b> Päättäkää opettaja ja päivittäkää opetustarjonta. Jos kurssi on Mikan, Tuomon rivi 22 poistetaan pedagogisesta suunnitelmasta. Sama koskee Esitystekniikkaa ja 2D CAD:ia (rivit 20–21).</p></div></div>
+
+    <div class="f" data-s="k"><span class="sev">Kriittinen 4</span><div class="body">
+      <h3>Materiaali- ja valmistusteknologia ei mahdu demopäivään</h3>
+      <p>Lukkarin mukaan ”koko kurssi täytyy olla valmis ennen demopäivää” (ti 4.5.) ja ”opettajan osuus päättyy viikolla 17”. Rivi on kuitenkin väritetty 1.4.–19.5., ja Nuutajärven kolme päivää ovat viikolla 20. Lisäksi lukkarissa on huomautus ”toteutussuunnitelmat puuttuvat”.</p>
+      <p class="fix"><b>Korjaus:</b> Valitse jompikumpi. Vaihtoehto A: lähiopetus 1.4.–30.4. ja demopäivä 4.5. näyttelynä, jonka jälkeen häntä ja Nuutajärvi ovat vapaaehtoinen jatko. Vaihtoehto B: demopäivä ei ole kurssin takaraja, ja huomautus poistetaan. Kirjoita toteutussuunnitelma pedagogisen suunnitelman rivin pohjalta, jolloin suunnittelija kopioi sen jatkossa.</p></div></div>
+
+    <div class="f" data-s="k"><span class="sev">Kriittinen 5</span><div class="body">
+      <h3>TAS:n periodijako ei vastaa lukkaria</h3>
+      <p>Syksyllä kaikki viisi KXE27-kurssia ovat TAS:ssa periodilla 2 (+161 h yli), vaikka orientaatio alkaa 16.8. Keväällä MaVa:sta on 90 h periodilla 3 (+33 h yli), vaikka lukkarissa kurssi on kokonaan periodilla 4.</p>
+      <p class="fix"><b>Korjaus:</b> Alla laskettu jako vie kaikki neljä periodia maksimin alle muuttamatta kokonaistunteja.</p></div></div>
+
+    <div class="f" data-s="t"><span class="sev">Tärkeä 6</span><div class="body">
+      <h3>KK&amp;E:n laajuus: 10 op vai 5 op?</h3>
+      <p>Opetustarjonnassa on 10 op. Lukkarissa, TAS:ssa (Mika 50 h + Juha 40 h) ja pedagogisessa suunnitelmassa on 5 op.</p>
+      <p class="fix"><b>Korjaus:</b> Tarkista OPS:sta ja korjaa opetustarjonta.</p></div></div>
+
+    <div class="f" data-s="t"><span class="sev">Tärkeä 7</span><div class="body">
+      <h3>TM &amp; uudet teknologiat: 20 iltamerkintää ja tila ”??”</h3>
+      <p>TM &amp; uudet teknologiat -rivillä on klo 16.30–20.30 sininen merkintä 20 päivänä aikavälillä 1.4.–19.5. Päivät ovat täsmälleen MaVa:n aamupäivät, eli maalaus on ilmeisesti valunut viereiselle riville. Kurssin tilaksi on merkitty ”??”, ja muilta Mikan riveiltä tila puuttuu kokonaan.</p>
+      <p class="fix"><b>Korjaus:</b> Poista iltamerkinnät. Varaa tilat malliin sopiviksi: CAD-kursseille lähi-ATK-luokka aamuksi ja paja iltapäiväksi, ja MaVa:lle ja Plastiselle sommittelulle paja koko päiväksi.</p></div></div>
+
+    <div class="f" data-s="t"><span class="sev">Tärkeä 8</span><div class="body">
+      <h3>KXE26:n kevät on 35 op, ja itsenäiset osuudet kasautuvat</h3>
+      <p>Lukkarissa itsessään lukee ”35 opintopistettä – ruuhkaa tulee”, ja Mikan osuus on 20 op. Mallin mukaiset kuukauden itsenäiset osuudet menevät seuraavan kurssin päälle: 3D CAD 1:n häntä TM &amp; UT:n päälle helmikuussa, TM &amp; UT:n häntä MaVa:n päälle huhtikuussa ja MaVa:n häntä kesälle.</p>
+      <p class="fix"><b>Korjaus:</b> Sovi karonkat porrastetusti ja ilmoita ne lukkarissa. Kerro pajamestareille huhti- ja toukokuun ruuhkasta: pajoilla on samaan aikaan KXE26 MaVa, KXE24 TMP2 (Tuomo) ja kahden kurssin hännät.</p></div></div>
+
+    <div class="f" data-s="t"><span class="sev">Tärkeä 9</span><div class="body">
+      <h3>Turbiini ja harjoitteluesittelyt puuttuvat kalenterista</h3>
+      <p>Turbiinille on TAS:ssa 100 h (25 h jokaisella periodilla), mutta se puuttuu opetustarjonnasta, eikä lukkarin rivillä ole päiviä. Työharjoittelupaikkojen esittelyllä (pedagogisessa suunnitelmassa 2 × 2,5 h vuodessa) ei myöskään ole päivää.</p>
+      <p class="fix"><b>Korjaus:</b> Merkitse Turbiinin vakiovuoro, esimerkiksi maanantait klo 13–16. Se sopii malliin, koska KXE27 on silloin pajoilla pajamestarien kanssa.</p></div></div>
+
+    <div class="f" data-s="t"><span class="sev">Tärkeä 10</span><div class="body">
+      <h3>Päivämäärät lukkarin otsikoissa: 165 solua väärin</h3>
+      <p>Kevään otsikoissa on vuosia 2026 ja 2025, ja viikot 4 ja 7 ovat siirtyneet (otsikossa ma 26.1., oikea 25.1.; ma 13.2. on lauantai, oikea 15.2.). Syksyllä viikon 35 vuosi on väärä ja viikon 49 maanantai on otsikossa 7.12., vaikka oikea on 6.12. Itsenäisyyspäivälle (ma 6.12.) on merkitty Piirustus ja maalaus (KXE26). Opinnäytetyön kypsyysnäyte ja Trendit ja brändistrategiat ovat pe 25.6., joka on juhannusaatto.</p>
+      <p class="fix"><b>Korjaus:</b> Laske otsikkopäivät viikkonumerosta kaavalla, jotta virheet eivät kopioidu ryhmältä toiselle. Siirrä 6.12. ja 25.6. merkinnät. Tarkista myös, onko valmistujaisten (28.5.) ja esitysseminaarin (23.–24.6.) järjestys oikein.</p></div></div>
+
+    <div class="f" data-s="h"><span class="sev">Huomio 11</span><div class="body">
+      <h3>Koodit ja nimet</h3>
+      <p>Opetustarjonnassa Työharjoittelu 2:n koodi on KX00EF45, joka on Työelämäprojektin koodi. Pedagogisessa suunnitelmassa koodi on KX00EF47. Tuotemuotoiluprojekti 2:lla on kaksi koodia (KX00EF44 ja nimessä KQ00BT65). Käyttöliittymäsuunnittelu on KD00AB43, kun taas pedagogisessa suunnitelmassa se on KX00EF39. Portfolion opettaja on Tuomo, mutta pedagogisessa suunnitelmassa Juha. Lukkarissa ”Mika” tarkoittaa myös Mika Säteriä (Tutkimusviestintä).</p>
+      <p class="fix"><b>Korjaus:</b> Merkitse lukkariin ”Mika I.” ja ”Mika S.”, ja yhtenäistä koodit opetustarjonnan ja pedagogisen suunnitelman välillä.</p></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Ristiintarkastelu kurssi kerrallaan</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Koodi</th><th>Opintojakso</th><th>Ryhmä</th><th>Opetustarjonta</th><th>Lukkari 2027</th><th>TAS 2027 (Mika)</th><th>Pedagoginen suunnitelma</th></tr></thead>
+    <tbody>
+      <tr><td class="code">KX00GJ26</td><td>Teollisen muotoilun orientaatio</td><td>KXE27 · syksy</td><td><span class="y">Mika 5 op</span></td><td><span class="q">ei päiviä</span>; Metgo/orientaatio 17.–19.8., työturvakoulutus</td><td class="num">90 h · <span class="x">p2</span> (pitäisi p1)</td><td><span class="y">täytetty</span></td></tr>
+      <tr><td class="code">KQ00DN10</td><td>Teollinen muotoilu</td><td>KXE27 · syksy</td><td><span class="x">Tuomo</span></td><td>Mika + pajamestarit, <span class="q">ei päiviä</span></td><td class="num">90 h · p2</td><td><span class="q">kaksi riviä (Tuomo, Mika)</span></td></tr>
+      <tr><td class="code">KX00GJ27</td><td>Esitystekniikka</td><td>KXE27 · syksy</td><td><span class="y">Mika</span></td><td>Mika, <span class="q">ei päiviä</span></td><td class="num">90 h · p2</td><td><span class="q">kaksi riviä</span></td></tr>
+      <tr><td class="code">KQ00BT57</td><td>Plastinen sommittelu</td><td>KXE27 · syksy</td><td><span class="y">Mika</span></td><td>Mika + pajamestarit, <span class="q">ei päiviä</span></td><td class="num">90 h · p2</td><td><span class="y">täytetty</span></td></tr>
+      <tr><td class="code">KX00EF40</td><td>2D CAD</td><td>KXE27 · syksy</td><td><span class="y">Mika</span></td><td>Mika + pajamestarit, <span class="q">ei päiviä</span></td><td class="num">90 h · p2</td><td><span class="q">kaksi riviä</span></td></tr>
+      <tr><td class="code">KX00EF41-3007</td><td>3D CAD 1</td><td>KXE26 · kevät</td><td><span class="y">Mika</span></td><td><span class="y">11.–29.1.</span> ma/ke/to + vaalea pe, 12 pv</td><td class="num">90 h · p3 <span class="y">✓</span></td><td><span class="y">täytetty</span></td></tr>
+      <tr><td class="code">KX00GJ28-3004</td><td>TM ja uudet teknologiat</td><td>KXE26 · kevät</td><td><span class="y">Mika</span></td><td>1.2.–25.3., 18 pv; <span class="x">päällekkäin KK&amp;E</span>; <span class="q">20 iltamerkintää, tila ??</span></td><td class="num">90 h · p3 <span class="y">✓</span></td><td><span class="y">täytetty</span></td></tr>
+      <tr><td class="code">KQ00BT53-3014</td><td>Materiaali- ja valmistusteknologia 10 op</td><td>KXE26 · kevät</td><td><span class="y">Mika</span></td><td>1.4.–19.5. aamut, 20 pv; <span class="x">demopäivä 4.5. ristiriita</span>; toteutussuunnitelma puuttuu</td><td class="num">180 h · <span class="x">p3 90 / p4 90</span> (lukkari: p4)</td><td><span class="y">täytetty (oma tarkka rivi)</span></td></tr>
+      <tr><td class="code">KX00EF42</td><td>3D CAD 2 (SolidWorks)</td><td>KXE26 · syksy</td><td><span class="y">Mika</span></td><td><span class="x">”Mika ei ehdi! Joku muu??”</span>, ei päiviä</td><td class="num">90 h · p1</td><td><span class="q">kaksi riviä (vanha rivi 13)</span></td></tr>
+      <tr><td class="code">KX00EF38-3006</td><td>Käyttäjäkeskeinen suunnittelu ja ergonomia</td><td>KXE25 · kevät</td><td><span class="x">10 op</span>, Mika &amp; Juha</td><td>5 op; Mika 3.2., 10.–12.2., muut 10.–24.3.</td><td class="num">50 h (+ Juha 40 h) · p3/p4</td><td><span class="q">kaksi riviä (vanha rivi 28)</span></td></tr>
+      <tr><td class="code">KM00FJ37</td><td>Turbiini Arabia -yrityshautomo</td><td>monialainen</td><td><span class="x">puuttuu</span></td><td>rivi kevät + syksy, <span class="q">ei päiviä</span></td><td class="num">100 h · 25 h/periodi</td><td><span class="y">täytetty</span></td></tr>
+      <tr><td class="code">KX00EF46/47</td><td>Työharjoittelu 1 ja 2</td><td>KXE25 / KXE24</td><td>ei opettajaa; <span class="x">TH2-koodi väärin</span></td><td>”paikkojen esittely” ilman päivää</td><td class="num">TH1 25 h, TH2 0 h</td><td>40 h / rivi</td></tr>
+      <tr><td class="code">KX00EF48-3035</td><td>Opinnäytetyö ja kypsyysnäyte</td><td>KXE23 · kevät</td><td>ei opettajaa</td><td>25.1., 30.3., 28.5., 23.–24.6., <span class="x">kypsäri 25.6. juhannusaatto</span></td><td class="num">133 h (+ Juha, Tuomo)</td><td><span class="q">luonnos</span></td></tr>
+      <tr><td class="code">–</td><td>CAD/VR 1 · Advanced 3D-Modelling (verkko)</td><td>avoin</td><td>ei mukana</td><td>ei mukana</td><td class="num">10 h + 10 h</td><td><span class="q">luonnos, OPS puuttuu</span></td></tr>
+      <tr><td class="code">–</td><td>Valintakurssi · Valintakoe TM</td><td>hakijat</td><td>ei mukana</td><td>ei mukana</td><td class="num">40 h · 50 h p4</td><td><span class="q">luonnos</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Ehdotus: syksy 2027 ja TAS-jako</h2>
+  <p class="col">Ehdotuksessa jokaisella 5 op:n kurssilla on noin 15 lähiopetusaamua kolmen viikon blokkina, ja iltapäivät ovat pajatyötä. Päivämäärät ja arkipäivien määrät on laskettu kalenterista, ja niistä on vähennetty syysloma (vko 42), itsenäisyyspäivä ja Ilonan Värihavainto.</p>
+  <div class="tbl"><table style="min-width:640px">
+    <thead><tr><th>Kurssi</th><th>Ryhmä</th><th>Lähiopetus</th><th class="num">Arkipv</th><th>Periodi</th><th>Huom.</th></tr></thead>
+    <tbody>
+      <tr><td>Teollisen muotoilun orientaatio</td><td>KXE27</td><td class="num">16.8.–3.9. (vko 33–35)</td><td class="num">15</td><td>p1</td><td>Työturvakoulutus ja pajaperehdytykset ensimmäisellä viikolla, ennen pajatyötä</td></tr>
+      <tr><td>Teollinen muotoilu</td><td>KXE27</td><td class="num">6.9.–24.9. (vko 36–38)</td><td class="num">15</td><td>p1</td><td>Jos opettaja on Mika (ks. kriittinen 3)</td></tr>
+      <tr><td>Plastinen sommittelu</td><td>KXE27</td><td class="num">27.9.–15.10. (vko 39–41)</td><td class="num">15</td><td>p1</td><td>Häntä syysloman yli</td></tr>
+      <tr><td>Esitystekniikka</td><td>KXE27</td><td class="num">25.10.–26.11. (pois Ilonan 4.–17.11.)</td><td class="num">15</td><td>p2</td><td>Jakautuu kahteen osaan</td></tr>
+      <tr><td>2D CAD</td><td>KXE27</td><td class="num">29.11.–17.12. (vko 48–50)</td><td class="num">14</td><td>p2</td><td>6.12. vapaa; häntä tammikuulle 2028</td></tr>
+      <tr><td>3D CAD 2</td><td>KXE26</td><td class="num">4.11.–17.11. + iltapäiviä</td><td class="num">10</td><td>p2</td><td>KXE27 on silloin Ilonalla. Kytketään TMP1:een (Tuomo)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="meters" id="meters"></div>
+  <p class="note">Siirrot: syksyllä orientaatio, Teollinen muotoilu ja Plastinen sommittelu p2 → p1, 3D CAD 2 p1 → p2. Keväällä MaVa:n 90 h p3 → p4. Kokonaistunnit pysyvät ennallaan (1 508 h), ja periodien maksimit ovat 360 h (p1–p2) ja 440 h (p3–p4).</p>
+</section>
+
+<section>
+  <h2>Seuraavat askeleet</h2>
+  <ol class="steps">
+    <li>Sovi Juhan kanssa KK&amp;E:n neljä päällekkäistä päivää ja laajuus (5 vai 10 op).</li>
+    <li>Päättäkää Teollisen muotoilun opettaja. Sen jälkeen syksyn lukkariin voi värittää ehdotuksen mukaiset blokit ja varata tilat (pajat ja lähi-ATK-luokka).</li>
+    <li>Ratkaise 3D CAD 2 Tuomon kanssa: ajankohta 4.–17.11. ja kytkentä TMP1:een.</li>
+    <li>Kirjoita MaVa:n toteutussuunnitelma ja päätä demopäivän rooli.</li>
+    <li>Pyydä TAS-jaon korjaus (p1/p2 ja p3/p4) ja merkitse Turbiinin vakiovuoro.</li>
+    <li>Vie pajamestareille kevään ruuhkaviikot (vko 13–20) ja syksyn KXE27-iltapäivät, jotta valvonta klo 8–16 on resursoitu.</li>
+  </ol>
+</section>
+</div>
+
+<script>
+(function(){
+  const W=52;
+  // viikko -> kuukausi (maanantain mukaan, ISO 2027)
+  const monday=w=>{const d=new Date(Date.UTC(2027,0,4));d.setUTCDate(d.getUTCDate()+(w-1)*7);return d};
+  const kk=['tammi','helmi','maalis','huhti','touko','kesä','heinä','elo','syys','loka','marras','joulu'];
+  const hol=new Set([8,42,52]); // hiihtoloma, syysloma, joulu
+  const rows=[
+    {g:'Kevät 2027 · lukkarin mukaan'},
+    {n:'3D CAD 1',s:'KXE26 · 5 op',b:[[2,4,'on'],[5,8,'tail']]},
+    {n:'TM ja uudet teknologiat',s:'KXE26 · 5 op',b:[[5,6,'on'],[7,7,'oth'],[9,9,'lt'],[10,12,'on'],[13,16,'tail']],p:[[6,'1']]},
+    {n:'Materiaali- ja valmistus­teknologia',s:'KXE26 · 10 op',b:[[13,20,'on'],[21,24,'tail']],p:[[18,'4'],[20,'N']]},
+    {n:'Käyttäjäkeskeinen s. & ergonomia',s:'KXE25 · Mika & Juha',b:[[5,6,'on'],[10,12,'oth']],p:[[5,'1']]},
+    {n:'Opinnäytetyö (ohjaus)',s:'KXE23 · seminaarit',b:[[4,4,'lt'],[13,13,'lt'],[21,21,'lt'],[25,25,'lt']],p:[[25,'10']]},
+    {n:'Turbiini',s:'100 h · ei päiviä',b:[[1,24,'none'],[33,51,'none']],p:[[3,'9']]},
+    {g:'Syksy 2027 · ehdotus'},
+    {n:'TM-orientaatio',s:'KXE27 · 5 op',b:[[33,35,'plan'],[36,39,'tail']]},
+    {n:'Teollinen muotoilu',s:'KXE27 · 5 op',b:[[36,38,'plan'],[39,41,'tail']],p:[[37,'3']]},
+    {n:'Plastinen sommittelu',s:'KXE27 · 5 op',b:[[39,41,'plan'],[43,45,'tail']]},
+    {n:'Värihavainto (Ilona)',s:'KXE27 · ei Mikaa',b:[[44,46,'oth']]},
+    {n:'Esitystekniikka',s:'KXE27 · 5 op',b:[[43,44,'plan'],[46,47,'plan'],[48,51,'tail']]},
+    {n:'2D CAD',s:'KXE27 · 5 op',b:[[48,50,'plan'],[51,51,'tail']],p:[[49,'10']]},
+    {n:'3D CAD 2',s:'KXE26 · SolidWorks',b:[[44,46,'plan'],[47,50,'tail']],p:[[45,'2']]},
+  ];
+  const el=document.getElementById('gantt');
+  const add=(cls,html,style)=>{const d=document.createElement('div');d.className=cls;if(html!=null)d.innerHTML=html;if(style)d.style.cssText=style;el.appendChild(d);return d};
+  // kuukausirivi
+  add('lbl','<span class="eyebrow" style="font-size:.66rem">kuukausi</span>');
+  let last=-1;
+  for(let w=1;w<=W;w++){const m=monday(w).getUTCMonth();add(m!==last?'mon':'wk',m!==last?kk[m]:'', m!==last?'':'border:0');last=m}
+  add('lbl','<span class="eyebrow" style="font-size:.66rem">viikko</span>');
+  for(let w=1;w<=W;w++)add('wk',w%2?String(w):'');
+  for(const r of rows){
+    if(r.g){add('grp',r.g);continue}
+    add('lbl',`<span>${r.n}</span><small>${r.s}</small>`);
+    for(let w=1;w<=W;w++){
+      const c=add('c'+(hol.has(w)?' hol':''));
+      for(const [a,b,t] of r.b) if(w>=a&&w<=b){const bar=document.createElement('i');bar.className='bar '+t;c.appendChild(bar)}
+      for(const [pw,lab] of (r.p||[])) if(pw===w){const p=document.createElement('span');p.className='pin'+(lab==='N'?' ev':'');p.textContent=lab;p.title=lab==='N'?'Nuutajärvi 17.–19.5.':'Löydös '+lab;c.appendChild(p)}
+    }
+  }
+  // TAS-mittarit
+  const data=[
+    {t:'Syksy 2027',rows:[['p1',173,353,360],['p2',521,341,360]]},
+    {t:'Kevät 2027',rows:[['p3',473,383,440],['p4',341,431,440]]},
+  ];
+  const M=document.getElementById('meters');
+  const scale=560;
+  for(const s of data){
+    const box=document.createElement('div');box.className='meter';
+    box.innerHTML=`<h3>${s.t} · Mikan tunnit periodeittain</h3>`;
+    for(const [p,now,after,max] of s.rows){
+      const pct=v=>Math.min(100,v/scale*100).toFixed(1)+'%';
+      const mk=(lab,v,cls)=>`<div class="mrow"><span class="lab">${p} ${lab}</span><div class="track"><i class="fill ${cls}" style="width:${pct(v)}"></i><i style="position:absolute;top:-3px;bottom:-3px;left:${pct(max)};border-left:2px solid var(--ink)" title="maksimi ${max} h"></i></div><span class="v">${v} / ${max} h</span></div>`;
+      box.insertAdjacentHTML('beforeend',mk('nyt',now,now>max?'over':'')+mk('ehd.',after,'after'));
+    }
+    M.appendChild(box);
+  }
+})();
+</script>
+
+</body></html>
